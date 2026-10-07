@@ -3,18 +3,18 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/navigation/Header";
 import { Editor } from "@/components/editor/Editor";
-import { Save, Send, Calendar, Clock, Sparkles, CheckCircle2 } from "lucide-react";
+import { Save, Send, Calendar, Clock, Feather, CheckCircle2, BookOpen } from "lucide-react";
 
 export default function WritePage() {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [contentHtml, setContentHtml] = useState("");
+  const [publication, setPublication] = useState("Architecture & Craft");
   const [status, setStatus] = useState<"DRAFT" | "IN_REVIEW" | "SCHEDULED" | "PUBLISHED">("DRAFT");
   const [scheduledDate, setScheduledDate] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [savedNotification, setSavedNotification] = useState(false);
 
-  // Load draft from localStorage on mount
   useEffect(() => {
     const savedDraft = localStorage.getItem("inkforge_active_draft");
     if (savedDraft) {
@@ -24,6 +24,7 @@ export default function WritePage() {
         if (parsed.excerpt) setExcerpt(parsed.excerpt);
         if (parsed.contentHtml) setContentHtml(parsed.contentHtml);
         if (parsed.status) setStatus(parsed.status);
+        if (parsed.publication) setPublication(parsed.publication);
       } catch (e) {
         console.error("Failed to parse saved draft", e);
       }
@@ -33,9 +34,10 @@ export default function WritePage() {
   const handleSave = async (targetStatus = status) => {
     setIsSaving(true);
     const draftData = {
-      title: title || "Untitled Story",
+      title: title || "Untitled Manuscript",
       excerpt,
       contentHtml,
+      publication,
       status: targetStatus,
       scheduledFor: targetStatus === "SCHEDULED" ? scheduledDate : null,
       updatedAt: new Date().toISOString(),
@@ -43,11 +45,10 @@ export default function WritePage() {
 
     localStorage.setItem("inkforge_active_draft", JSON.stringify(draftData));
 
-    // Also persist into in-memory/API list
     try {
       const existingRaw = localStorage.getItem("inkforge_all_posts") || "[]";
       const existing = JSON.parse(existingRaw);
-      const postSlug = (title || "untitled-story")
+      const postSlug = (title || "untitled-manuscript")
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
@@ -58,8 +59,8 @@ export default function WritePage() {
         ...draftData,
         slug: postSlug,
         author: {
-          name: "Anonymous Scribe",
-          role: "Founding Writer",
+          name: "Resident Author",
+          role: "Editorial Fellow",
         },
       };
 
@@ -71,51 +72,71 @@ export default function WritePage() {
 
       localStorage.setItem("inkforge_all_posts", JSON.stringify(existing));
     } catch (err) {
-      console.error("Local persistence error", err);
+      console.error("Persistence error", err);
     }
 
     setTimeout(() => {
       setIsSaving(false);
       setSavedNotification(true);
       setTimeout(() => setSavedNotification(false), 2500);
-    }, 400);
+    }, 350);
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0d0e] text-[#f1f2f4]">
+    <div className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)]">
       <Header />
 
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-        {/* Top Control Bar */}
-        <div className="mb-8 flex flex-col gap-4 border-b border-zinc-800/80 pb-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="flex h-7 items-center rounded-full bg-amber-500/10 px-3 text-xs font-semibold uppercase tracking-wider text-amber-400">
-              Writer Studio
-            </span>
-            <span className="text-xs text-zinc-500">Draft v1.0</span>
+      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        {/* Scribe Desk Header */}
+        <div className="mb-8 flex flex-col gap-4 border-b border-[var(--editorial-rule)] pb-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
+                The Scribe&apos;s Desk
+              </span>
+              <span className="text-[var(--editorial-rule)]">•</span>
+              <span className="font-editorial-mono text-[11px] text-[var(--ink-muted)]">
+                Folio IF-MANUSCRIPT
+              </span>
+            </div>
+            <p className="mt-1 font-editorial-serif italic text-xs text-[var(--ink-secondary)]">
+              Crafting for long-horizon publication
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Status Selector */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Publication Selector */}
+            <select
+              value={publication}
+              onChange={(e) => setPublication(e.target.value)}
+              className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1.5 font-editorial-sans text-xs text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-none"
+            >
+              <option value="Architecture & Craft">Architecture &amp; Craft</option>
+              <option value="Digital Ecology">Digital Ecology</option>
+              <option value="Inkforge Engineering">Inkforge Engineering</option>
+              <option value="Literary Review">The Literary Review</option>
+            </select>
+
+            {/* Lifecycle Status Selector */}
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as typeof status)}
-              className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs font-medium text-zinc-300 focus:border-amber-500 focus:outline-none"
+              className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1.5 font-editorial-sans text-xs text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-none"
             >
-              <option value="DRAFT">Draft</option>
-              <option value="IN_REVIEW">Submit for Review</option>
-              <option value="SCHEDULED">Schedule Post</option>
-              <option value="PUBLISHED">Published</option>
+              <option value="DRAFT">Draft Manuscript</option>
+              <option value="IN_REVIEW">Submit for Peer Review</option>
+              <option value="SCHEDULED">Schedule Edition</option>
+              <option value="PUBLISHED">Published Edition</option>
             </select>
 
             {status === "SCHEDULED" && (
-              <div className="flex items-center space-x-1 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-xs text-zinc-300">
-                <Calendar className="h-3.5 w-3.5 text-amber-400" />
+              <div className="flex items-center space-x-1 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2 py-1 text-xs">
+                <Calendar className="h-3.5 w-3.5 text-[var(--oxblood)]" />
                 <input
                   type="datetime-local"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
-                  className="bg-transparent text-xs text-zinc-300 focus:outline-none"
+                  className="bg-transparent text-xs text-[var(--ink-primary)] focus:outline-none font-editorial-mono"
                 />
               </div>
             )}
@@ -124,10 +145,10 @@ export default function WritePage() {
               type="button"
               onClick={() => handleSave(status)}
               disabled={isSaving}
-              className="flex items-center space-x-1.5 rounded-lg border border-zinc-700 bg-zinc-800/80 px-3.5 py-1.5 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-700 disabled:opacity-50"
+              className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-1.5 font-editorial-sans text-xs font-medium text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] disabled:opacity-50"
             >
-              <Save className="h-3.5 w-3.5" />
-              <span>{isSaving ? "Saving..." : "Save Draft"}</span>
+              <Save className="h-3.5 w-3.5 text-[var(--oxblood)]" />
+              <span>{isSaving ? "Inking..." : "Save Manuscript"}</span>
             </button>
 
             <button
@@ -136,41 +157,41 @@ export default function WritePage() {
                 setStatus("PUBLISHED");
                 handleSave("PUBLISHED");
               }}
-              className="flex items-center space-x-1.5 rounded-lg bg-amber-500 px-4 py-1.5 text-xs font-semibold text-black transition-all hover:bg-amber-400 hover:shadow-md hover:shadow-amber-500/20 active:scale-95"
+              className="flex items-center space-x-1.5 rounded-md bg-[var(--oxblood)] px-4 py-1.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white transition-all hover:bg-[var(--oxblood-hover)] shadow-xs"
             >
               <Send className="h-3.5 w-3.5" />
-              <span>Publish Now</span>
+              <span>Publish Edition</span>
             </button>
           </div>
         </div>
 
         {savedNotification && (
-          <div className="mb-6 flex items-center space-x-2 rounded-lg border border-emerald-500/30 bg-emerald-950/40 px-4 py-2 text-xs text-emerald-300 animate-in fade-in slide-in-from-top-2">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            <span>Story saved successfully to local studio archive.</span>
+          <div className="mb-6 flex items-center space-x-2 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-card)] px-4 py-2 text-xs text-[var(--oxblood)] animate-in fade-in">
+            <CheckCircle2 className="h-4 w-4 text-[var(--oxblood)]" />
+            <span className="font-editorial-mono">Manuscript faithfully inscribed to the local archive.</span>
           </div>
         )}
 
-        {/* Story Title & Subtitle */}
+        {/* Title & Subtitle */}
         <div className="mb-8 space-y-4">
           <input
             type="text"
-            placeholder="Title of your story..."
+            placeholder="Title of this Monograph..."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent font-serif text-3xl font-extrabold tracking-tight text-white placeholder-zinc-600 focus:outline-none sm:text-5xl"
+            className="w-full bg-transparent font-editorial-serif text-3xl sm:text-5xl font-bold tracking-tight text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/50 focus:outline-none"
           />
 
           <input
             type="text"
-            placeholder="Add an enticing subtitle or summary excerpt..."
+            placeholder="Add an italicized prologue, subtitle, or summary excerpt..."
             value={excerpt}
             onChange={(e) => setExcerpt(e.target.value)}
-            className="w-full bg-transparent text-lg text-zinc-400 placeholder-zinc-700 focus:outline-none"
+            className="w-full bg-transparent font-editorial-serif italic text-lg sm:text-xl text-[var(--ink-secondary)] placeholder-[var(--ink-muted)]/40 focus:outline-none"
           />
         </div>
 
-        {/* Block Editor */}
+        {/* The Living Editor Canvas */}
         <div className="mb-12">
           <Editor
             initialContent={contentHtml}
@@ -178,14 +199,14 @@ export default function WritePage() {
           />
         </div>
 
-        {/* Publishing Workflow Tips */}
-        <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-5 text-sm text-zinc-400">
-          <div className="flex items-center space-x-2 font-medium text-zinc-200 mb-2">
-            <Sparkles className="h-4 w-4 text-amber-400" />
-            <span>Inkforge Writing Tip</span>
+        {/* Editorial Guidance Monograph */}
+        <div className="rounded-xl border border-[var(--paper-border)] bg-[var(--paper-card)] p-6 font-editorial-serif text-sm">
+          <div className="flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-wider text-[var(--oxblood)] mb-2 font-bold">
+            <Feather className="h-3.5 w-3.5" />
+            <span>Editorial Precepts for Inkforge Authors</span>
           </div>
-          <p className="text-xs leading-relaxed text-zinc-400">
-            Use the slash menu or highlight text to summon the floating formatting bar. Inkforge keeps your drafts auto-synchronized, and scheduled publications will release automatically when their target time triggers.
+          <p className="text-xs italic text-[var(--ink-secondary)] leading-relaxed">
+            Write with enduring intent. Every document in Inkforge is structured as a tree of semantic blocks, allowing seamless conversion between web monographs, print folios, and long-horizon archival editions.
           </p>
         </div>
       </main>

@@ -1,27 +1,32 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Header } from "@/components/navigation/Header";
-import { ArrowLeft, Clock, Calendar, Bookmark, Share2 } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, BookOpen, Bookmark, Share2 } from "lucide-react";
 
 interface Story {
   slug: string;
+  chapter: string;
+  folio: string;
   title: string;
-  excerpt: string;
+  subtitle: string;
   author: string;
   role: string;
   date: string;
   readingTime: string;
   publication: string;
   content: string[];
+  pullquote?: string;
+  footnotes?: { id: number; text: string }[];
 }
 
 const STORIES: Record<string, Story> = {
   "crafting-systems-that-endure": {
     slug: "crafting-systems-that-endure",
+    chapter: "CHAPTER I",
+    folio: "FOLIO 14–28",
     title: "Crafting Systems That Endure: The Philosophy of Long-Horizon Software",
-    excerpt: "Modern engineering often rushes to ship ephemeral features. But the truest software architecture mirrors literature: thoughtful, disciplined, and designed for decades.",
+    subtitle: "On permanence, architectural discipline, and treating digital constructs with the gravity of literature.",
     author: "Elena Rostova",
-    role: "Lead Systems Architect",
+    role: "Chair of Architectural Studies",
     date: "October 6, 2026",
     readingTime: "6 min read",
     publication: "Architecture & Craft",
@@ -33,11 +38,18 @@ const STORIES: Record<string, Story> = {
       "By decoupling authoring semantics from display mediums, we ensure that an essay written today can be read on an ambient e-ink display in 2035, parsed into structured knowledge graphs, or republished across decentralized feeds without losing a shred of typographic intention.",
       "Enduring software is not static software; it is software whose foundations are sturdy enough that evolution feels like growth rather than replacement.",
     ],
+    pullquote: "The truest software architecture mirrors literature: thoughtful, disciplined, and designed for decades.",
+    footnotes: [
+      { id: 1, text: "Donald Knuth, Computers & Typesetting, Vol. A: The TeXbook (Addison-Wesley, 1984)." },
+      { id: 2, text: "Edgar F. Codd, 'A Relational Model of Data for Large Shared Data Banks', CACM 13(6), 1970." },
+    ],
   },
   "the-death-and-rebirth-of-the-independent-web": {
     slug: "the-death-and-rebirth-of-the-independent-web",
+    chapter: "CHAPTER II",
+    folio: "FOLIO 29–38",
     title: "The Rebirth of the Independent Web: Why Writers Are Leaving Algorithmic Silos",
-    excerpt: "Feeds incentivize outrage and decay attention. A new renaissance of dedicated publications, newsletters, and bespoke digital spaces is quietly reclaiming the written word.",
+    subtitle: "How dedicated publications and sovereign digital spaces are reclaiming the dignity of the written word.",
     author: "Marcus Chen",
     role: "Editorial Essayist",
     date: "October 5, 2026",
@@ -49,11 +61,14 @@ const STORIES: Record<string, Story> = {
       "What we are witnessing today is not the decline of reading, but the quiet migration of discerning readers toward independent digital gardens.",
       "Inkforge provides writers and editorial cooperatives with sovereign digital spaces: high-performance reading surfaces that respect the reader's attention span and elevate writing back to literature.",
     ],
+    pullquote: "Discerning readers are quietly migrating away from engagement loops toward independent digital gardens.",
   },
   "block-based-composition-in-modern-publishing": {
     slug: "block-based-composition-in-modern-publishing",
+    chapter: "CHAPTER III",
+    folio: "FOLIO 39–54",
     title: "The Architecture of Block Composition: From ProseMirror ASTs to Dynamic Canvases",
-    excerpt: "How decoupling content blocks from rigid HTML structures unlocks programmable narratives, responsive media embeds, and effortless multi-format syndication.",
+    subtitle: "Decoupling narrative intent from rendering mediums for expressive, multi-format publishing.",
     author: "David Vance",
     role: "Principal Frontend Engineer",
     date: "October 3, 2026",
@@ -64,6 +79,7 @@ const STORIES: Record<string, Story> = {
       "Traditional rich-text editors produce messy, unpredictable HTML payloads littered with inline styles. In Inkforge, every document is serialized into a clean JSON document tree.",
       "This separation allows real-time collaborative editing, granular version diffing, and automated transforms into multiple output formats including clean HTML, Markdown, and syndication feeds.",
     ],
+    pullquote: "A document tree should be an expressive abstract canvas, not a fragile bundle of tags.",
   },
 };
 
@@ -75,94 +91,135 @@ export default async function StoryReaderPage({
   const { slug } = await params;
   const story = STORIES[slug] || {
     slug,
+    chapter: "MANUSCRIPT",
+    folio: "FOLIO ARCHIVE",
     title: slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-    excerpt: "An archival story published through the Inkforge studio.",
+    subtitle: "A monograph from the Inkforge Studio archive.",
     author: "Inkforge Author",
     role: "Staff Contributor",
-    date: "Recent",
+    date: "Recent Edition",
     readingTime: "3 min read",
-    publication: "Inkforge Collective",
+    publication: "The Collective",
     content: [
-      "This piece was authored and published via the Inkforge Writer Studio. Explore the studio to create and publish your own stories.",
+      "This piece was authored and published via the Inkforge Writer Studio. Explore the studio to create and publish your own stories with living editorial typography.",
     ],
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0d0e] text-[#f1f2f4]">
+    <div className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)]">
       <Header />
 
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        {/* Back link */}
-        <Link
-          href="/"
-          className="mb-8 inline-flex items-center space-x-1.5 text-xs font-medium text-zinc-400 transition-colors hover:text-amber-400"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back to Feed</span>
-        </Link>
+        {/* Navigation & Chapter Folio */}
+        <div className="mb-8 flex items-center justify-between border-b border-[var(--editorial-rule)] pb-4 font-editorial-mono text-xs tracking-widest uppercase text-[var(--ink-muted)]">
+          <Link
+            href="/"
+            className="inline-flex items-center space-x-1.5 transition-colors hover:text-[var(--oxblood)]"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Return to Index</span>
+          </Link>
 
-        {/* Publication banner */}
-        <div className="mb-4">
-          <span className="text-xs font-semibold uppercase tracking-wider text-amber-500">
-            {story.publication}
+          <span>
+            {story.chapter} • {story.folio}
           </span>
         </div>
 
-        {/* Title */}
-        <h1 className="font-serif text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
-          {story.title}
-        </h1>
-
-        {/* Subtitle / Excerpt */}
-        <p className="mt-4 text-lg leading-relaxed text-zinc-400 sm:text-xl">
-          {story.excerpt}
-        </p>
-
-        {/* Meta Bar */}
-        <div className="my-8 flex flex-wrap items-center justify-between border-y border-zinc-800/80 py-4 text-xs text-zinc-400">
-          <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-amber-700 text-black font-serif font-bold text-sm">
-              {story.author[0]}
-            </div>
-            <div>
-              <p className="font-semibold text-white">{story.author}</p>
-              <p className="text-[11px] text-zinc-500">{story.role}</p>
-            </div>
+        {/* Header Section */}
+        <header className="mb-10 text-center sm:text-left">
+          <div className="mb-3">
+            <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
+              {story.publication}
+            </span>
           </div>
 
-          <div className="mt-2 flex items-center space-x-4 sm:mt-0">
-            <span className="flex items-center space-x-1">
-              <Calendar className="h-3.5 w-3.5" />
+          <h1 className="font-editorial-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-[var(--ink-primary)] leading-[1.12]">
+            {story.title}
+          </h1>
+
+          <p className="mt-5 font-editorial-serif text-lg sm:text-xl text-[var(--ink-secondary)] italic leading-relaxed">
+            {story.subtitle}
+          </p>
+
+          {/* Byline and Reading Folio */}
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-[var(--editorial-rule)] py-4 font-editorial-sans text-xs text-[var(--ink-muted)]">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--paper-card)] border border-[var(--paper-border)] font-editorial-serif font-bold text-sm text-[var(--oxblood)]">
+                {story.author[0]}
+              </div>
+              <div>
+                <p className="font-semibold text-[var(--ink-primary)]">{story.author}</p>
+                <p className="text-[11px] text-[var(--ink-muted)]">{story.role}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4 font-editorial-mono text-[11px]">
               <span>{story.date}</span>
-            </span>
-            <span className="flex items-center space-x-1">
-              <Clock className="h-3.5 w-3.5" />
-              <span>{story.readingTime}</span>
-            </span>
+              <span>•</span>
+              <span className="flex items-center space-x-1">
+                <Clock className="h-3.5 w-3.5" />
+                <span>{story.readingTime}</span>
+              </span>
+            </div>
           </div>
-        </div>
+        </header>
 
-        {/* Story Body */}
-        <div className="space-y-6 font-serif text-lg leading-[1.85] text-zinc-300">
-          {story.content.map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
+        {/* Prose Content */}
+        <div className="space-y-6 font-editorial-serif text-lg leading-[1.88] text-[var(--ink-primary)]">
+          {story.content.map((paragraph, idx) => (
+            <p
+              key={idx}
+              className={idx === 0 ? "drop-cap" : ""}
+            >
+              {paragraph}
+            </p>
           ))}
         </div>
 
-        {/* Author Footer Card */}
-        <div className="mt-16 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6 sm:p-8">
+        {/* Pullquote if available */}
+        {story.pullquote && (
+          <blockquote className="editorial-pullquote my-10">
+            &ldquo;{story.pullquote}&rdquo;
+          </blockquote>
+        )}
+
+        {/* Editorial Section Divider */}
+        <div className="editorial-divider my-12">
+          <span>✦ • ✦</span>
+        </div>
+
+        {/* Footnotes Section if available */}
+        {story.footnotes && (
+          <div className="my-10 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-card)] p-6 font-editorial-sans text-xs text-[var(--ink-secondary)]">
+            <h4 className="font-editorial-mono font-bold uppercase tracking-wider text-[var(--oxblood)] mb-3">
+              Footnotes &amp; Critical References
+            </h4>
+            <ol className="list-decimal pl-4 space-y-1.5">
+              {story.footnotes.map((fn) => (
+                <li key={fn.id} className="leading-relaxed">
+                  {fn.text}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        {/* Author Colophon Box */}
+        <footer className="mt-14 rounded-2xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8">
           <div className="flex items-start space-x-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-500 text-black font-serif font-bold text-lg">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--oxblood)] text-white font-editorial-serif font-bold text-lg">
               {story.author[0]}
             </div>
             <div className="space-y-1">
-              <h4 className="font-serif text-base font-bold text-white">Written by {story.author}</h4>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Contributing editor at {story.publication}. Writing on system design, modern typography, and the evolving digital public square.
+              <h4 className="font-editorial-serif text-lg font-bold text-[var(--ink-primary)]">
+                About the Author
+              </h4>
+              <p className="font-editorial-serif italic text-sm text-[var(--ink-secondary)] leading-relaxed">
+                {story.author} serves as {story.role} at {story.publication}. Their work explores the intersection of literature, system design, and the digital public square.
               </p>
             </div>
           </div>
-        </div>
+        </footer>
       </article>
     </div>
   );

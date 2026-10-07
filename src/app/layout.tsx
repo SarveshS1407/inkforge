@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { EditionProvider } from "@/components/theme/EditionContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Inkforge — The Modern Publishing Platform",
+  title: "Inkforge — The Living Digital Book & Publishing Platform",
   description:
-    "An artisanal publishing ecosystem crafted for writers and readers. Distraction-free writing, collaborative publications, and high-performance reader architecture.",
-  keywords: ["publishing", "blog engine", "writer studio", "editorial", "journalism", "newsletter"],
-  authors: [{ name: "Inkforge Team" }],
+    "A living publishing ecosystem combining editorial sophistication, tactile book-inspired design, and modern digital energy. Crafted for discerning writers and readers.",
+  keywords: ["publishing", "literary journal", "essays", "writer studio", "book design", "reading", "typography"],
+  authors: [{ name: "The Inkforge Editors" }],
 };
 
 export default function RootLayout({
@@ -15,9 +16,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#0c0d0e] text-[#f1f2f4] antialiased selection:bg-amber-500/30 selection:text-amber-200">
-        {children}
+    <html lang="en">
+      <body className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)] antialiased selection:bg-[#86212b]/15 selection:text-[#86212b]">
+        <EditionProvider>{children}</EditionProvider>
       </body>
     </html>
   );

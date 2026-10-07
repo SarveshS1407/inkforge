@@ -2,81 +2,165 @@
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --primary: 38 92% 50%;
-    --primary-foreground: 240 10% 3.9%;
+    /* Paper Edition (Default Warm Editorial) */
+    --paper-bg: #fcfaf6;
+    --paper-surface: #ffffff;
+    --paper-card: #f7f4ed;
+    --paper-border: #e7e2d6;
+    --paper-border-subtle: #f0ebe1;
+    --ink-primary: #171615;
+    --ink-secondary: #4a4742;
+    --ink-muted: #827e76;
+    --oxblood: #86212b;
+    --oxblood-hover: #9c2733;
+    --oxblood-subtle: #fbeff0;
+    --amber-gold: #c28825;
+    --editorial-rule: #dfd9cb;
+  }
+
+  .dark {
+    /* Inkwell Edition (Night Bound Bookcloth) */
+    --paper-bg: #121315;
+    --paper-surface: #18191c;
+    --paper-card: #1f2024;
+    --paper-border: #2c2d33;
+    --paper-border-subtle: #23242a;
+    --ink-primary: #f5f2eb;
+    --ink-secondary: #c2beb5;
+    --ink-muted: #7f7b73;
+    --oxblood: #b83642;
+    --oxblood-hover: #d1424f;
+    --oxblood-subtle: #2a1518;
+    --amber-gold: #d89f36;
+    --editorial-rule: #2a2b30;
   }
 
   body {
-    background-color: #0c0d0e;
-    color: #f1f2f4;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    background-color: var(--paper-bg);
+    color: var(--ink-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
-/* Prose and Block Editor Typography */
+/* Serif Typography for Editorial Literature */
+.font-editorial-serif {
+  font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, "Times New Roman", Georgia, serif;
+}
+
+.font-editorial-sans {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.font-editorial-mono {
+  font-family: ui-monospace, "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", monospace;
+}
+
+/* Classical Drop-Cap for Opening Paragraphs */
+.drop-cap::first-letter {
+  float: left;
+  font-family: Charter, "Bitstream Charter", Cambria, Georgia, serif;
+  font-size: 3.75rem;
+  line-height: 0.85;
+  padding-right: 0.65rem;
+  padding-top: 0.25rem;
+  font-weight: 700;
+  color: var(--oxblood);
+}
+
+/* Pull Quotes */
+.editorial-pullquote {
+  font-family: Charter, "Bitstream Charter", Cambria, Georgia, serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  line-height: 1.5;
+  color: var(--ink-primary);
+  border-left: 3px solid var(--oxblood);
+  padding: 0.75rem 0 0.75rem 1.5rem;
+  margin: 2rem 0;
+}
+
+/* Book Dividers */
+.editorial-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2.5rem 0;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+.editorial-divider::before,
+.editorial-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--editorial-rule);
+}
+.editorial-divider span {
+  padding: 0 1.25rem;
+  letter-spacing: 0.3em;
+  font-family: ui-monospace, monospace;
+}
+
+/* Tiptap Prose Styling */
 .tiptap {
-  min-height: 380px;
+  min-height: 420px;
   outline: none;
+  font-family: Charter, "Bitstream Charter", Cambria, Georgia, serif;
+  color: var(--ink-primary);
 }
 
 .tiptap p.is-editor-empty:first-child::before {
-  color: #64748b;
+  color: var(--ink-muted);
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
+  font-style: italic;
 }
 
 .tiptap p {
-  line-height: 1.8;
-  margin-bottom: 1.25rem;
-  font-size: 1.125rem;
-  color: #cbd5e1;
+  line-height: 1.85;
+  margin-bottom: 1.4rem;
+  font-size: 1.15rem;
+  color: var(--ink-secondary);
 }
 
 .tiptap h1 {
   font-size: 2.25rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  margin-top: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-top: 2.25rem;
   margin-bottom: 1rem;
-  color: #f8fafc;
+  color: var(--ink-primary);
+  line-height: 1.2;
 }
 
 .tiptap h2 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 1.65rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin-top: 1.75rem;
   margin-bottom: 0.75rem;
-  color: #f8fafc;
+  color: var(--ink-primary);
+  line-height: 1.25;
 }
 
 .tiptap h3 {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 600;
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
-  color: #f8fafc;
+  color: var(--ink-primary);
 }
 
 .tiptap blockquote {
-  border-left: 3px solid #f59e0b;
+  border-left: 2px solid var(--oxblood);
   padding-left: 1.25rem;
-  margin: 1.5rem 0;
+  margin: 1.75rem 0;
   font-style: italic;
-  color: #e2e8f0;
+  color: var(--ink-primary);
 }
 
 .tiptap ul {
@@ -92,18 +176,19 @@
 }
 
 .tiptap pre {
-  background: #18191c;
-  color: #e2e8f0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  padding: 1rem 1.25rem;
+  background: var(--paper-card);
+  color: var(--ink-primary);
+  font-family: ui-monospace, "SF Mono", Monaco, monospace;
+  padding: 1.1rem 1.35rem;
   border-radius: 0.5rem;
-  border: 1px solid #27272a;
-  margin: 1.25rem 0;
+  border: 1px solid var(--paper-border);
+  margin: 1.5rem 0;
   overflow-x: auto;
+  font-size: 0.95rem;
 }
 
 .tiptap hr {
   border: none;
-  border-top: 1px solid #27272a;
-  margin: 2rem 0;
+  border-top: 1px solid var(--editorial-rule);
+  margin: 2.5rem 0;
 }

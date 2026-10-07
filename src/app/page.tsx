@@ -2,212 +2,312 @@ import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
 import {
   Feather,
-  Sparkles,
+  BookOpen,
   ArrowRight,
   Clock,
-  BookOpen,
-  Calendar,
+  Bookmark,
+  Sparkles,
   Layers,
-  CheckCircle2,
+  FileText,
+  Compass,
 } from "lucide-react";
 
-const FEATURED_STORIES = [
-  {
-    slug: "crafting-systems-that-endure",
-    title: "Crafting Systems That Endure: The Philosophy of Long-Horizon Software",
-    excerpt:
-      "Modern engineering often rushes to ship ephemeral features. But the truest software architecture mirrors literature: thoughtful, disciplined, and designed for decades.",
-    author: "Elena Rostova",
-    role: "Lead Systems Architect",
-    date: "Oct 6, 2026",
-    readingTime: "6 min read",
-    publication: "Architecture & Craft",
-    status: "PUBLISHED",
-  },
+const LEAD_ESSAY = {
+  slug: "crafting-systems-that-endure",
+  chapter: "CHAPTER I",
+  title: "Crafting Systems That Endure: The Philosophy of Long-Horizon Software",
+  subtitle: "On permanence, architectural discipline, and treating digital constructs with the gravity of literature.",
+  author: "Elena Rostova",
+  role: "Chair of Architectural Studies",
+  edition: "Issue IV • October 2026",
+  readingTime: "6 min read",
+  folio: "pp. 14–28",
+  publication: "Architecture & Craft",
+  excerpt:
+    "Software engineering suffers from a pervasive bias toward the ephemeral. We measure velocity by story points burned in two-week sprints, celebrate migrations that will be reversed eighteen months later, and obsess over frameworks whose lifespans rarely outlast an oak leaf. Yet there exists another lineage in software — one rooted in permanence.",
+};
+
+const ANTHOLOGY_STORIES = [
   {
     slug: "the-death-and-rebirth-of-the-independent-web",
+    chapter: "CHAPTER II",
     title: "The Rebirth of the Independent Web: Why Writers Are Leaving Algorithmic Silos",
     excerpt:
-      "Feeds incentivize outrage and decay attention. A new renaissance of dedicated publications, newsletters, and bespoke digital spaces is quietly reclaiming the written word.",
+      "Feeds incentivize outrage and decay attention. A new renaissance of dedicated publications, newsletters, and bespoke digital spaces is quietly reclaiming the sovereign written word.",
     author: "Marcus Chen",
     role: "Editorial Essayist",
-    date: "Oct 5, 2026",
+    date: "Autumn 2026",
     readingTime: "4 min read",
+    folio: "pp. 29–38",
     publication: "Digital Ecology",
-    status: "PUBLISHED",
   },
   {
     slug: "block-based-composition-in-modern-publishing",
+    chapter: "CHAPTER III",
     title: "The Architecture of Block Composition: From ProseMirror ASTs to Dynamic Canvases",
     excerpt:
-      "How decoupling content blocks from rigid HTML structures unlocks programmable narratives, responsive media embeds, and effortless multi-format syndication.",
+      "How decoupling content blocks from rigid HTML structures unlocks programmable narratives, responsive media embeds, and effortless multi-format syndication across print and digital mediums.",
     author: "David Vance",
     role: "Principal Frontend Engineer",
-    date: "Oct 3, 2026",
+    date: "Autumn 2026",
     readingTime: "8 min read",
+    folio: "pp. 39–54",
     publication: "Inkforge Engineering",
-    status: "PUBLISHED",
+  },
+  {
+    slug: "notes-on-local-first-autosave",
+    chapter: "DISPATCH IV",
+    title: "The Scribe's Sanctuary: Local-First Draft Persistence in Uncertain Networks",
+    excerpt:
+      "An exploration of resilient state architectures that guarantee no author ever loses a syllable, even during network turbulence or power failure.",
+    author: "Sarah Lindqvist",
+    role: "Staff Fellow",
+    date: "Autumn 2026",
+    readingTime: "5 min read",
+    folio: "pp. 55–64",
+    publication: "Systems & Theory",
+  },
+];
+
+const CURATED_VOLUMES = [
+  {
+    number: "VOLUME I",
+    title: "On Craft & Systems",
+    count: "12 Monographs",
+    tagline: "Foundational essays on endurance, architecture, and tool design.",
+  },
+  {
+    number: "VOLUME II",
+    title: "The Sovereign Writer",
+    count: "8 Monographs",
+    tagline: "Essays exploring independent distribution and literary autonomy.",
+  },
+  {
+    number: "VOLUME III",
+    title: "Block Semantics & Type",
+    count: "15 Monographs",
+    tagline: "The union of classical typography algorithms and digital canvases.",
   },
 ];
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#0c0d0e] text-[#f1f2f4]">
+    <div className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)]">
       <Header />
 
-      {/* Hero Banner */}
-      <section className="relative overflow-hidden border-b border-zinc-800/80 bg-gradient-to-b from-amber-500/[0.04] via-transparent to-transparent py-20 px-4 sm:px-6">
-        <div className="mx-auto max-w-5xl text-center">
-          <div className="inline-flex items-center space-x-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3.5 py-1 text-xs font-medium text-amber-400 mb-6">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Next-Generation Publishing Infrastructure</span>
+      <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+        {/* Living Editorial Masthead Title */}
+        <section className="border-b border-[var(--editorial-rule)] pb-10 text-center">
+          <div className="inline-flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] mb-4">
+            <span>Autumn Anthology</span>
+            <span>•</span>
+            <span>Volume IV</span>
+            <span>•</span>
+            <span>Continuous Print</span>
           </div>
 
-          <h1 className="font-serif text-4xl font-extrabold tracking-tight text-white sm:text-6xl md:text-7xl leading-[1.1]">
-            Where Great Writing <br />
-            <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 bg-clip-text text-transparent">
-              Becomes Literature.
-            </span>
+          <h1 className="font-editorial-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-[var(--ink-primary)] leading-[1.08]">
+            The Living Digital Book.
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-400 sm:text-xl">
-            Inkforge is a precision-engineered publishing ecosystem designed for writers, editorial collectives, and publication networks.
+          <p className="mx-auto mt-5 max-w-2xl font-editorial-serif text-lg sm:text-xl text-[var(--ink-secondary)] italic leading-relaxed">
+            &ldquo;Where the timeless discipline of books meets the living breath of digital prose.&rdquo;
           </p>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-8 flex items-center justify-center space-x-4">
             <Link
               href="/write"
-              className="flex items-center space-x-2 rounded-full bg-amber-500 px-6 py-3 text-sm font-semibold text-black transition-all hover:bg-amber-400 hover:shadow-xl hover:shadow-amber-500/25 active:scale-95"
+              className="inline-flex items-center space-x-2 rounded-full bg-[var(--oxblood)] px-5 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-[var(--oxblood-hover)] hover:scale-105 active:scale-95"
             >
-              <span>Launch Studio</span>
-              <ArrowRight className="h-4 w-4" />
+              <span>Begin Composing</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
 
             <Link
               href="/posts"
-              className="flex items-center space-x-2 rounded-full border border-zinc-700 bg-zinc-900/60 px-6 py-3 text-sm font-semibold text-zinc-200 transition-colors hover:border-zinc-500 hover:bg-zinc-800"
+              className="inline-flex items-center space-x-2 rounded-full border border-[var(--paper-border)] bg-[var(--paper-surface)] px-5 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-[var(--ink-secondary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--ink-primary)]"
             >
-              <Layers className="h-4 w-4" />
-              <span>Explore Dashboard</span>
+              <Layers className="h-3.5 w-3.5" />
+              <span>View Editorial Ledger</span>
             </Link>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Editorial Feed */}
-      <main className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-        <div className="mb-10 flex items-end justify-between border-b border-zinc-800 pb-4">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-500">
-              Curated Stories
-            </span>
-            <h2 className="font-serif text-2xl font-bold text-white sm:text-3xl">
-              From the Collective
-            </h2>
+        {/* Lead Feature / Cover Story (Book-Cover Proportions) */}
+        <section className="my-16">
+          <div className="mb-4 flex items-center justify-between text-xs font-editorial-mono tracking-widest uppercase text-[var(--ink-muted)]">
+            <span>Frontispiece &amp; Featured Essay</span>
+            <span>{LEAD_ESSAY.folio}</span>
           </div>
-          <Link
-            href="/posts"
-            className="text-xs font-medium text-zinc-400 hover:text-amber-400 transition-colors"
-          >
-            View all stories &rarr;
-          </Link>
-        </div>
 
-        <div className="grid gap-8 md:grid-cols-3">
-          {FEATURED_STORIES.map((story) => (
-            <article
-              key={story.slug}
-              className="group flex flex-col justify-between rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6 transition-all hover:border-zinc-700 hover:bg-zinc-900/60"
-            >
-              <div>
-                <div className="mb-3 flex items-center justify-between text-xs text-zinc-400">
-                  <span className="font-medium text-amber-400/90">{story.publication}</span>
-                  <span className="flex items-center space-x-1">
-                    <Clock className="h-3 w-3" />
-                    <span>{story.readingTime}</span>
-                  </span>
-                </div>
+          <div className="rounded-2xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-8 sm:p-12 shadow-sm transition-all hover:border-[var(--oxblood)]/50">
+            <div className="max-w-3xl">
+              <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
+                {LEAD_ESSAY.chapter} • {LEAD_ESSAY.publication}
+              </span>
 
-                <Link href={`/read/${story.slug}`}>
-                  <h3 className="font-serif text-xl font-bold leading-snug text-white transition-colors group-hover:text-amber-300">
-                    {story.title}
-                  </h3>
-                </Link>
+              <Link href={`/read/${LEAD_ESSAY.slug}`}>
+                <h2 className="mt-3 font-editorial-serif text-3xl sm:text-5xl font-bold tracking-tight text-[var(--ink-primary)] transition-colors hover:text-[var(--oxblood)] leading-tight">
+                  {LEAD_ESSAY.title}
+                </h2>
+              </Link>
 
-                <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-zinc-400">
-                  {story.excerpt}
+              <p className="mt-4 font-editorial-serif text-lg text-[var(--ink-secondary)] italic leading-relaxed">
+                {LEAD_ESSAY.subtitle}
+              </p>
+
+              {/* Opening paragraph with classical drop cap */}
+              <div className="mt-6 border-t border-[var(--editorial-rule)] pt-6">
+                <p className="drop-cap font-editorial-serif text-base sm:text-lg leading-[1.8] text-[var(--ink-secondary)]">
+                  {LEAD_ESSAY.excerpt}
                 </p>
               </div>
 
-              <div className="mt-6 flex items-center justify-between border-t border-zinc-800/60 pt-4 text-xs text-zinc-500">
-                <div>
-                  <p className="font-medium text-zinc-300">{story.author}</p>
-                  <p className="text-[11px] text-zinc-500">{story.role}</p>
+              {/* Byline & Folio Details */}
+              <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--editorial-rule)] pt-5 font-editorial-sans text-xs text-[var(--ink-muted)]">
+                <div className="flex items-center space-x-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--paper-card)] border border-[var(--paper-border)] font-editorial-serif font-bold text-sm text-[var(--oxblood)]">
+                    {LEAD_ESSAY.author[0]}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[var(--ink-primary)]">{LEAD_ESSAY.author}</p>
+                    <p className="text-[11px] text-[var(--ink-muted)]">{LEAD_ESSAY.role}</p>
+                  </div>
                 </div>
-                <span>{story.date}</span>
-              </div>
-            </article>
-          ))}
-        </div>
 
-        {/* Platform Architecture Highlights */}
-        <div className="mt-20 rounded-3xl border border-zinc-800 bg-zinc-950 p-8 sm:p-12">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="font-serif text-2xl font-bold text-white sm:text-3xl">
-              Engineered for the Full Publishing Lifecycle
-            </h2>
-            <p className="mt-3 text-sm text-zinc-400">
-              Inkforge marries a lightweight, distraction-free writing studio with an enterprise-scale editorial workflow engine.
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 p-5">
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
-                <Feather className="h-5 w-5" />
+                <div className="flex items-center space-x-5 font-editorial-mono text-[11px]">
+                  <span>{LEAD_ESSAY.edition}</span>
+                  <span>•</span>
+                  <span className="flex items-center space-x-1">
+                    <Clock className="h-3 w-3" />
+                    <span>{LEAD_ESSAY.readingTime}</span>
+                  </span>
+                  <span>•</span>
+                  <Link
+                    href={`/read/${LEAD_ESSAY.slug}`}
+                    className="font-bold text-[var(--oxblood)] hover:underline flex items-center gap-1 uppercase"
+                  >
+                    <span>Read Monograph</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
               </div>
-              <h4 className="text-sm font-semibold text-white">Block Editor</h4>
-              <p className="mt-1.5 text-xs leading-relaxed text-zinc-400">
-                Extensible ProseMirror/Tiptap AST supporting custom blocks, callouts, and slash shortcuts.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 p-5">
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
-                <Calendar className="h-5 w-5" />
-              </div>
-              <h4 className="text-sm font-semibold text-white">Scheduled Releases</h4>
-              <p className="mt-1.5 text-xs leading-relaxed text-zinc-400">
-                Programmatic and queue-based publishing for time-sensitive editions and newsletters.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 p-5">
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
-                <Layers className="h-5 w-5" />
-              </div>
-              <h4 className="text-sm font-semibold text-white">Publications (RBAC)</h4>
-              <p className="mt-1.5 text-xs leading-relaxed text-zinc-400">
-                Multi-author organizations with Owner, Editor, Author, and Contributor permissions.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 p-5">
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
-                <CheckCircle2 className="h-5 w-5" />
-              </div>
-              <h4 className="text-sm font-semibold text-white">Prisma Data Layer</h4>
-              <p className="mt-1.5 text-xs leading-relaxed text-zinc-400">
-                Strict relational integrity, full revision histories, and seamless Postgres migration.
-              </p>
             </div>
           </div>
+        </section>
+
+        {/* Decorative Editorial Divider */}
+        <div className="editorial-divider">
+          <span>✦ • ✦</span>
         </div>
+
+        {/* The Anthology / Table of Contents Grid */}
+        <section className="my-16">
+          <div className="mb-8 flex items-baseline justify-between border-b border-[var(--editorial-rule)] pb-3">
+            <div>
+              <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
+                Table of Contents
+              </span>
+              <h3 className="font-editorial-serif text-2xl sm:text-3xl font-bold text-[var(--ink-primary)]">
+                The Contemporary Anthology
+              </h3>
+            </div>
+            <Link
+              href="/posts"
+              className="font-editorial-mono text-xs tracking-wider uppercase text-[var(--ink-muted)] hover:text-[var(--oxblood)] transition-colors"
+            >
+              Examine Full Index &rarr;
+            </Link>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {ANTHOLOGY_STORIES.map((story) => (
+              <article
+                key={story.slug}
+                className="group flex flex-col justify-between rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 transition-all hover:border-[var(--oxblood)] hover:shadow-sm"
+              >
+                <div>
+                  <div className="mb-3 flex items-center justify-between font-editorial-mono text-[11px] text-[var(--ink-muted)]">
+                    <span className="font-semibold text-[var(--oxblood)]">{story.chapter}</span>
+                    <span>{story.folio}</span>
+                  </div>
+
+                  <Link href={`/read/${story.slug}`}>
+                    <h4 className="font-editorial-serif text-xl font-bold leading-snug text-[var(--ink-primary)] transition-colors group-hover:text-[var(--oxblood)]">
+                      {story.title}
+                    </h4>
+                  </Link>
+
+                  <p className="mt-3 line-clamp-3 font-editorial-serif text-sm leading-relaxed text-[var(--ink-secondary)]">
+                    {story.excerpt}
+                  </p>
+                </div>
+
+                <div className="mt-6 border-t border-[var(--editorial-rule)] pt-4 font-editorial-sans text-xs">
+                  <div className="flex items-center justify-between text-[var(--ink-muted)]">
+                    <div>
+                      <p className="font-semibold text-[var(--ink-primary)]">{story.author}</p>
+                      <p className="text-[10px]">{story.role}</p>
+                    </div>
+                    <span className="font-editorial-mono text-[11px]">{story.readingTime}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* Bound Collections / Slipcase Editions */}
+        <section className="my-16 rounded-2xl border border-[var(--paper-border)] bg-[var(--paper-card)] p-8 sm:p-10">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
+                Archive Collections
+              </span>
+              <h3 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)]">
+                Thematic Slipcases &amp; Volumes
+              </h3>
+            </div>
+            <BookOpen className="h-5 w-5 text-[var(--oxblood)]" />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            {CURATED_VOLUMES.map((vol) => (
+              <div
+                key={vol.number}
+                className="rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 transition-transform hover:-translate-y-1 hover:border-[var(--oxblood)]"
+              >
+                <div className="font-editorial-mono text-[10px] tracking-widest uppercase text-[var(--amber-gold)] font-bold">
+                  {vol.number}
+                </div>
+                <h5 className="mt-1 font-editorial-serif text-lg font-bold text-[var(--ink-primary)]">
+                  {vol.title}
+                </h5>
+                <p className="mt-2 text-xs text-[var(--ink-secondary)] leading-relaxed">
+                  {vol.tagline}
+                </p>
+                <div className="mt-4 font-editorial-mono text-[10px] tracking-wider text-[var(--ink-muted)] uppercase">
+                  {vol.count}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-800/80 bg-[#08090a] py-8 text-center text-xs text-zinc-500">
-        <p>Inkforge Publishing Platform • Precision-crafted for modern authors.</p>
+      {/* Classical Book Colophon / Footer */}
+      <footer className="border-t border-[var(--editorial-rule)] bg-[var(--paper-surface)] py-12 px-4 text-center font-editorial-mono text-xs text-[var(--ink-muted)]">
+        <div className="mx-auto max-w-2xl space-y-3">
+          <p className="tracking-widest uppercase text-[var(--ink-primary)] font-bold">
+            I N K F O R G E • C O L O P H O N
+          </p>
+          <p className="font-editorial-serif italic text-sm text-[var(--ink-secondary)]">
+            Set in digital Charter and classical typography algorithms. Bound with modern React and Next.js.
+          </p>
+          <p className="text-[11px] text-[var(--ink-muted)]">
+            Designed for long-horizon reading, authorial sovereignty, and intellectual delight.
+          </p>
+        </div>
       </footer>
     </div>
   );
