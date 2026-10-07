@@ -1,0 +1,111 @@
+// INKFORGE Prisma Schema
+// Configured with SQLite for instant zero-dependency local development,
+// with schema architecture strictly designed to migrate directly to PostgreSQL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  username      String    @unique
+  displayName   String?
+  avatarUrl     String?
+  bio           String?
+  role          String    @default("WRITER") // ADMIN, EDITOR, WRITER, READER
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  posts         Post[]
+  memberships   PublicationMember[]
+  ownedPublications Publication[] @relation("PublicationOwner")
+}
+
+model Publication {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  logoUrl     String?
+  coverUrl    String?
+  ownerId     String
+  owner       User      @relation("PublicationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  members     PublicationMember[]
+  posts       Post[]
+}
+
+model PublicationMember {
+  id            String      @id @default(uuid())
+  publicationId String
+  userId        String
+  role          String      @default("CONTRIBUTOR") // OWNER, EDITOR, AUTHOR, CONTRIBUTOR
+  createdAt     DateTime    @default(now())
+
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([publicationId, userId])
+}
+
+model Post {
+  id                 String       @id @default(uuid())
+  title              String
+  slug               String       @unique
+  excerpt            String?
+  contentJson        String?      // Stored as JSON string (AST)
+  contentHtml        String?      // Pre-rendered HTML for fast reader serving
+  status             String       @default("DRAFT") // DRAFT, IN_REVIEW, SCHEDULED, PUBLISHED, ARCHIVED
+  coverImageUrl      String?
+  readingTimeMinutes Int          @default(1)
+  publishedAt        DateTime?
+  scheduledFor       DateTime?
+  canonicalUrl       String?
+
+  authorId           String
+  author             User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  publicationId      String?
+  publication        Publication? @relation(fields: [publicationId], references: [id], onDelete: SetNull)
+
+  revisions          PostRevision[]
+  tags               PostTag[]
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+model PostRevision {
+  id          String   @id @default(uuid())
+  postId      String
+  title       String
+  contentJson String
+  createdAt   DateTime @default(now())
+
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  posts     PostTag[]
+  createdAt DateTime  @default(now())
+}
+
+model PostTag {
+  postId    String
+  tagId     String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+}
