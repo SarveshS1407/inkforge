@@ -95,14 +95,14 @@ export default function PostsDashboardPage() {
     switch (status) {
       case "PUBLISHED":
         return (
-          <span className="inline-flex items-center gap-1 font-editorial-mono text-[10px] font-bold tracking-wider uppercase text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+          <span className="inline-flex items-center gap-1 font-editorial-mono text-[10px] font-bold tracking-wider uppercase text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded border border-emerald-300/80 dark:border-emerald-800/60">
             <CheckCircle2 className="h-3 w-3" />
             Published Edition
           </span>
         );
       case "SCHEDULED":
         return (
-          <span className="inline-flex items-center gap-1 font-editorial-mono text-[10px] font-bold tracking-wider uppercase text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded border border-blue-200">
+          <span className="inline-flex items-center gap-1 font-editorial-mono text-[10px] font-bold tracking-wider uppercase text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-2.5 py-0.5 rounded border border-sky-300/80 dark:border-sky-800/60">
             <Calendar className="h-3 w-3" />
             Bound &amp; Scheduled
           </span>
@@ -145,20 +145,20 @@ export default function PostsDashboardPage() {
 
           <Link
             href="/write"
-            className="inline-flex items-center space-x-2 rounded-full bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-[var(--oxblood-hover)] hover:scale-105 active:scale-95"
+            className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98]"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Compose Monograph</span>
           </Link>
         </div>
 
-        {/* Tab Filters styled like library book indexes */}
+        {/* Tab Filters */}
         <div className="mb-8 flex flex-wrap items-center gap-2 border-b border-[var(--editorial-rule)] pb-4 font-editorial-mono text-xs">
           {(["ALL", "DRAFT", "IN_REVIEW", "SCHEDULED", "PUBLISHED"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`rounded-md px-3 py-1.5 transition-colors uppercase tracking-wider ${
+              className={`rounded-md px-3 py-1.5 transition-colors uppercase tracking-wider shadow-xs ${
                 filter === tab
                   ? "bg-[var(--oxblood)] text-white font-bold"
                   : "bg-[var(--paper-card)] text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] border border-[var(--paper-border)]"
@@ -175,7 +175,7 @@ export default function PostsDashboardPage() {
         {/* Manuscript List */}
         <div className="space-y-4">
           {filteredPosts.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[var(--paper-border)] p-12 text-center bg-[var(--paper-surface)]">
+            <div className="paper-sheet rounded-xl p-12 text-center">
               <BookOpen className="mx-auto h-8 w-8 text-[var(--ink-muted)] mb-3" />
               <h3 className="font-editorial-serif text-base font-bold text-[var(--ink-primary)]">
                 No manuscripts filed in this index
@@ -188,7 +188,7 @@ export default function PostsDashboardPage() {
             filteredPosts.map((post) => (
               <div
                 key={post.id}
-                className="group flex flex-col justify-between rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 transition-all hover:border-[var(--oxblood)] hover:shadow-sm sm:flex-row sm:items-center"
+                className="paper-sheet group flex flex-col justify-between rounded-xl p-6 transition-all sm:flex-row sm:items-center"
               >
                 <div className="space-y-2 sm:max-w-2xl">
                   <div className="flex items-center space-x-3">
@@ -215,7 +215,7 @@ export default function PostsDashboardPage() {
                 <div className="mt-4 flex items-center space-x-2 sm:mt-0">
                   <Link
                     href={`/read/${post.slug}`}
-                    className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-card)] px-3 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)]"
+                    className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-card)] px-3 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] shadow-xs"
                   >
                     <Eye className="h-3.5 w-3.5" />
                     <span>Read</span>
@@ -223,7 +223,7 @@ export default function PostsDashboardPage() {
 
                   <Link
                     href="/write"
-                    className="flex items-center space-x-1.5 rounded-md bg-[var(--paper-card)] border border-[var(--paper-border)] px-3 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)]"
+                    className="flex items-center space-x-1.5 rounded-md bg-[var(--paper-card)] border border-[var(--paper-border)] px-3 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] shadow-xs"
                   >
                     <Edit3 className="h-3.5 w-3.5" />
                     <span>Inscribe</span>

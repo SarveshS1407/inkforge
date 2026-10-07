@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
 import {
@@ -5,11 +8,8 @@ import {
   BookOpen,
   ArrowRight,
   Clock,
-  Bookmark,
-  Sparkles,
   Layers,
-  FileText,
-  Compass,
+  Sparkles,
 } from "lucide-react";
 
 const LEAD_ESSAY = {
@@ -30,6 +30,7 @@ const LEAD_ESSAY = {
 const ANTHOLOGY_STORIES = [
   {
     slug: "the-death-and-rebirth-of-the-independent-web",
+    category: "LITERARY ECOLOGY",
     chapter: "CHAPTER II",
     title: "The Rebirth of the Independent Web: Why Writers Are Leaving Algorithmic Silos",
     excerpt:
@@ -43,6 +44,7 @@ const ANTHOLOGY_STORIES = [
   },
   {
     slug: "block-based-composition-in-modern-publishing",
+    category: "SYSTEMS CRAFT",
     chapter: "CHAPTER III",
     title: "The Architecture of Block Composition: From ProseMirror ASTs to Dynamic Canvases",
     excerpt:
@@ -56,6 +58,7 @@ const ANTHOLOGY_STORIES = [
   },
   {
     slug: "notes-on-local-first-autosave",
+    category: "DIGITAL THEORY",
     chapter: "DISPATCH IV",
     title: "The Scribe's Sanctuary: Local-First Draft Persistence in Uncertain Networks",
     excerpt:
@@ -91,13 +94,19 @@ const CURATED_VOLUMES = [
 ];
 
 export default function HomePage() {
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+
+  const filteredAnthology = ANTHOLOGY_STORIES.filter(
+    (story) => selectedCategory === "ALL" || story.category === selectedCategory
+  );
+
   return (
     <div className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)]">
       <Header />
 
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         {/* Living Editorial Masthead Title */}
-        <section className="border-b border-[var(--editorial-rule)] pb-10 text-center">
+        <section className="border-b border-[var(--editorial-rule)] pb-12 text-center">
           <div className="inline-flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] mb-4">
             <span>Autumn Anthology</span>
             <span>•</span>
@@ -106,7 +115,7 @@ export default function HomePage() {
             <span>Continuous Print</span>
           </div>
 
-          <h1 className="font-editorial-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-[var(--ink-primary)] leading-[1.08]">
+          <h1 className="font-editorial-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-[var(--ink-primary)] leading-[1.06]">
             The Living Digital Book.
           </h1>
 
@@ -117,7 +126,7 @@ export default function HomePage() {
           <div className="mt-8 flex items-center justify-center space-x-4">
             <Link
               href="/write"
-              className="inline-flex items-center space-x-2 rounded-full bg-[var(--oxblood)] px-5 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-[var(--oxblood-hover)] hover:scale-105 active:scale-95"
+              className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-5 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98]"
             >
               <span>Begin Composing</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -125,7 +134,7 @@ export default function HomePage() {
 
             <Link
               href="/posts"
-              className="inline-flex items-center space-x-2 rounded-full border border-[var(--paper-border)] bg-[var(--paper-surface)] px-5 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-[var(--ink-secondary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--ink-primary)]"
+              className="inline-flex items-center space-x-2 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-5 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-[var(--ink-secondary)] shadow-xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--ink-primary)] active:scale-[0.98]"
             >
               <Layers className="h-3.5 w-3.5" />
               <span>View Editorial Ledger</span>
@@ -140,14 +149,14 @@ export default function HomePage() {
             <span>{LEAD_ESSAY.folio}</span>
           </div>
 
-          <div className="rounded-2xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-8 sm:p-12 shadow-sm transition-all hover:border-[var(--oxblood)]/50">
+          <div className="paper-sheet rounded-xl p-8 sm:p-12 transition-all">
             <div className="max-w-3xl">
               <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
                 {LEAD_ESSAY.chapter} • {LEAD_ESSAY.publication}
               </span>
 
-              <Link href={`/read/${LEAD_ESSAY.slug}`}>
-                <h2 className="mt-3 font-editorial-serif text-3xl sm:text-5xl font-bold tracking-tight text-[var(--ink-primary)] transition-colors hover:text-[var(--oxblood)] leading-tight">
+              <Link href={`/read/${LEAD_ESSAY.slug}`} className="group block">
+                <h2 className="mt-3 font-editorial-serif text-3xl sm:text-5xl font-bold tracking-tight text-[var(--ink-primary)] transition-colors group-hover:text-[var(--oxblood)] leading-tight">
                   {LEAD_ESSAY.title}
                 </h2>
               </Link>
@@ -158,7 +167,7 @@ export default function HomePage() {
 
               {/* Opening paragraph with classical drop cap */}
               <div className="mt-6 border-t border-[var(--editorial-rule)] pt-6">
-                <p className="drop-cap font-editorial-serif text-base sm:text-lg leading-[1.8] text-[var(--ink-secondary)]">
+                <p className="drop-cap font-editorial-serif text-base sm:text-lg leading-[1.85] text-[var(--ink-secondary)]">
                   {LEAD_ESSAY.excerpt}
                 </p>
               </div>
@@ -201,9 +210,9 @@ export default function HomePage() {
           <span>✦ • ✦</span>
         </div>
 
-        {/* The Anthology / Table of Contents Grid */}
+        {/* The Anthology / Table of Contents Section */}
         <section className="my-16">
-          <div className="mb-8 flex items-baseline justify-between border-b border-[var(--editorial-rule)] pb-3">
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[var(--editorial-rule)] pb-4 gap-4">
             <div>
               <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
                 Table of Contents
@@ -212,19 +221,30 @@ export default function HomePage() {
                 The Contemporary Anthology
               </h3>
             </div>
-            <Link
-              href="/posts"
-              className="font-editorial-mono text-xs tracking-wider uppercase text-[var(--ink-muted)] hover:text-[var(--oxblood)] transition-colors"
-            >
-              Examine Full Index &rarr;
-            </Link>
+
+            {/* Living Interactive Filter */}
+            <div className="flex flex-wrap items-center gap-1.5 font-editorial-mono text-[10px] tracking-wider uppercase">
+              {["ALL", "SYSTEMS CRAFT", "LITERARY ECOLOGY", "DIGITAL THEORY"].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-2.5 py-1 rounded transition-colors ${
+                    selectedCategory === cat
+                      ? "bg-[var(--oxblood)] text-white font-bold"
+                      : "bg-[var(--paper-card)] text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] border border-[var(--paper-border)]"
+                  }`}
+                >
+                  {cat === "ALL" ? "All Subjects" : cat}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            {ANTHOLOGY_STORIES.map((story) => (
+          <div className="grid gap-6 md:grid-cols-3">
+            {filteredAnthology.map((story) => (
               <article
                 key={story.slug}
-                className="group flex flex-col justify-between rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 transition-all hover:border-[var(--oxblood)] hover:shadow-sm"
+                className="paper-sheet group flex flex-col justify-between rounded-xl p-6 transition-all"
               >
                 <div>
                   <div className="mb-3 flex items-center justify-between font-editorial-mono text-[11px] text-[var(--ink-muted)]">
@@ -258,7 +278,7 @@ export default function HomePage() {
         </section>
 
         {/* Bound Collections / Slipcase Editions */}
-        <section className="my-16 rounded-2xl border border-[var(--paper-border)] bg-[var(--paper-card)] p-8 sm:p-10">
+        <section className="my-16 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-card)] p-8 sm:p-10 shadow-xs">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
@@ -275,7 +295,7 @@ export default function HomePage() {
             {CURATED_VOLUMES.map((vol) => (
               <div
                 key={vol.number}
-                className="rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 transition-transform hover:-translate-y-1 hover:border-[var(--oxblood)]"
+                className="rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 transition-transform hover:-translate-y-1 hover:border-[var(--oxblood)] shadow-xs"
               >
                 <div className="font-editorial-mono text-[10px] tracking-widest uppercase text-[var(--amber-gold)] font-bold">
                   {vol.number}

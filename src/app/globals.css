@@ -2,37 +2,47 @@
 
 @layer base {
   :root {
-    /* Paper Edition (Default Warm Editorial) */
+    /* Paper Edition (Natural Warm Editorial Ground) */
     --paper-bg: #fcfaf6;
     --paper-surface: #ffffff;
     --paper-card: #f7f4ed;
-    --paper-border: #e7e2d6;
-    --paper-border-subtle: #f0ebe1;
-    --ink-primary: #171615;
-    --ink-secondary: #4a4742;
-    --ink-muted: #827e76;
+    --paper-card-hover: #f3efe4;
+    --paper-border: #e6e0d2;
+    --paper-border-subtle: #efeae0;
+    --ink-primary: #181716;
+    --ink-secondary: #48453f;
+    --ink-muted: #6e6a62;
     --oxblood: #86212b;
     --oxblood-hover: #9c2733;
-    --oxblood-subtle: #fbeff0;
-    --amber-gold: #c28825;
-    --editorial-rule: #dfd9cb;
+    --oxblood-subtle: #faedf0;
+    --amber-gold: #b37e22;
+    --editorial-rule: #ded7c8;
+    --shadow-paper: 0 1px 3px rgba(24, 23, 22, 0.04), 0 4px 14px rgba(24, 23, 22, 0.03);
+    --shadow-paper-elevated: 0 4px 6px -1px rgba(24, 23, 22, 0.05), 0 10px 24px -3px rgba(24, 23, 22, 0.04);
   }
 
   .dark {
-    /* Inkwell Edition (Night Bound Bookcloth) */
-    --paper-bg: #121315;
-    --paper-surface: #18191c;
-    --paper-card: #1f2024;
-    --paper-border: #2c2d33;
-    --paper-border-subtle: #23242a;
+    /* Inkwell Edition (Night Bound Bookcloth & Midnight Charcoal) */
+    --paper-bg: #111214;
+    --paper-surface: #17181c;
+    --paper-card: #1d1e22;
+    --paper-card-hover: #23252a;
+    --paper-border: #2b2c32;
+    --paper-border-subtle: #222328;
     --ink-primary: #f5f2eb;
-    --ink-secondary: #c2beb5;
-    --ink-muted: #7f7b73;
-    --oxblood: #b83642;
-    --oxblood-hover: #d1424f;
-    --oxblood-subtle: #2a1518;
+    --ink-secondary: #c4c0b6;
+    --ink-muted: #8d8980;
+    --oxblood: #c93b48;
+    --oxblood-hover: #dc4553;
+    --oxblood-subtle: #291417;
     --amber-gold: #d89f36;
-    --editorial-rule: #2a2b30;
+    --editorial-rule: #28292e;
+    --shadow-paper: 0 1px 4px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.35);
+    --shadow-paper-elevated: 0 6px 12px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.45);
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
@@ -40,56 +50,71 @@
     color: var(--ink-primary);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
-/* Serif Typography for Editorial Literature */
+/* Typography Foundations */
 .font-editorial-serif {
-  font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, "Times New Roman", Georgia, serif;
+  font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, "Times New Roman", serif;
+  font-feature-settings: "kern" 1, "liga" 1, "clig" 1, "calt" 1;
 }
 
 .font-editorial-sans {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.01em;
 }
 
 .font-editorial-mono {
-  font-family: ui-monospace, "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", monospace;
+  font-family: ui-monospace, "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Menlo, monospace;
 }
 
-/* Classical Drop-Cap for Opening Paragraphs */
+/* Tactile Paper Cards & Elevation */
+.paper-sheet {
+  background-color: var(--paper-surface);
+  border: 1px solid var(--paper-border);
+  box-shadow: var(--shadow-paper);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.paper-sheet:hover {
+  box-shadow: var(--shadow-paper-elevated);
+}
+
+/* Classical Drop-Cap for Opening Prose */
 .drop-cap::first-letter {
   float: left;
   font-family: Charter, "Bitstream Charter", Cambria, Georgia, serif;
-  font-size: 3.75rem;
-  line-height: 0.85;
-  padding-right: 0.65rem;
-  padding-top: 0.25rem;
+  font-size: 3.5rem;
+  line-height: 0.82;
+  margin-right: 0.65rem;
+  margin-top: 0.2rem;
   font-weight: 700;
   color: var(--oxblood);
 }
 
-/* Pull Quotes */
+/* Editorial Pullquote */
 .editorial-pullquote {
   font-family: Charter, "Bitstream Charter", Cambria, Georgia, serif;
   font-style: italic;
-  font-size: 1.5rem;
-  line-height: 1.5;
+  font-size: 1.35rem;
+  line-height: 1.55;
   color: var(--ink-primary);
-  border-left: 3px solid var(--oxblood);
-  padding: 0.75rem 0 0.75rem 1.5rem;
-  margin: 2rem 0;
+  border-left: 2.5px solid var(--oxblood);
+  padding: 0.6rem 0 0.6rem 1.4rem;
+  margin: 2.25rem 0;
 }
 
-/* Book Dividers */
+/* Subtle Book Dividers with Ornamental Punctuation */
 .editorial-divider {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 2.5rem 0;
+  margin: 2.75rem 0;
   color: var(--ink-muted);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 .editorial-divider::before,
 .editorial-divider::after {
@@ -99,13 +124,26 @@
 }
 .editorial-divider span {
   padding: 0 1.25rem;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.35em;
   font-family: ui-monospace, monospace;
+}
+
+/* Interactive Literary Links */
+.editorial-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--oxblood) 30%, transparent);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.18s ease, color 0.18s ease;
+}
+.editorial-link:hover {
+  color: var(--oxblood);
+  text-decoration-color: var(--oxblood);
 }
 
 /* Tiptap Prose Styling */
 .tiptap {
-  min-height: 420px;
+  min-height: 440px;
   outline: none;
   font-family: Charter, "Bitstream Charter", Cambria, Georgia, serif;
   color: var(--ink-primary);
@@ -122,7 +160,7 @@
 
 .tiptap p {
   line-height: 1.85;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.35rem;
   font-size: 1.15rem;
   color: var(--ink-secondary);
 }

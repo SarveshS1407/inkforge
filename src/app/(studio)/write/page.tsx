@@ -79,14 +79,14 @@ export default function WritePage() {
       setIsSaving(false);
       setSavedNotification(true);
       setTimeout(() => setSavedNotification(false), 2500);
-    }, 350);
+    }, 300);
   };
 
   return (
     <div className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)]">
       <Header />
 
-      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+      <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         {/* Scribe Desk Header */}
         <div className="mb-8 flex flex-col gap-4 border-b border-[var(--editorial-rule)] pb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -99,7 +99,7 @@ export default function WritePage() {
                 Folio IF-MANUSCRIPT
               </span>
             </div>
-            <p className="mt-1 font-editorial-serif italic text-xs text-[var(--ink-secondary)]">
+            <p className="mt-1 font-editorial-serif italic text-sm text-[var(--ink-secondary)]">
               Crafting for long-horizon publication
             </p>
           </div>
@@ -109,7 +109,7 @@ export default function WritePage() {
             <select
               value={publication}
               onChange={(e) => setPublication(e.target.value)}
-              className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1.5 font-editorial-sans text-xs text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-none"
+              className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1.5 font-editorial-sans text-xs text-[var(--ink-primary)] shadow-xs focus:border-[var(--oxblood)] focus:outline-none"
             >
               <option value="Architecture & Craft">Architecture &amp; Craft</option>
               <option value="Digital Ecology">Digital Ecology</option>
@@ -121,7 +121,7 @@ export default function WritePage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as typeof status)}
-              className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1.5 font-editorial-sans text-xs text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-none"
+              className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1.5 font-editorial-sans text-xs text-[var(--ink-primary)] shadow-xs focus:border-[var(--oxblood)] focus:outline-none"
             >
               <option value="DRAFT">Draft Manuscript</option>
               <option value="IN_REVIEW">Submit for Peer Review</option>
@@ -130,7 +130,7 @@ export default function WritePage() {
             </select>
 
             {status === "SCHEDULED" && (
-              <div className="flex items-center space-x-1 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2 py-1 text-xs">
+              <div className="flex items-center space-x-1 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2 py-1 text-xs shadow-xs">
                 <Calendar className="h-3.5 w-3.5 text-[var(--oxblood)]" />
                 <input
                   type="datetime-local"
@@ -145,7 +145,7 @@ export default function WritePage() {
               type="button"
               onClick={() => handleSave(status)}
               disabled={isSaving}
-              className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-1.5 font-editorial-sans text-xs font-medium text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] disabled:opacity-50"
+              className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-1.5 font-editorial-sans text-xs font-medium text-[var(--ink-primary)] shadow-xs transition-colors hover:border-[var(--oxblood)] disabled:opacity-50 active:scale-[0.98]"
             >
               <Save className="h-3.5 w-3.5 text-[var(--oxblood)]" />
               <span>{isSaving ? "Inking..." : "Save Manuscript"}</span>
@@ -157,7 +157,7 @@ export default function WritePage() {
                 setStatus("PUBLISHED");
                 handleSave("PUBLISHED");
               }}
-              className="flex items-center space-x-1.5 rounded-md bg-[var(--oxblood)] px-4 py-1.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white transition-all hover:bg-[var(--oxblood-hover)] shadow-xs"
+              className="flex items-center space-x-1.5 rounded-md bg-[var(--oxblood)] px-4 py-1.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98]"
             >
               <Send className="h-3.5 w-3.5" />
               <span>Publish Edition</span>
@@ -166,7 +166,7 @@ export default function WritePage() {
         </div>
 
         {savedNotification && (
-          <div className="mb-6 flex items-center space-x-2 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-card)] px-4 py-2 text-xs text-[var(--oxblood)] animate-in fade-in">
+          <div className="mb-6 flex items-center space-x-2 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-card)] px-4 py-2.5 text-xs text-[var(--oxblood)] animate-in fade-in shadow-xs">
             <CheckCircle2 className="h-4 w-4 text-[var(--oxblood)]" />
             <span className="font-editorial-mono">Manuscript faithfully inscribed to the local archive.</span>
           </div>
@@ -200,7 +200,7 @@ export default function WritePage() {
         </div>
 
         {/* Editorial Guidance Monograph */}
-        <div className="rounded-xl border border-[var(--paper-border)] bg-[var(--paper-card)] p-6 font-editorial-serif text-sm">
+        <div className="paper-sheet rounded-xl p-6 font-editorial-serif text-sm">
           <div className="flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-wider text-[var(--oxblood)] mb-2 font-bold">
             <Feather className="h-3.5 w-3.5" />
             <span>Editorial Precepts for Inkforge Authors</span>

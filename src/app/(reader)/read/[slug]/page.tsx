@@ -1,6 +1,19 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Header } from "@/components/navigation/Header";
-import { ArrowLeft, Clock, Calendar, BookOpen, Bookmark, Share2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Clock,
+  Calendar,
+  BookOpen,
+  Share2,
+  Check,
+  Type,
+} from "lucide-react";
 
 interface Story {
   slug: string;
@@ -16,6 +29,7 @@ interface Story {
   content: string[];
   pullquote?: string;
   footnotes?: { id: number; text: string }[];
+  nextStory?: { slug: string; title: string; chapter: string };
 }
 
 const STORIES: Record<string, Story> = {
@@ -43,6 +57,11 @@ const STORIES: Record<string, Story> = {
       { id: 1, text: "Donald Knuth, Computers & Typesetting, Vol. A: The TeXbook (Addison-Wesley, 1984)." },
       { id: 2, text: "Edgar F. Codd, 'A Relational Model of Data for Large Shared Data Banks', CACM 13(6), 1970." },
     ],
+    nextStory: {
+      slug: "the-death-and-rebirth-of-the-independent-web",
+      chapter: "CHAPTER II",
+      title: "The Rebirth of the Independent Web: Why Writers Are Leaving Algorithmic Silos",
+    },
   },
   "the-death-and-rebirth-of-the-independent-web": {
     slug: "the-death-and-rebirth-of-the-independent-web",
@@ -62,6 +81,11 @@ const STORIES: Record<string, Story> = {
       "Inkforge provides writers and editorial cooperatives with sovereign digital spaces: high-performance reading surfaces that respect the reader's attention span and elevate writing back to literature.",
     ],
     pullquote: "Discerning readers are quietly migrating away from engagement loops toward independent digital gardens.",
+    nextStory: {
+      slug: "block-based-composition-in-modern-publishing",
+      chapter: "CHAPTER III",
+      title: "The Architecture of Block Composition: From ProseMirror ASTs to Dynamic Canvases",
+    },
   },
   "block-based-composition-in-modern-publishing": {
     slug: "block-based-composition-in-modern-publishing",
@@ -80,15 +104,34 @@ const STORIES: Record<string, Story> = {
       "This separation allows real-time collaborative editing, granular version diffing, and automated transforms into multiple output formats including clean HTML, Markdown, and syndication feeds.",
     ],
     pullquote: "A document tree should be an expressive abstract canvas, not a fragile bundle of tags.",
+    nextStory: {
+      slug: "crafting-systems-that-endure",
+      chapter: "CHAPTER I",
+      title: "Crafting Systems That Endure: The Philosophy of Long-Horizon Software",
+    },
   },
 };
 
-export default async function StoryReaderPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+export default function StoryReaderPage() {
+  const params = useParams();
+  const slug = (params?.slug as string) || "crafting-systems-that-endure";
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [fontSize, setFontSize] = useState<"standard" | "large" | "generous">("standard");
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        const currentProgress = (window.scrollY / totalHeight) * 100;
+        setScrollProgress(Math.min(100, Math.max(0, currentProgress)));
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const story = STORIES[slug] || {
     slug,
     chapter: "MANUSCRIPT",
@@ -105,13 +148,38 @@ export default async function StoryReaderPage({
     ],
   };
 
+  const copyUrl = () => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
+
+  const getProseTextSize = () => {
+    switch (fontSize) {
+      case "large":
+        return "text-xl leading-[1.95]";
+      case "generous":
+        return "text-2xl leading-[2.05]";
+      default:
+        return "text-lg leading-[1.88]";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)]">
+      {/* Living Scroll Progress Bar */}
+      <div
+        className="fixed top-0 left-0 z-50 h-[2.5px] bg-[var(--oxblood)] transition-all duration-75 ease-out"
+        style={{ width: `${scrollProgress}%` }}
+      />
+
       <Header />
 
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        {/* Navigation & Chapter Folio */}
-        <div className="mb-8 flex items-center justify-between border-b border-[var(--editorial-rule)] pb-4 font-editorial-mono text-xs tracking-widest uppercase text-[var(--ink-muted)]">
+        {/* Navigation & Chapter Folio Bar */}
+        <div className="mb-8 flex flex-wrap items-center justify-between border-b border-[var(--editorial-rule)] pb-4 font-editorial-mono text-xs tracking-widest uppercase text-[var(--ink-muted)] gap-3">
           <Link
             href="/"
             className="inline-flex items-center space-x-1.5 transition-colors hover:text-[var(--oxblood)]"
@@ -120,9 +188,42 @@ export default async function StoryReaderPage({
             <span>Return to Index</span>
           </Link>
 
-          <span>
-            {story.chapter} • {story.folio}
-          </span>
+          <div className="flex items-center space-x-4">
+            {/* Reading Type Scale Controls */}
+            <div className="flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-1.5 py-0.5 text-[10px]">
+              <span className="text-[var(--ink-muted)] mr-1">TYPE:</span>
+              <button
+                type="button"
+                onClick={() => setFontSize("standard")}
+                className={`px-1 rounded ${fontSize === "standard" ? "font-bold text-[var(--oxblood)]" : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"}`}
+                title="Standard type size"
+              >
+                A
+              </button>
+              <button
+                type="button"
+                onClick={() => setFontSize("large")}
+                className={`px-1 rounded ${fontSize === "large" ? "font-bold text-[var(--oxblood)] text-[11px]" : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)] text-[11px]"}`}
+                title="Large type size"
+              >
+                A+
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={copyUrl}
+              className="flex items-center space-x-1 hover:text-[var(--oxblood)] transition-colors"
+              title="Copy citation link"
+            >
+              {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Share2 className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline">{copiedLink ? "Copied" : "Cite"}</span>
+            </button>
+
+            <span>
+              {story.chapter} • {story.folio}
+            </span>
+          </div>
         </div>
 
         {/* Header Section */}
@@ -144,7 +245,7 @@ export default async function StoryReaderPage({
           {/* Byline and Reading Folio */}
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-[var(--editorial-rule)] py-4 font-editorial-sans text-xs text-[var(--ink-muted)]">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--paper-card)] border border-[var(--paper-border)] font-editorial-serif font-bold text-sm text-[var(--oxblood)]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--paper-card)] border border-[var(--paper-border)] font-editorial-serif font-bold text-sm text-[var(--oxblood)]">
                 {story.author[0]}
               </div>
               <div>
@@ -164,8 +265,8 @@ export default async function StoryReaderPage({
           </div>
         </header>
 
-        {/* Prose Content */}
-        <div className="space-y-6 font-editorial-serif text-lg leading-[1.88] text-[var(--ink-primary)]">
+        {/* Prose Content with Adjustable Reading Typography */}
+        <div className={`space-y-6 font-editorial-serif ${getProseTextSize()} text-[var(--ink-primary)] transition-all`}>
           {story.content.map((paragraph, idx) => (
             <p
               key={idx}
@@ -176,25 +277,25 @@ export default async function StoryReaderPage({
           ))}
         </div>
 
-        {/* Pullquote if available */}
+        {/* Editorial Pullquote */}
         {story.pullquote && (
           <blockquote className="editorial-pullquote my-10">
             &ldquo;{story.pullquote}&rdquo;
           </blockquote>
         )}
 
-        {/* Editorial Section Divider */}
+        {/* Book Divider */}
         <div className="editorial-divider my-12">
           <span>✦ • ✦</span>
         </div>
 
         {/* Footnotes Section if available */}
         {story.footnotes && (
-          <div className="my-10 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-card)] p-6 font-editorial-sans text-xs text-[var(--ink-secondary)]">
+          <div className="my-10 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-card)] p-6 font-editorial-sans text-xs text-[var(--ink-secondary)]">
             <h4 className="font-editorial-mono font-bold uppercase tracking-wider text-[var(--oxblood)] mb-3">
               Footnotes &amp; Critical References
             </h4>
-            <ol className="list-decimal pl-4 space-y-1.5">
+            <ol className="list-decimal pl-4 space-y-2">
               {story.footnotes.map((fn) => (
                 <li key={fn.id} className="leading-relaxed">
                   {fn.text}
@@ -204,10 +305,31 @@ export default async function StoryReaderPage({
           </div>
         )}
 
+        {/* Next Chapter in Anthology Card */}
+        {story.nextStory && (
+          <div className="my-12 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8 paper-sheet">
+            <div className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
+              Proceed to Next Chapter
+            </div>
+            <Link href={`/read/${story.nextStory.slug}`} className="group block mt-2">
+              <span className="font-editorial-mono text-xs text-[var(--ink-muted)]">
+                {story.nextStory.chapter}
+              </span>
+              <h3 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)] group-hover:text-[var(--oxblood)] transition-colors mt-1">
+                {story.nextStory.title}
+              </h3>
+              <div className="mt-3 inline-flex items-center space-x-1.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-[var(--oxblood)] group-hover:underline">
+                <span>Continue Reading</span>
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+              </div>
+            </Link>
+          </div>
+        )}
+
         {/* Author Colophon Box */}
-        <footer className="mt-14 rounded-2xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8">
+        <footer className="mt-14 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-card)] p-6 sm:p-8">
           <div className="flex items-start space-x-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--oxblood)] text-white font-editorial-serif font-bold text-lg">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--oxblood)] text-white font-editorial-serif font-bold text-lg">
               {story.author[0]}
             </div>
             <div className="space-y-1">
