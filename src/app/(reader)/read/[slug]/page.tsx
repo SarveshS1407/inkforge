@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Header } from "@/components/navigation/Header";
-import { useEdition, PaperTone } from "@/components/theme/EditionContext";
+import { useEdition } from "@/components/theme/EditionContext";
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,7 +15,8 @@ import {
   Check,
   Bookmark,
   BookmarkCheck,
-  Sparkles,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 
 interface Story {
@@ -29,6 +30,7 @@ interface Story {
   role: string;
   date: string;
   readingTime: string;
+  readingMinutesTotal: number;
   publication: string;
   content: string[];
   pullquote?: string;
@@ -48,6 +50,7 @@ const STORIES: Record<string, Story> = {
     role: "Chair of Architectural Studies",
     date: "October 6, 2026",
     readingTime: "6 min read",
+    readingMinutesTotal: 6,
     publication: "Architecture & Craft",
     content: [
       "Software engineering suffers from a pervasive bias toward the ephemeral. We measure velocity by story points burned in two-week sprints, celebrate migrations that will be reversed eighteen months later, and obsess over frameworks whose lifespans rarely outlast an oak leaf.",
@@ -79,6 +82,7 @@ const STORIES: Record<string, Story> = {
     role: "Editorial Essayist",
     date: "October 5, 2026",
     readingTime: "4 min read",
+    readingMinutesTotal: 4,
     publication: "Digital Ecology",
     content: [
       "The promise of the early social web was democratic distribution. The reality twenty years later is algorithmic homogenisation.",
@@ -104,6 +108,7 @@ const STORIES: Record<string, Story> = {
     role: "Principal Frontend Engineer",
     date: "October 3, 2026",
     readingTime: "8 min read",
+    readingMinutesTotal: 8,
     publication: "Inkforge Engineering",
     content: [
       "A publishing engine is only as good as its content model. In this technical deep-dive, we examine how Inkforge leverages ProseMirror schemas and Tiptap extensions to construct a zero-friction authoring canvas.",
@@ -122,12 +127,14 @@ const STORIES: Record<string, Story> = {
 export default function StoryReaderPage() {
   const params = useParams();
   const slug = (params?.slug as string) || "crafting-systems-that-endure";
-  const { tone, setTone } = useEdition();
+  const { tone } = useEdition();
 
   const [scrollProgress, setScrollProgress] = useState(0);
   const [fontSize, setFontSize] = useState<"standard" | "large" | "generous">("standard");
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [activeFootnote, setActiveFootnote] = useState<number | null>(null);
+  const [solitaryMode, setSolitaryMode] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -179,6 +186,7 @@ export default function StoryReaderPage() {
     role: "Staff Contributor",
     date: "Recent Edition",
     readingTime: "3 min read",
+    readingMinutesTotal: 3,
     publication: "The Collective",
     content: [
       "This piece was authored and published via the Inkforge Writer Studio. Explore the studio to create and publish your own stories with living editorial typography.",
@@ -204,6 +212,11 @@ export default function StoryReaderPage() {
     }
   };
 
+  const remainingMinutes = Math.max(
+    1,
+    Math.ceil(story.readingMinutesTotal * (1 - scrollProgress / 100))
+  );
+
   return (
     <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)] relative">
       {/* Pinned Scroll Progress Indicator */}
@@ -212,7 +225,8 @@ export default function StoryReaderPage() {
         style={{ width: `${scrollProgress}%` }}
       />
 
-      <Header />
+      {/* Main Header (Hidden in Solitary Reading Mode) */}
+      {!solitaryMode && <Header />}
 
       <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         {/* Navigation & Reader Folio Bar */}
@@ -226,6 +240,17 @@ export default function StoryReaderPage() {
           </Link>
 
           <div className="flex items-center space-x-4">
+            {/* Solitary Immersion Mode Toggle */}
+            <button
+              type="button"
+              onClick={() => setSolitaryMode(!solitaryMode)}
+              className="flex items-center space-x-1 hover:text-[var(--oxblood)] transition-colors"
+              title={solitaryMode ? "Exit Solitary Mode" : "Enter Solitary Reading Mode"}
+            >
+              {solitaryMode ? <Minimize2 className="h-3.5 w-3.5 text-[var(--oxblood)]" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline">{solitaryMode ? "Library" : "Solitary"}</span>
+            </button>
+
             {/* Type Scale Controls */}
             <div className="flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-1.5 py-0.5 text-[10px]">
               <span className="text-[var(--ink-muted)] mr-1">TYPE:</span>
@@ -300,7 +325,7 @@ export default function StoryReaderPage() {
             {story.subtitle}
           </p>
 
-          {/* Byline and Reading Folio */}
+          {/* Byline and Dynamic Reading Progress */}
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-[var(--editorial-rule)] py-4 font-editorial-sans text-xs text-[var(--ink-muted)]">
             <div className="flex items-center space-x-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--paper-warm)] border border-[var(--paper-border)] font-editorial-serif font-bold text-sm text-[var(--oxblood)]">
@@ -317,13 +342,13 @@ export default function StoryReaderPage() {
               <span>•</span>
               <span className="flex items-center space-x-1">
                 <Clock className="h-3.5 w-3.5" />
-                <span>{story.readingTime}</span>
+                <span>{remainingMinutes} min remaining</span>
               </span>
             </div>
           </div>
         </header>
 
-        {/* Monograph Body with Renaissance Margin Layout on Wide Screens */}
+        {/* Monograph Body with Renaissance Marginalia Layout */}
         <div className="grid lg:grid-cols-12 gap-8 items-start">
           {/* Main Prose Text (9 cols) */}
           <div className="lg:col-span-9 space-y-6 font-editorial-serif text-[var(--ink-primary)] transition-all">
@@ -333,6 +358,25 @@ export default function StoryReaderPage() {
                 className={`${getProseTextSize()} ${idx === 0 ? "drop-cap" : ""}`}
               >
                 {paragraph}
+                {/* Embedded footnote trigger anchors on relevant paragraphs */}
+                {story.footnotes && idx === 1 && (
+                  <sup
+                    className="ml-1 cursor-pointer font-editorial-mono font-bold text-[var(--oxblood)] hover:underline"
+                    onMouseEnter={() => setActiveFootnote(1)}
+                    onMouseLeave={() => setActiveFootnote(null)}
+                  >
+                    [1]
+                  </sup>
+                )}
+                {story.footnotes && idx === 3 && (
+                  <sup
+                    className="ml-1 cursor-pointer font-editorial-mono font-bold text-[var(--oxblood)] hover:underline"
+                    onMouseEnter={() => setActiveFootnote(2)}
+                    onMouseLeave={() => setActiveFootnote(null)}
+                  >
+                    [2]
+                  </sup>
+                )}
               </p>
             ))}
 
@@ -344,15 +388,18 @@ export default function StoryReaderPage() {
             )}
           </div>
 
-          {/* Marginalia Sidebar (3 cols on desktop) */}
-          <aside className="hidden lg:block lg:col-span-3 space-y-8 font-editorial-sans text-xs text-[var(--ink-secondary)] border-l border-[var(--editorial-rule)] pl-5">
+          {/* Marginalia Sidebar with Interactive Anchor Highlighting */}
+          <aside className="hidden lg:block lg:col-span-3 space-y-6 font-editorial-sans text-xs text-[var(--ink-secondary)] border-l border-[var(--editorial-rule)] pl-5">
             <div className="font-editorial-mono text-[9px] uppercase tracking-widest text-[var(--oxblood)] font-bold">
               Marginalia &amp; Apparatus
             </div>
 
             {story.footnotes &&
               story.footnotes.map((fn) => (
-                <div key={fn.id} className="space-y-1">
+                <div
+                  key={fn.id}
+                  className={`marginalia-item space-y-1 ${activeFootnote === fn.id ? "active" : ""}`}
+                >
                   <span className="font-editorial-mono text-[10px] font-bold text-[var(--oxblood)]">
                     [{fn.id}]
                   </span>

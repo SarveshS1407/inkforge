@@ -11,8 +11,9 @@ import {
   Feather,
   CheckCircle2,
   BookOpen,
-  FileCheck,
-  Compass,
+  Eye,
+  Edit3,
+  Target,
 } from "lucide-react";
 
 export default function WritePage() {
@@ -25,6 +26,9 @@ export default function WritePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [savedNotification, setSavedNotification] = useState(false);
   const [words, setWords] = useState(0);
+  const [proofMode, setProofMode] = useState(false);
+
+  const TARGET_WORDS = 1200;
 
   useEffect(() => {
     const savedDraft = localStorage.getItem("inkforge_active_draft");
@@ -101,6 +105,8 @@ export default function WritePage() {
     return "EXTENDED MONOGRAPH";
   };
 
+  const progressPct = Math.min(100, Math.round((words / TARGET_WORDS) * 100));
+
   return (
     <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
@@ -114,16 +120,36 @@ export default function WritePage() {
               <span className="text-[var(--editorial-rule)]">•</span>
               <span className="text-[var(--ink-muted)]">Folio IF-SCRIBE-2026</span>
             </div>
-            <div className="mt-1 flex items-center space-x-3 text-xs font-editorial-mono text-[var(--ink-muted)]">
+            <div className="mt-1 flex flex-wrap items-center gap-3 text-xs font-editorial-mono text-[var(--ink-muted)]">
               <span>RHYTHM: <strong className="text-[var(--ink-primary)]">{calculateRhythm()}</strong></span>
               <span>•</span>
               <span>{Math.max(1, Math.ceil(words / 220))} MIN READ</span>
               <span>•</span>
               <span>~{(words / 320).toFixed(1)} PRINT PAGES</span>
+              <span>•</span>
+              <span className="flex items-center gap-1 text-[var(--amber-gold)]">
+                <Target className="h-3 w-3" />
+                <span>{progressPct}% OF {TARGET_WORDS}W TARGET</span>
+              </span>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Galley Proof Preview Toggle */}
+            <button
+              type="button"
+              onClick={() => setProofMode(!proofMode)}
+              className={`flex items-center space-x-1.5 rounded-md px-3 py-1.5 font-editorial-mono text-xs transition-colors shadow-xs ${
+                proofMode
+                  ? "bg-[var(--oxblood)] text-white font-bold"
+                  : "bg-[var(--paper-surface)] text-[var(--ink-primary)] border border-[var(--paper-border)] hover:border-[var(--oxblood)]"
+              }`}
+              title="Toggle Galley Proof Reader Preview"
+            >
+              {proofMode ? <Edit3 className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              <span>{proofMode ? "Return to Scribe" : "Galley Proof"}</span>
+            </button>
+
             {/* Publication Selector */}
             <select
               value={publication}
@@ -210,17 +236,40 @@ export default function WritePage() {
           />
         </div>
 
-        {/* The Tiptap Prose Canvas */}
-        <div className="mb-12">
-          <Editor
-            initialContent={contentHtml}
-            onChange={({ html, text }) => {
-              setContentHtml(html);
-              const count = text.trim().split(/\s+/).filter(Boolean).length;
-              setWords(count);
-            }}
-          />
-        </div>
+        {/* Galley Proof Mode vs Live Editor */}
+        {proofMode ? (
+          <div className="book-jacket rounded-xl p-8 sm:p-12 mb-12">
+            <div className="mb-4 flex items-center justify-between font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] pb-3 border-b border-[var(--editorial-rule)]">
+              <span>GALLEY PROOF INSPECTION</span>
+              <span>{publication}</span>
+            </div>
+            <h2 className="font-editorial-serif text-3xl sm:text-4xl font-bold text-[var(--ink-primary)]">
+              {title || "Untitled Monograph"}
+            </h2>
+            {excerpt && (
+              <p className="mt-3 font-editorial-serif text-lg italic text-[var(--ink-secondary)]">
+                {excerpt}
+              </p>
+            )}
+            <div
+              className="mt-8 font-editorial-serif text-lg leading-[1.88] text-[var(--ink-primary)] space-y-4"
+              dangerouslySetInnerHTML={{
+                __html: contentHtml || "<p class='italic text-[var(--ink-muted)]'>No prose inscribed yet.</p>",
+              }}
+            />
+          </div>
+        ) : (
+          <div className="mb-12">
+            <Editor
+              initialContent={contentHtml}
+              onChange={({ html, text }) => {
+                setContentHtml(html);
+                const count = text.trim().split(/\s+/).filter(Boolean).length;
+                setWords(count);
+              }}
+            />
+          </div>
+        )}
 
         {/* Editorial Craft Precepts */}
         <div className="book-jacket rounded-xl p-6 sm:p-8">

@@ -81,10 +81,11 @@
   }
 }
 
-/* Typography Foundation */
+/* Typographic Foundations & Ligatures */
 .font-editorial-serif {
   font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, "Times New Roman", serif;
-  font-feature-settings: "kern" 1, "liga" 1, "clig" 1, "calt" 1;
+  font-feature-settings: "kern" 1, "liga" 1, "clig" 1, "calt" 1, "pnum" 1;
+  hanging-punctuation: first last;
 }
 
 .font-editorial-sans {
@@ -108,7 +109,7 @@
   box-shadow: var(--shadow-paper-elevated);
 }
 
-/* Book Jacket with Spine Groove Shadow */
+/* Book Jacket with Embossed Spine Groove */
 .book-jacket {
   position: relative;
   background-color: var(--paper-surface);
@@ -131,8 +132,22 @@
   height: 28px;
   background-color: var(--oxblood);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
   z-index: 10;
+  transition: transform 0.2s ease;
+}
+
+.book-ribbon:hover {
+  transform: translateY(2px);
+}
+
+/* Classical Double Deckled Rule */
+.deckled-rule {
+  border: none;
+  border-top: 1px solid var(--editorial-rule);
+  border-bottom: 1px solid var(--editorial-rule);
+  height: 3px;
+  margin: 2.5rem 0;
 }
 
 /* Classical Drop-Cap for Opening Prose */
@@ -191,6 +206,18 @@
 .editorial-link:hover {
   color: var(--oxblood);
   text-decoration-color: var(--oxblood);
+}
+
+/* Interactive Marginalia Anchor Highlight */
+.marginalia-item {
+  transition: all 0.2s ease;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.375rem;
+}
+.marginalia-item.active {
+  background-color: var(--oxblood-subtle);
+  border-left: 2px solid var(--oxblood);
+  color: var(--ink-primary);
 }
 
 /* Tiptap Prose Styling */
