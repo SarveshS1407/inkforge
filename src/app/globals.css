@@ -1,44 +1,69 @@
 @import "tailwindcss";
 
 @layer base {
-  :root {
-    /* Paper Edition (Natural Warm Editorial Ground) */
-    --paper-bg: #fcfaf6;
+  :root,
+  .tone-cotton {
+    /* Cotton Paper Edition (Natural Warm Ivory) */
+    --paper-canvas: #fbf9f4;
     --paper-surface: #ffffff;
-    --paper-card: #f7f4ed;
-    --paper-card-hover: #f3efe4;
-    --paper-border: #e6e0d2;
-    --paper-border-subtle: #efeae0;
-    --ink-primary: #181716;
-    --ink-secondary: #48453f;
-    --ink-muted: #6e6a62;
-    --oxblood: #86212b;
-    --oxblood-hover: #9c2733;
+    --paper-warm: #f6f1e6;
+    --paper-vellum: #eee6d6;
+    --paper-border: #e4dccb;
+    --paper-border-subtle: #ece5d5;
+    --ink-primary: #171513;
+    --ink-secondary: #423e38;
+    --ink-muted: #6b665c;
+    --oxblood: #831e26;
+    --oxblood-hover: #9b242e;
     --oxblood-subtle: #faedf0;
-    --amber-gold: #b37e22;
-    --editorial-rule: #ded7c8;
-    --shadow-paper: 0 1px 3px rgba(24, 23, 22, 0.04), 0 4px 14px rgba(24, 23, 22, 0.03);
-    --shadow-paper-elevated: 0 4px 6px -1px rgba(24, 23, 22, 0.05), 0 10px 24px -3px rgba(24, 23, 22, 0.04);
+    --amber-gold: #b68222;
+    --forest: #1b4332;
+    --editorial-rule: #ded5c3;
+    --shadow-paper: 0 1px 3px rgba(23, 21, 19, 0.04), 0 5px 16px rgba(23, 21, 19, 0.03);
+    --shadow-paper-elevated: 0 8px 24px -4px rgba(23, 21, 19, 0.07), 0 2px 6px -1px rgba(23, 21, 19, 0.04);
   }
 
-  .dark {
-    /* Inkwell Edition (Night Bound Bookcloth & Midnight Charcoal) */
-    --paper-bg: #111214;
-    --paper-surface: #17181c;
-    --paper-card: #1d1e22;
-    --paper-card-hover: #23252a;
-    --paper-border: #2b2c32;
-    --paper-border-subtle: #222328;
-    --ink-primary: #f5f2eb;
-    --ink-secondary: #c4c0b6;
-    --ink-muted: #8d8980;
-    --oxblood: #c93b48;
-    --oxblood-hover: #dc4553;
-    --oxblood-subtle: #291417;
-    --amber-gold: #d89f36;
-    --editorial-rule: #28292e;
-    --shadow-paper: 0 1px 4px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.35);
-    --shadow-paper-elevated: 0 6px 12px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.45);
+  .tone-vellum {
+    /* Bookshop Vellum (Warm Amber Newsprint) */
+    --paper-canvas: #f4eee2;
+    --paper-surface: #faf6ee;
+    --paper-warm: #ede3d1;
+    --paper-vellum: #e4d7bf;
+    --paper-border: #d7c7ab;
+    --paper-border-subtle: #e0d2b9;
+    --ink-primary: #201a14;
+    --ink-secondary: #473c30;
+    --ink-muted: #6d5e4d;
+    --oxblood: #99292d;
+    --oxblood-hover: #b03236;
+    --oxblood-subtle: #f4e3dc;
+    --amber-gold: #bd7d21;
+    --forest: #234b37;
+    --editorial-rule: #d2c0a3;
+    --shadow-paper: 0 1px 3px rgba(32, 26, 20, 0.05), 0 5px 16px rgba(32, 26, 20, 0.04);
+    --shadow-paper-elevated: 0 8px 24px -4px rgba(32, 26, 20, 0.08), 0 2px 6px -1px rgba(32, 26, 20, 0.05);
+  }
+
+  .dark,
+  .tone-inkwell {
+    /* Midnight Buckram Edition (Library Night Cloth) */
+    --paper-canvas: #0f1012;
+    --paper-surface: #16171b;
+    --paper-warm: #1c1e23;
+    --paper-vellum: #23262c;
+    --paper-border: #2a2d35;
+    --paper-border-subtle: #212329;
+    --ink-primary: #f5f2ea;
+    --ink-secondary: #c6c2b7;
+    --ink-muted: #8e8a80;
+    --oxblood: #cb3d4b;
+    --oxblood-hover: #de4856;
+    --oxblood-subtle: #2c1619;
+    --amber-gold: #d9a343;
+    --forest: #387b5a;
+    --editorial-rule: #282b33;
+    --shadow-paper: 0 2px 6px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-paper-elevated: 0 10px 30px rgba(0, 0, 0, 0.45), 0 3px 10px rgba(0, 0, 0, 0.35);
   }
 
   html {
@@ -46,17 +71,17 @@
   }
 
   body {
-    background-color: var(--paper-bg);
+    background-color: var(--paper-canvas);
     color: var(--ink-primary);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
-/* Typography Foundations */
+/* Typography Foundation */
 .font-editorial-serif {
   font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, "Times New Roman", serif;
   font-feature-settings: "kern" 1, "liga" 1, "clig" 1, "calt" 1;
@@ -64,33 +89,60 @@
 
 .font-editorial-sans {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.012em;
 }
 
 .font-editorial-mono {
   font-family: ui-monospace, "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Menlo, monospace;
 }
 
-/* Tactile Paper Cards & Elevation */
+/* Tactile Paper Sheet */
 .paper-sheet {
   background-color: var(--paper-surface);
   border: 1px solid var(--paper-border);
   box-shadow: var(--shadow-paper);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .paper-sheet:hover {
   box-shadow: var(--shadow-paper-elevated);
 }
 
+/* Book Jacket with Spine Groove Shadow */
+.book-jacket {
+  position: relative;
+  background-color: var(--paper-surface);
+  border: 1px solid var(--paper-border);
+  box-shadow: inset 4px 0 8px -2px rgba(0, 0, 0, 0.08), var(--shadow-paper);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.book-jacket:hover {
+  box-shadow: inset 5px 0 10px -2px rgba(0, 0, 0, 0.12), var(--shadow-paper-elevated);
+  transform: translateY(-2px);
+}
+
+/* Silk Bookmark Ribbon */
+.book-ribbon {
+  position: absolute;
+  top: 0;
+  right: 1.5rem;
+  width: 14px;
+  height: 28px;
+  background-color: var(--oxblood);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
 /* Classical Drop-Cap for Opening Prose */
 .drop-cap::first-letter {
   float: left;
   font-family: Charter, "Bitstream Charter", Cambria, Georgia, serif;
-  font-size: 3.5rem;
+  font-size: 3.75rem;
   line-height: 0.82;
-  margin-right: 0.65rem;
-  margin-top: 0.2rem;
+  margin-right: 0.75rem;
+  margin-top: 0.15rem;
   font-weight: 700;
   color: var(--oxblood);
 }
@@ -99,22 +151,22 @@
 .editorial-pullquote {
   font-family: Charter, "Bitstream Charter", Cambria, Georgia, serif;
   font-style: italic;
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   line-height: 1.55;
   color: var(--ink-primary);
-  border-left: 2.5px solid var(--oxblood);
-  padding: 0.6rem 0 0.6rem 1.4rem;
-  margin: 2.25rem 0;
+  border-left: 3px solid var(--oxblood);
+  padding: 0.75rem 0 0.75rem 1.6rem;
+  margin: 2.5rem 0;
 }
 
-/* Subtle Book Dividers with Ornamental Punctuation */
+/* Ornamental Book Divider */
 .editorial-divider {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 2.75rem 0;
+  margin: 3rem 0;
   color: var(--ink-muted);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 .editorial-divider::before,
 .editorial-divider::after {
@@ -123,18 +175,18 @@
   border-bottom: 1px solid var(--editorial-rule);
 }
 .editorial-divider span {
-  padding: 0 1.25rem;
-  letter-spacing: 0.35em;
+  padding: 0 1.5rem;
+  letter-spacing: 0.4em;
   font-family: ui-monospace, monospace;
 }
 
-/* Interactive Literary Links */
+/* Literary Underline */
 .editorial-link {
   color: inherit;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--oxblood) 30%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--oxblood) 35%, transparent);
   text-underline-offset: 4px;
-  transition: text-decoration-color 0.18s ease, color 0.18s ease;
+  transition: text-decoration-color 0.2s ease, color 0.2s ease;
 }
 .editorial-link:hover {
   color: var(--oxblood);
@@ -143,7 +195,7 @@
 
 /* Tiptap Prose Styling */
 .tiptap {
-  min-height: 440px;
+  min-height: 460px;
   outline: none;
   font-family: Charter, "Bitstream Charter", Cambria, Georgia, serif;
   color: var(--ink-primary);
@@ -159,34 +211,34 @@
 }
 
 .tiptap p {
-  line-height: 1.85;
-  margin-bottom: 1.35rem;
+  line-height: 1.88;
+  margin-bottom: 1.4rem;
   font-size: 1.15rem;
   color: var(--ink-secondary);
 }
 
 .tiptap h1 {
-  font-size: 2.25rem;
+  font-size: 2.35rem;
   font-weight: 700;
   letter-spacing: -0.015em;
-  margin-top: 2.25rem;
+  margin-top: 2.35rem;
   margin-bottom: 1rem;
   color: var(--ink-primary);
-  line-height: 1.2;
+  line-height: 1.18;
 }
 
 .tiptap h2 {
-  font-size: 1.65rem;
+  font-size: 1.7rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  margin-top: 1.75rem;
+  margin-top: 1.85rem;
   margin-bottom: 0.75rem;
   color: var(--ink-primary);
   line-height: 1.25;
 }
 
 .tiptap h3 {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 600;
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
@@ -194,9 +246,9 @@
 }
 
 .tiptap blockquote {
-  border-left: 2px solid var(--oxblood);
-  padding-left: 1.25rem;
-  margin: 1.75rem 0;
+  border-left: 2.5px solid var(--oxblood);
+  padding-left: 1.35rem;
+  margin: 1.85rem 0;
   font-style: italic;
   color: var(--ink-primary);
 }
@@ -214,10 +266,10 @@
 }
 
 .tiptap pre {
-  background: var(--paper-card);
+  background: var(--paper-warm);
   color: var(--ink-primary);
   font-family: ui-monospace, "SF Mono", Monaco, monospace;
-  padding: 1.1rem 1.35rem;
+  padding: 1.15rem 1.4rem;
   border-radius: 0.5rem;
   border: 1px solid var(--paper-border);
   margin: 1.5rem 0;
@@ -228,5 +280,5 @@
 .tiptap hr {
   border: none;
   border-top: 1px solid var(--editorial-rule);
-  margin: 2.5rem 0;
+  margin: 2.75rem 0;
 }

@@ -2,51 +2,59 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type EditionMode = "paper" | "inkwell";
+export type PaperTone = "cotton" | "vellum" | "inkwell";
 
 interface EditionContextType {
-  mode: EditionMode;
-  toggleMode: () => void;
-  setMode: (mode: EditionMode) => void;
+  tone: PaperTone;
+  setTone: (tone: PaperTone) => void;
+  cycleTone: () => void;
 }
 
 const EditionContext = createContext<EditionContextType>({
-  mode: "paper",
-  toggleMode: () => {},
-  setMode: () => {},
+  tone: "cotton",
+  setTone: () => {},
+  cycleTone: () => {},
 });
 
 export function EditionProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<EditionMode>("paper");
+  const [tone, setToneState] = useState<PaperTone>("cotton");
 
   useEffect(() => {
-    const saved = localStorage.getItem("inkforge_edition_mode") as EditionMode | null;
-    if (saved === "inkwell" || saved === "paper") {
-      setModeState(saved);
-      if (saved === "inkwell") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
+    const saved = localStorage.getItem("inkforge_paper_tone") as PaperTone | null;
+    if (saved && (saved === "cotton" || saved === "vellum" || saved === "inkwell")) {
+      applyTone(saved);
+    } else {
+      applyTone("cotton");
     }
   }, []);
 
-  const setMode = (newMode: EditionMode) => {
-    setModeState(newMode);
-    localStorage.setItem("inkforge_edition_mode", newMode);
-    if (newMode === "inkwell") {
-      document.documentElement.classList.add("dark");
+  const applyTone = (newTone: PaperTone) => {
+    setToneState(newTone);
+    localStorage.setItem("inkforge_paper_tone", newTone);
+
+    const root = document.documentElement;
+    root.classList.remove("tone-cotton", "tone-vellum", "tone-inkwell", "dark");
+
+    if (newTone === "inkwell") {
+      root.classList.add("dark", "tone-inkwell");
+    } else if (newTone === "vellum") {
+      root.classList.add("tone-vellum");
     } else {
-      document.documentElement.classList.remove("dark");
+      root.classList.add("tone-cotton");
     }
   };
 
-  const toggleMode = () => {
-    setMode(mode === "paper" ? "inkwell" : "paper");
+  const cycleTone = () => {
+    const nextMap: Record<PaperTone, PaperTone> = {
+      cotton: "vellum",
+      vellum: "inkwell",
+      inkwell: "cotton",
+    };
+    applyTone(nextMap[tone]);
   };
 
   return (
-    <EditionContext.Provider value={{ mode, toggleMode, setMode }}>
+    <EditionContext.Provider value={{ tone, setTone: applyTone, cycleTone }}>
       {children}
     </EditionContext.Provider>
   );

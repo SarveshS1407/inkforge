@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
-import { BookOpen, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)]">
+    <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
 
       <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6">

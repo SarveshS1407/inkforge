@@ -3,7 +3,17 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/navigation/Header";
 import { Editor } from "@/components/editor/Editor";
-import { Save, Send, Calendar, Clock, Feather, CheckCircle2, BookOpen } from "lucide-react";
+import {
+  Save,
+  Send,
+  Calendar,
+  Clock,
+  Feather,
+  CheckCircle2,
+  BookOpen,
+  FileCheck,
+  Compass,
+} from "lucide-react";
 
 export default function WritePage() {
   const [title, setTitle] = useState("");
@@ -14,6 +24,7 @@ export default function WritePage() {
   const [scheduledDate, setScheduledDate] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [savedNotification, setSavedNotification] = useState(false);
+  const [words, setWords] = useState(0);
 
   useEffect(() => {
     const savedDraft = localStorage.getItem("inkforge_active_draft");
@@ -79,29 +90,37 @@ export default function WritePage() {
       setIsSaving(false);
       setSavedNotification(true);
       setTimeout(() => setSavedNotification(false), 2500);
-    }, 300);
+    }, 280);
+  };
+
+  const calculateRhythm = () => {
+    if (words === 0) return "BLANK LEAF";
+    if (words < 300) return "EPIGRAM / SKETCH";
+    if (words < 800) return "CRITICAL ESSAY";
+    if (words < 1800) return "TREATISE";
+    return "EXTENDED MONOGRAPH";
   };
 
   return (
-    <div className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)]">
+    <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
 
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-        {/* Scribe Desk Header */}
+        {/* The Scribe Master Desk Header */}
         <div className="mb-8 flex flex-col gap-4 border-b border-[var(--editorial-rule)] pb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
-                The Scribe&apos;s Desk
-              </span>
+            <div className="flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)]">
+              <span className="font-bold">The Scribe&apos;s Studio Desk</span>
               <span className="text-[var(--editorial-rule)]">•</span>
-              <span className="font-editorial-mono text-[11px] text-[var(--ink-muted)]">
-                Folio IF-MANUSCRIPT
-              </span>
+              <span className="text-[var(--ink-muted)]">Folio IF-SCRIBE-2026</span>
             </div>
-            <p className="mt-1 font-editorial-serif italic text-sm text-[var(--ink-secondary)]">
-              Crafting for long-horizon publication
-            </p>
+            <div className="mt-1 flex items-center space-x-3 text-xs font-editorial-mono text-[var(--ink-muted)]">
+              <span>RHYTHM: <strong className="text-[var(--ink-primary)]">{calculateRhythm()}</strong></span>
+              <span>•</span>
+              <span>{Math.max(1, Math.ceil(words / 220))} MIN READ</span>
+              <span>•</span>
+              <span>~{(words / 320).toFixed(1)} PRINT PAGES</span>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
@@ -166,9 +185,9 @@ export default function WritePage() {
         </div>
 
         {savedNotification && (
-          <div className="mb-6 flex items-center space-x-2 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-card)] px-4 py-2.5 text-xs text-[var(--oxblood)] animate-in fade-in shadow-xs">
+          <div className="mb-6 flex items-center space-x-2 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2.5 text-xs text-[var(--oxblood)] animate-in fade-in shadow-xs">
             <CheckCircle2 className="h-4 w-4 text-[var(--oxblood)]" />
-            <span className="font-editorial-mono">Manuscript faithfully inscribed to the local archive.</span>
+            <span className="font-editorial-mono">Manuscript faithfully inscribed to the local archive sanctuary.</span>
           </div>
         )}
 
@@ -191,22 +210,26 @@ export default function WritePage() {
           />
         </div>
 
-        {/* The Living Editor Canvas */}
+        {/* The Tiptap Prose Canvas */}
         <div className="mb-12">
           <Editor
             initialContent={contentHtml}
-            onChange={({ html }) => setContentHtml(html)}
+            onChange={({ html, text }) => {
+              setContentHtml(html);
+              const count = text.trim().split(/\s+/).filter(Boolean).length;
+              setWords(count);
+            }}
           />
         </div>
 
-        {/* Editorial Guidance Monograph */}
-        <div className="paper-sheet rounded-xl p-6 font-editorial-serif text-sm">
+        {/* Editorial Craft Precepts */}
+        <div className="book-jacket rounded-xl p-6 sm:p-8">
           <div className="flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-wider text-[var(--oxblood)] mb-2 font-bold">
             <Feather className="h-3.5 w-3.5" />
-            <span>Editorial Precepts for Inkforge Authors</span>
+            <span>Master Bookbinder&apos;s Precepts</span>
           </div>
-          <p className="text-xs italic text-[var(--ink-secondary)] leading-relaxed">
-            Write with enduring intent. Every document in Inkforge is structured as a tree of semantic blocks, allowing seamless conversion between web monographs, print folios, and long-horizon archival editions.
+          <p className="font-editorial-serif italic text-sm text-[var(--ink-secondary)] leading-relaxed">
+            Every sentence inscribed here is structured as an immutable document tree. When published, this manuscript seamlessly adapts into web reading surfaces, e-ink folios, and print-ready editions. Write with permanence.
           </p>
         </div>
       </main>

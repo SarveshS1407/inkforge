@@ -116,7 +116,7 @@ export default function PostsDashboardPage() {
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 font-editorial-mono text-[10px] font-bold tracking-wider uppercase text-[var(--ink-muted)] bg-[var(--paper-card)] px-2.5 py-0.5 rounded border border-[var(--paper-border)]">
+          <span className="inline-flex items-center gap-1 font-editorial-mono text-[10px] font-bold tracking-wider uppercase text-[var(--ink-muted)] bg-[var(--paper-warm)] px-2.5 py-0.5 rounded border border-[var(--paper-border)]">
             <FileText className="h-3 w-3" />
             Draft Manuscript
           </span>
@@ -125,7 +125,7 @@ export default function PostsDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)]">
+    <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
 
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
@@ -133,13 +133,13 @@ export default function PostsDashboardPage() {
         <div className="mb-8 flex flex-col gap-4 border-b border-[var(--editorial-rule)] pb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
-              Registry &amp; Catalog
+              Registry &amp; Publishing Catalogue
             </div>
             <h1 className="mt-1 font-editorial-serif text-3xl sm:text-4xl font-bold text-[var(--ink-primary)]">
               The Editorial Ledger
             </h1>
             <p className="mt-1 font-editorial-serif italic text-sm text-[var(--ink-secondary)]">
-              Catalogue of active manuscripts, editorial reviews, and published editions.
+              Official register of active manuscripts, editorial reviews, and published editions.
             </p>
           </div>
 
@@ -148,7 +148,7 @@ export default function PostsDashboardPage() {
             className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98]"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Compose Monograph</span>
+            <span>Inscribe New Work</span>
           </Link>
         </div>
 
@@ -161,7 +161,7 @@ export default function PostsDashboardPage() {
               className={`rounded-md px-3 py-1.5 transition-colors uppercase tracking-wider shadow-xs ${
                 filter === tab
                   ? "bg-[var(--oxblood)] text-white font-bold"
-                  : "bg-[var(--paper-card)] text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] border border-[var(--paper-border)]"
+                  : "bg-[var(--paper-warm)] text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] border border-[var(--paper-border)]"
               }`}
             >
               {tab === "ALL" ? "All Folios" : tab.replace("_", " ")}
@@ -175,20 +175,20 @@ export default function PostsDashboardPage() {
         {/* Manuscript List */}
         <div className="space-y-4">
           {filteredPosts.length === 0 ? (
-            <div className="paper-sheet rounded-xl p-12 text-center">
+            <div className="book-jacket rounded-xl p-12 text-center">
               <BookOpen className="mx-auto h-8 w-8 text-[var(--ink-muted)] mb-3" />
               <h3 className="font-editorial-serif text-base font-bold text-[var(--ink-primary)]">
                 No manuscripts filed in this index
               </h3>
               <p className="mt-1 font-editorial-serif italic text-xs text-[var(--ink-secondary)]">
-                Open the Scribe desk to begin writing a new work.
+                Open the Scribe studio desk to begin drafting a new monograph.
               </p>
             </div>
           ) : (
             filteredPosts.map((post) => (
               <div
                 key={post.id}
-                className="paper-sheet group flex flex-col justify-between rounded-xl p-6 transition-all sm:flex-row sm:items-center"
+                className="book-jacket group flex flex-col justify-between rounded-xl p-6 transition-all sm:flex-row sm:items-center"
               >
                 <div className="space-y-2 sm:max-w-2xl">
                   <div className="flex items-center space-x-3">
@@ -215,7 +215,7 @@ export default function PostsDashboardPage() {
                 <div className="mt-4 flex items-center space-x-2 sm:mt-0">
                   <Link
                     href={`/read/${post.slug}`}
-                    className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-card)] px-3 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] shadow-xs"
+                    className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-warm)] px-3 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] shadow-xs"
                   >
                     <Eye className="h-3.5 w-3.5" />
                     <span>Read</span>
@@ -223,7 +223,7 @@ export default function PostsDashboardPage() {
 
                   <Link
                     href="/write"
-                    className="flex items-center space-x-1.5 rounded-md bg-[var(--paper-card)] border border-[var(--paper-border)] px-3 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] shadow-xs"
+                    className="flex items-center space-x-1.5 rounded-md bg-[var(--paper-warm)] border border-[var(--paper-border)] px-3 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] shadow-xs"
                   >
                     <Edit3 className="h-3.5 w-3.5" />
                     <span>Inscribe</span>

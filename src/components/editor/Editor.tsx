@@ -28,7 +28,7 @@ interface EditorProps {
 
 export function Editor({
   initialContent = "",
-  placeholder = "Begin drafting your manuscript here... Press '/' for block commands",
+  placeholder = "Inscribe your manuscript here... Press '/' for block commands",
   onChange,
 }: EditorProps) {
   const editor = useEditor({
@@ -46,7 +46,7 @@ export function Editor({
     content: initialContent,
     editorProps: {
       attributes: {
-        class: "prose max-w-none focus:outline-none min-h-[460px] font-editorial-serif text-lg leading-[1.85] text-[var(--ink-primary)]",
+        class: "prose max-w-none focus:outline-none min-h-[460px] font-editorial-serif text-lg leading-[1.88] text-[var(--ink-primary)]",
       },
     },
     onUpdate: ({ editor }) => {
@@ -63,7 +63,7 @@ export function Editor({
 
   if (!editor) {
     return (
-      <div className="flex min-h-[460px] items-center justify-center rounded-xl border border-[var(--paper-border)] bg-[var(--paper-card)] text-[var(--ink-muted)] font-editorial-mono text-xs shadow-xs">
+      <div className="flex min-h-[460px] items-center justify-center rounded-xl border border-[var(--paper-border)] bg-[var(--paper-warm)] text-[var(--ink-muted)] font-editorial-mono text-xs shadow-xs">
         Preparing manuscript desk...
       </div>
     );
@@ -74,9 +74,9 @@ export function Editor({
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 220));
 
   return (
-    <div className="paper-sheet w-full rounded-xl transition-all focus-within:border-[var(--oxblood)]">
+    <div className="book-jacket w-full rounded-xl transition-all focus-within:border-[var(--oxblood)]">
       {/* Editor Tool Ribbon */}
-      <div className="flex flex-wrap items-center gap-1 border-b border-[var(--editorial-rule)] bg-[var(--paper-card)] px-4 py-2 text-[var(--ink-secondary)] rounded-t-xl">
+      <div className="flex flex-wrap items-center gap-1 border-b border-[var(--editorial-rule)] bg-[var(--paper-warm)] px-4 py-2 text-[var(--ink-secondary)] rounded-t-xl">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -223,12 +223,12 @@ export function Editor({
       </div>
 
       {/* Editor Manuscript Surface */}
-      <div className="p-8 md:p-12">
+      <div className="p-8 md:p-12 bg-[var(--paper-surface)]">
         <EditorContent editor={editor} />
       </div>
 
       {/* Scribe Ledger Bar */}
-      <div className="flex items-center justify-between border-t border-[var(--editorial-rule)] bg-[var(--paper-card)] px-6 py-3 font-editorial-mono text-[11px] text-[var(--ink-muted)] rounded-b-xl">
+      <div className="flex items-center justify-between border-t border-[var(--editorial-rule)] bg-[var(--paper-warm)] px-6 py-3 font-editorial-mono text-[11px] text-[var(--ink-muted)] rounded-b-xl">
         <div className="flex items-center space-x-4">
           <span>{wordCount} words</span>
           <span>•</span>

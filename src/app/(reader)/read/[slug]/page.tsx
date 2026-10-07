@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Header } from "@/components/navigation/Header";
+import { useEdition, PaperTone } from "@/components/theme/EditionContext";
 import {
   ArrowLeft,
   ArrowRight,
@@ -12,13 +13,16 @@ import {
   BookOpen,
   Share2,
   Check,
-  Type,
+  Bookmark,
+  BookmarkCheck,
+  Sparkles,
 } from "lucide-react";
 
 interface Story {
   slug: string;
   chapter: string;
   folio: string;
+  issue: string;
   title: string;
   subtitle: string;
   author: string;
@@ -28,7 +32,7 @@ interface Story {
   publication: string;
   content: string[];
   pullquote?: string;
-  footnotes?: { id: number; text: string }[];
+  footnotes?: { id: number; text: string; sideNote?: string }[];
   nextStory?: { slug: string; title: string; chapter: string };
 }
 
@@ -37,6 +41,7 @@ const STORIES: Record<string, Story> = {
     slug: "crafting-systems-that-endure",
     chapter: "CHAPTER I",
     folio: "FOLIO 14–28",
+    issue: "ISSUE IV • AUTUMN 2026",
     title: "Crafting Systems That Endure: The Philosophy of Long-Horizon Software",
     subtitle: "On permanence, architectural discipline, and treating digital constructs with the gravity of literature.",
     author: "Elena Rostova",
@@ -54,8 +59,8 @@ const STORIES: Record<string, Story> = {
     ],
     pullquote: "The truest software architecture mirrors literature: thoughtful, disciplined, and designed for decades.",
     footnotes: [
-      { id: 1, text: "Donald Knuth, Computers & Typesetting, Vol. A: The TeXbook (Addison-Wesley, 1984)." },
-      { id: 2, text: "Edgar F. Codd, 'A Relational Model of Data for Large Shared Data Banks', CACM 13(6), 1970." },
+      { id: 1, text: "Donald Knuth, Computers & Typesetting, Vol. A: The TeXbook (Addison-Wesley, 1984).", sideNote: "Knuth's TeX algorithm achieved version 3.141592653, asymptotically approaching π." },
+      { id: 2, text: "Edgar F. Codd, 'A Relational Model of Data for Large Shared Data Banks', CACM 13(6), 1970.", sideNote: "Codd's twelve rules established relational calculus as mathematical truth." },
     ],
     nextStory: {
       slug: "the-death-and-rebirth-of-the-independent-web",
@@ -67,6 +72,7 @@ const STORIES: Record<string, Story> = {
     slug: "the-death-and-rebirth-of-the-independent-web",
     chapter: "CHAPTER II",
     folio: "FOLIO 29–38",
+    issue: "ISSUE IV • AUTUMN 2026",
     title: "The Rebirth of the Independent Web: Why Writers Are Leaving Algorithmic Silos",
     subtitle: "How dedicated publications and sovereign digital spaces are reclaiming the dignity of the written word.",
     author: "Marcus Chen",
@@ -91,6 +97,7 @@ const STORIES: Record<string, Story> = {
     slug: "block-based-composition-in-modern-publishing",
     chapter: "CHAPTER III",
     folio: "FOLIO 39–54",
+    issue: "ISSUE IV • AUTUMN 2026",
     title: "The Architecture of Block Composition: From ProseMirror ASTs to Dynamic Canvases",
     subtitle: "Decoupling narrative intent from rendering mediums for expressive, multi-format publishing.",
     author: "David Vance",
@@ -115,8 +122,11 @@ const STORIES: Record<string, Story> = {
 export default function StoryReaderPage() {
   const params = useParams();
   const slug = (params?.slug as string) || "crafting-systems-that-endure";
+  const { tone, setTone } = useEdition();
+
   const [scrollProgress, setScrollProgress] = useState(0);
   const [fontSize, setFontSize] = useState<"standard" | "large" | "generous">("standard");
+  const [isBookmarked, setIsBookmarked] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
@@ -132,10 +142,37 @@ export default function StoryReaderPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    try {
+      const marks = JSON.parse(localStorage.getItem("inkforge_bookmarks") || "[]");
+      setIsBookmarked(marks.includes(slug));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [slug]);
+
+  const toggleBookmark = () => {
+    try {
+      const marks = JSON.parse(localStorage.getItem("inkforge_bookmarks") || "[]");
+      let updated;
+      if (marks.includes(slug)) {
+        updated = marks.filter((s: string) => s !== slug);
+        setIsBookmarked(false);
+      } else {
+        updated = [...marks, slug];
+        setIsBookmarked(true);
+      }
+      localStorage.setItem("inkforge_bookmarks", JSON.stringify(updated));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const story = STORIES[slug] || {
     slug,
     chapter: "MANUSCRIPT",
     folio: "FOLIO ARCHIVE",
+    issue: "INKFORGE PRESS ARCHIVE",
     title: slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
     subtitle: "A monograph from the Inkforge Studio archive.",
     author: "Inkforge Author",
@@ -168,8 +205,8 @@ export default function StoryReaderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)]">
-      {/* Living Scroll Progress Bar */}
+    <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)] relative">
+      {/* Pinned Scroll Progress Indicator */}
       <div
         className="fixed top-0 left-0 z-50 h-[2.5px] bg-[var(--oxblood)] transition-all duration-75 ease-out"
         style={{ width: `${scrollProgress}%` }}
@@ -177,26 +214,26 @@ export default function StoryReaderPage() {
 
       <Header />
 
-      <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        {/* Navigation & Chapter Folio Bar */}
+      <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+        {/* Navigation & Reader Folio Bar */}
         <div className="mb-8 flex flex-wrap items-center justify-between border-b border-[var(--editorial-rule)] pb-4 font-editorial-mono text-xs tracking-widest uppercase text-[var(--ink-muted)] gap-3">
           <Link
             href="/"
             className="inline-flex items-center space-x-1.5 transition-colors hover:text-[var(--oxblood)]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Return to Index</span>
+            <span>Return to Frontispiece</span>
           </Link>
 
           <div className="flex items-center space-x-4">
-            {/* Reading Type Scale Controls */}
+            {/* Type Scale Controls */}
             <div className="flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-1.5 py-0.5 text-[10px]">
               <span className="text-[var(--ink-muted)] mr-1">TYPE:</span>
               <button
                 type="button"
                 onClick={() => setFontSize("standard")}
                 className={`px-1 rounded ${fontSize === "standard" ? "font-bold text-[var(--oxblood)]" : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"}`}
-                title="Standard type size"
+                title="Standard type scale"
               >
                 A
               </button>
@@ -204,12 +241,30 @@ export default function StoryReaderPage() {
                 type="button"
                 onClick={() => setFontSize("large")}
                 className={`px-1 rounded ${fontSize === "large" ? "font-bold text-[var(--oxblood)] text-[11px]" : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)] text-[11px]"}`}
-                title="Large type size"
+                title="Large type scale"
               >
                 A+
               </button>
             </div>
 
+            {/* Bookmark Folio Ribbon Action */}
+            <button
+              type="button"
+              onClick={toggleBookmark}
+              className={`flex items-center space-x-1 transition-colors ${
+                isBookmarked ? "text-[var(--oxblood)] font-bold" : "hover:text-[var(--oxblood)]"
+              }`}
+              title="Bookmark this monograph"
+            >
+              {isBookmarked ? (
+                <BookmarkCheck className="h-3.5 w-3.5 fill-[var(--oxblood)] text-[var(--oxblood)]" />
+              ) : (
+                <Bookmark className="h-3.5 w-3.5" />
+              )}
+              <span className="hidden sm:inline">{isBookmarked ? "Bookmarked" : "Bookmark"}</span>
+            </button>
+
+            {/* Citation Share */}
             <button
               type="button"
               onClick={copyUrl}
@@ -226,15 +281,18 @@ export default function StoryReaderPage() {
           </div>
         </div>
 
-        {/* Header Section */}
-        <header className="mb-10 text-center sm:text-left">
+        {/* Article Monograph Header */}
+        <header className="mb-10 text-center sm:text-left relative">
+          {/* Active Bookmark Ribbon Accent */}
+          {isBookmarked && <div className="book-ribbon" />}
+
           <div className="mb-3">
             <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
-              {story.publication}
+              {story.publication} • {story.issue}
             </span>
           </div>
 
-          <h1 className="font-editorial-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-[var(--ink-primary)] leading-[1.12]">
+          <h1 className="font-editorial-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-[var(--ink-primary)] leading-[1.1]">
             {story.title}
           </h1>
 
@@ -245,7 +303,7 @@ export default function StoryReaderPage() {
           {/* Byline and Reading Folio */}
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-[var(--editorial-rule)] py-4 font-editorial-sans text-xs text-[var(--ink-muted)]">
             <div className="flex items-center space-x-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--paper-card)] border border-[var(--paper-border)] font-editorial-serif font-bold text-sm text-[var(--oxblood)]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--paper-warm)] border border-[var(--paper-border)] font-editorial-serif font-bold text-sm text-[var(--oxblood)]">
                 {story.author[0]}
               </div>
               <div>
@@ -265,33 +323,55 @@ export default function StoryReaderPage() {
           </div>
         </header>
 
-        {/* Prose Content with Adjustable Reading Typography */}
-        <div className={`space-y-6 font-editorial-serif ${getProseTextSize()} text-[var(--ink-primary)] transition-all`}>
-          {story.content.map((paragraph, idx) => (
-            <p
-              key={idx}
-              className={idx === 0 ? "drop-cap" : ""}
-            >
-              {paragraph}
-            </p>
-          ))}
+        {/* Monograph Body with Renaissance Margin Layout on Wide Screens */}
+        <div className="grid lg:grid-cols-12 gap-8 items-start">
+          {/* Main Prose Text (9 cols) */}
+          <div className="lg:col-span-9 space-y-6 font-editorial-serif text-[var(--ink-primary)] transition-all">
+            {story.content.map((paragraph, idx) => (
+              <p
+                key={idx}
+                className={`${getProseTextSize()} ${idx === 0 ? "drop-cap" : ""}`}
+              >
+                {paragraph}
+              </p>
+            ))}
+
+            {/* Editorial Pullquote */}
+            {story.pullquote && (
+              <blockquote className="editorial-pullquote my-10">
+                &ldquo;{story.pullquote}&rdquo;
+              </blockquote>
+            )}
+          </div>
+
+          {/* Marginalia Sidebar (3 cols on desktop) */}
+          <aside className="hidden lg:block lg:col-span-3 space-y-8 font-editorial-sans text-xs text-[var(--ink-secondary)] border-l border-[var(--editorial-rule)] pl-5">
+            <div className="font-editorial-mono text-[9px] uppercase tracking-widest text-[var(--oxblood)] font-bold">
+              Marginalia &amp; Apparatus
+            </div>
+
+            {story.footnotes &&
+              story.footnotes.map((fn) => (
+                <div key={fn.id} className="space-y-1">
+                  <span className="font-editorial-mono text-[10px] font-bold text-[var(--oxblood)]">
+                    [{fn.id}]
+                  </span>
+                  <p className="text-[11px] leading-relaxed text-[var(--ink-muted)] italic">
+                    {fn.sideNote || fn.text}
+                  </p>
+                </div>
+              ))}
+          </aside>
         </div>
 
-        {/* Editorial Pullquote */}
-        {story.pullquote && (
-          <blockquote className="editorial-pullquote my-10">
-            &ldquo;{story.pullquote}&rdquo;
-          </blockquote>
-        )}
-
-        {/* Book Divider */}
+        {/* Ornamental Divider */}
         <div className="editorial-divider my-12">
           <span>✦ • ✦</span>
         </div>
 
-        {/* Footnotes Section if available */}
+        {/* Footnotes Section on Mobile / Below fold */}
         {story.footnotes && (
-          <div className="my-10 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-card)] p-6 font-editorial-sans text-xs text-[var(--ink-secondary)]">
+          <div className="my-10 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-warm)] p-6 font-editorial-sans text-xs text-[var(--ink-secondary)]">
             <h4 className="font-editorial-mono font-bold uppercase tracking-wider text-[var(--oxblood)] mb-3">
               Footnotes &amp; Critical References
             </h4>
@@ -305,9 +385,9 @@ export default function StoryReaderPage() {
           </div>
         )}
 
-        {/* Next Chapter in Anthology Card */}
+        {/* Proceed to Next Chapter Book-Jacket Box */}
         {story.nextStory && (
-          <div className="my-12 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8 paper-sheet">
+          <div className="my-12 rounded-xl book-jacket p-6 sm:p-8">
             <div className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
               Proceed to Next Chapter
             </div>
@@ -319,7 +399,7 @@ export default function StoryReaderPage() {
                 {story.nextStory.title}
               </h3>
               <div className="mt-3 inline-flex items-center space-x-1.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-[var(--oxblood)] group-hover:underline">
-                <span>Continue Reading</span>
+                <span>Open Next Monograph</span>
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </div>
             </Link>
@@ -327,7 +407,7 @@ export default function StoryReaderPage() {
         )}
 
         {/* Author Colophon Box */}
-        <footer className="mt-14 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-card)] p-6 sm:p-8">
+        <footer className="mt-14 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-warm)] p-6 sm:p-8">
           <div className="flex items-start space-x-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--oxblood)] text-white font-editorial-serif font-bold text-lg">
               {story.author[0]}
