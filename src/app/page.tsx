@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Header } from "@/components/navigation/Header";
 import { InkforgeLanding } from "@/components/landing/InkforgeLanding";
 import {
   BookOpen,
@@ -130,9 +129,6 @@ export default function HomePage() {
 
   return (
     <InkforgeLanding>
-      <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
-        <Header />
-
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         {/* Title Frontispiece Banner */}
         <section className="border-b border-[var(--editorial-rule)] pb-12 text-center">
@@ -158,16 +154,16 @@ export default function HomePage() {
               href="/write"
               className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-5 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98]"
             >
-              <span>Begin Composing</span>
+              <span>Start Writing</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
 
             <Link
-              href="/posts"
+              href="/discover"
               className="inline-flex items-center space-x-2 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-5 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-[var(--ink-secondary)] shadow-xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--ink-primary)] active:scale-[0.98]"
             >
-              <Layers className="h-3.5 w-3.5" />
-              <span>Editorial Ledger</span>
+              <Compass className="h-3.5 w-3.5" />
+              <span>Discover Catalog</span>
             </Link>
           </div>
         </section>
@@ -439,7 +435,6 @@ export default function HomePage() {
           </p>
         </div>
       </footer>
-    </div>
-  </InkforgeLanding>
+    </InkforgeLanding>
   );
 }

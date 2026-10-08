@@ -129,11 +129,11 @@ export function PhysicalBook({
         return <Compass className="h-4 w-4 text-[var(--amber-gold)]" />;
       case "write":
         return <PenTool className="h-4 w-4 text-[var(--oxblood)]" />;
-      case "ledger":
+      case "collections":
         return <Layers className="h-4 w-4 text-[var(--forest)]" />;
       case "authors":
         return <Users className="h-4 w-4 text-[var(--oxblood)]" />;
-      case "colophon":
+      case "about":
         return <BookMarked className="h-4 w-4 text-[var(--amber-gold)]" />;
       default:
         return <BookOpen className="h-4 w-4 text-[var(--oxblood)]" />;
@@ -323,18 +323,18 @@ export function PhysicalBook({
               <div>
                 {/* Running Header */}
                 <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-2.5 font-editorial-mono text-[9px] tracking-widest uppercase text-[var(--ink-muted)]">
-                  <span>INDEX RATIONIS</span>
-                  <span className="font-bold text-[var(--ink-primary)]">TABLE OF CONTENTS</span>
+                  <span className="font-bold text-[var(--oxblood)]">INKFORGE</span>
+                  <span className="font-bold text-[var(--ink-primary)]">PRIMARY DESTINATIONS</span>
                   <span>p. 2</span>
                 </div>
 
                 {/* Title Section */}
                 <div className="mt-5 mb-3">
                   <span className="font-editorial-mono text-[9px] uppercase tracking-[0.25em] text-[var(--oxblood)] font-bold">
-                    Volume IV • Continuous Edition
+                    Write • Publish • Discover • Read
                   </span>
                   <h3 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)] mt-0.5">
-                    Chapters &amp; Inscriptions
+                    Choose Where to Begin
                   </h3>
                 </div>
 
@@ -404,7 +404,7 @@ export function PhysicalBook({
 
             {/* Right Page Bottom Folio */}
             <div className="mt-4 pt-3 border-t border-[var(--editorial-rule)] flex items-center justify-between font-editorial-mono text-[8px] uppercase tracking-wider text-[var(--ink-muted)]">
-              <span>Select chapter to open</span>
+              <span>Select destination to enter</span>
               <span className="text-[var(--oxblood)] font-bold">
                 Chapter {BOOK_CHAPTERS[activeChapterIndex].roman} of VI
               </span>

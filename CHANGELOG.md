@@ -1,5 +1,32 @@
 # INKFORGE — Release Changelog
 
+## [0.8.0] — 2026-10-08
+
+### Overhauled: Information Architecture, Navigation & First-Time User Experience
+- **Core Directive: "Simplify, Clarify & Elevate the Existing Experience"**:
+  - Re-anchored INKFORGE around its foundational purpose: *"A place to write, publish, discover, and read great work."*
+  - Separated concerns cleanly:
+    - `BOOK = BRAND + ENTRANCE + EMOTIONAL CENTERPIECE`
+    - `NAVIGATION = FAST, SELF-EXPLANATORY WAYFINDING`
+    - `APPLICATION = PRODUCTION PUBLISHING & READING TOOLS`
+- **Three-Tier Navigation Hierarchy**:
+  - **Level 1 (Primary Actions)**: Prominent `Read`, `Discover`, and `Write` actions on header and landing stage.
+  - **Level 2 (Secondary Exploration)**: Clean `Collections` and `Authors` entrypoints.
+  - **Level 3 (Utility & Support)**: Global `Help & FAQ`, `About INKFORGE`, and `Sign In` modal.
+- **New Real Destination Routes**:
+  - `/help`: Comprehensive Help Center with searchable FAQ (Getting Started, Reading, Writing, Accounts), keyboard shortcuts guide, and contact channels.
+  - `/about`: Philosophy manifesto detailing the living book metaphor, colophon typography, and editorial mission.
+  - `/collections`: Curated thematic folios grouping related monographs with reading time estimates.
+  - `/authors`: Resident writers directory with bios, affiliations, and published treatises.
+  - `/discover`: Catalog exploration with live search query filter and subject tags.
+- **Authentication & Sign-In Modal**:
+  - Accessible, distraction-free modal (`SignInModal.tsx`) with magic link dispatch, local-first author key support, and keyboard escape handling.
+- **Nomenclature Reform**:
+  - Eliminated confusing jargon (`Gazetteer` → `Discover`, `Index Rationis` → `Table of Contents`, `Excavate` → `Explore`, `Scriptorium` → `Start Writing`).
+- **Comprehensive Documentation**:
+  - Added [`docs/INFORMATION_ARCHITECTURE.md`](file:///Users/kingpin/Documents/Vibecoded projects/inkforge/docs/INFORMATION_ARCHITECTURE.md).
+  - Added [`docs/FIRST_TIME_USER_EXPERIENCE.md`](file:///Users/kingpin/Documents/Vibecoded projects/inkforge/docs/FIRST_TIME_USER_EXPERIENCE.md).
+
 ## [0.7.0] — 2026-10-08
 
 ### Added: Real AI Book Cover Generation Engine & Two-Stage Pipeline
