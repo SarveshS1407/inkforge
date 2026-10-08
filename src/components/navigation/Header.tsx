@@ -73,6 +73,14 @@ export function Header() {
               <Layers className="h-3.5 w-3.5" />
               <span>Editorial Ledger</span>
             </Link>
+            <Link
+              href="/?view=toc"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md transition-colors hover:text-[var(--oxblood)] hover:bg-[var(--paper-warm)]"
+              title="Open Volume IV Interactive Book Navigation"
+            >
+              <BookOpen className="h-3.5 w-3.5 text-[var(--oxblood)]" />
+              <span>Book Folio</span>
+            </Link>
           </nav>
         </div>
 

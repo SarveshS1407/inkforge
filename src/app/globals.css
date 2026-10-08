@@ -309,3 +309,101 @@
   border-top: 1px solid var(--editorial-rule);
   margin: 2.75rem 0;
 }
+
+/* =========================================================================
+   Interactive Book 3D Stage & Mechanical Styling
+   ========================================================================= */
+
+.perspective-book {
+  perspective: 2000px;
+  -webkit-perspective: 2000px;
+  perspective-origin: 50% 50%;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Stacked book page edges on closed volume */
+.book-edge-stack {
+  box-shadow: 
+    3px 0 0 0 var(--paper-warm),
+    6px 0 0 0 var(--paper-vellum),
+    9px 0 0 0 var(--paper-border),
+    12px 3px 20px -2px rgba(0, 0, 0, 0.22);
+}
+
+/* Spine gradient and embossed crease */
+.book-spine-hinge {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(255, 255, 255, 0.08) 35%,
+    rgba(0, 0, 0, 0.15) 70%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+}
+
+/* Center gutter shadow when book is opened */
+.book-gutter-shadow {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.12) 0%,
+    rgba(0, 0, 0, 0.04) 20%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.04) 80%,
+    rgba(0, 0, 0, 0.12) 100%
+  );
+}
+
+/* Gold foil deboss effect */
+.foil-stamp {
+  background: linear-gradient(135deg, #dfb76c 0%, #f6e3a1 25%, #c5973b 50%, #fae6a6 75%, #a87928 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+
+/* Cover cloth texture overlay */
+.cloth-texture {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
+  background-size: 4px 4px;
+}
+
+/* Silk ribbon bookmark */
+.silk-ribbon-landing {
+  position: absolute;
+  top: -12px;
+  right: 2.5rem;
+  width: 22px;
+  height: 90px;
+  background: linear-gradient(180deg, var(--oxblood-hover) 0%, var(--oxblood) 70%, #560f15 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  z-index: 40;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), height 0.35s ease;
+}
+
+.silk-ribbon-landing:hover {
+  transform: translateY(6px);
+}
+
+/* Smooth book page lift */
+@media (prefers-reduced-motion: reduce) {
+  .book-flip-transition {
+    transition: opacity 0.3s ease !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .book-flip-transition {
+    transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+

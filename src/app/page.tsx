@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
+import { InkforgeLanding } from "@/components/landing/InkforgeLanding";
 import {
   BookOpen,
   ArrowRight,
@@ -128,8 +129,9 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
-      <Header />
+    <InkforgeLanding>
+      <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
+        <Header />
 
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         {/* Title Frontispiece Banner */}
@@ -438,5 +440,6 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+  </InkforgeLanding>
   );
 }
