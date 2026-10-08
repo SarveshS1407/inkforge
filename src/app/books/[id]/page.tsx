@@ -7,7 +7,6 @@ import { Header } from "@/components/navigation/Header";
 import { PhysicalBook } from "@/components/landing/PhysicalBook";
 import { getBookById, saveBook, addCoverVersion } from "@/lib/book-store";
 import { BookIdentity, CoverVersion } from "@/types/book";
-import { coverService } from "@/lib/cover-generator/service";
 import {
   BookOpen,
   PenTool,
@@ -100,22 +99,80 @@ export default function BookWorkspacePage() {
   const handleRegenerateCover = async () => {
     setIsRegenerating(true);
     try {
-      const result = await coverService.generateCover({
-        title: book.title,
-        subtitle: book.subtitle,
-        author: book.author,
-        description: book.description,
-        genre: book.genre,
-        mood: book.mood,
-        keywords: book.keywords,
-        direction: book.coverDirection,
+      const interpretRes = await fetch("/api/covers/interpret", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: {
+            title: book.title,
+            subtitle: book.subtitle,
+            author: book.author,
+            description: book.description,
+            genre: book.genre,
+            mood: book.mood,
+            keywords: book.keywords,
+          },
+        }),
       });
 
-      const newVersion = coverService.createCoverVersion(result, book.cover.versions.length + 1);
+      const interpretData = await interpretRes.json();
+      if (!interpretRes.ok) {
+        alert(
+          interpretData.error ||
+            "AI cover generation is not configured yet. Please configure OPENAI_API_KEY in your .env file."
+        );
+        return;
+      }
+
+      const brief = interpretData.brief;
+      const concept = brief.concepts[0];
+
+      const genRes = await fetch("/api/covers/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: {
+            title: book.title,
+            subtitle: book.subtitle,
+            author: book.author,
+            description: book.description,
+            genre: book.genre,
+            mood: book.mood,
+            keywords: book.keywords,
+          },
+          brief,
+          conceptId: concept.id,
+        }),
+      });
+
+      const genData = await genRes.json();
+      if (!genRes.ok) {
+        alert(genData.error || "Artwork generation failed.");
+        return;
+      }
+
+      const generated = genData.result;
+      const newVersion: CoverVersion = {
+        id: generated.id,
+        versionNumber: book.cover.versions.length + 1,
+        directionId: book.coverDirection,
+        imageUrl: generated.imageUrl,
+        generatedPrompt: generated.prompt,
+        palette: generated.palette,
+        typography: generated.typography,
+        artworkSource: "ai",
+        createdAt: generated.createdAt,
+        notes: `${concept.name}: ${concept.summary}`,
+        provider: generated.provider,
+        model: generated.model,
+        conceptName: concept.name,
+      };
+
       const updated = addCoverVersion(book.id, newVersion);
       if (updated) setBook(updated);
     } catch (err) {
       console.error("Cover regeneration failed", err);
+      alert("Failed to connect to cover generation service.");
     } finally {
       setIsRegenerating(false);
     }

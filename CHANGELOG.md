@@ -1,5 +1,31 @@
 # INKFORGE — Release Changelog
 
+## [0.7.0] — 2026-10-08
+
+### Added: Real AI Book Cover Generation Engine & Two-Stage Pipeline
+- **Core Directive: "Every book should look like its story"**:
+  - Replaced mock art generation with a production-ready, server-side two-stage AI publishing pipeline.
+  - Generates bespoke cover art reflecting narrative themes, core conflicts, and literary metaphors extracted from manuscript context rather than literal title illustration.
+- **Stage 1: Visual Interpretation (`/api/covers/interpret`)**:
+  - Semantic analysis of manuscript (Title, Description, Genre, Mood, Keywords, Author, Custom Art Direction).
+  - Distinguishes between Title, Subject, and Visual Metaphor.
+  - Derives structured `VisualBrief` with 4 story-tailored concepts (Visual Metaphor, Character & Environment, Minimal Editorial, Cinematic Depth).
+- **Stage 2: Image Synthesis (`/api/covers/generate`)**:
+  - Synthesizes high-resolution portrait artwork (`1024x1792`) using OpenAI DALL-E 3 (or Google Imagen 3).
+  - Enforces upper-third negative space for typography overlay and strict exclusion of AI-hallucinated lettering/logos/watermarks.
+- **Provider Abstraction (`OpenAICoverProvider`, `GeminiCoverProvider`, `registry.ts`)**:
+  - Secure server-side API execution: zero credentials or secrets exposed to the client.
+  - Configurable via `OPENAI_API_KEY` (and `GEMINI_API_KEY`).
+  - Provider status reporting (`/api/covers/status`).
+- **Asset Storage & Persistence (`src/lib/storage/cover-storage.ts`)**:
+  - Persists generated artwork directly to `public/uploads/covers/`, eliminating image expiration issues.
+- **Zero-Fake Generation Policy & Editorial Fallbacks**:
+  - When unconfigured, the system truthfully displays setup instructions (`OPENAI_API_KEY=...`) rather than faking generation.
+  - Unblocked author workflow with 4 Handcrafted Editorial Templates (Oxford Navy Buckram, Bordeaux Heritage Cloth, Nordic Slate Linen, Bookshop Vellum), custom art upload, and plain cloth binding.
+- **Cover Refinement & Versioning (`BookCreationWizard.tsx`)**:
+  - Real-time refinement chips ("Make it darker", "More minimal", "More cinematic", "Emphasize scientific aspect") and custom prompt refinement.
+  - Full cover version archive with instant auditioning, switching, and deletion of versions.
+
 ## [0.6.0] — 2026-10-08
 
 ### Added: AI Book Identity & Adaptive Cover Experience

@@ -1,74 +1,134 @@
-import { CoverProviderAdapter, CoverGenerationContext, CoverGenerationResult } from "./types";
-import { CuratedEditorialProvider } from "./providers/curated-provider";
-import { GeminiCoverProvider } from "./providers/gemini-provider";
-import { CoverDirectionId, COVER_DIRECTIONS, CoverVersion } from "@/types/book";
+import { getActiveProvider, getProviderStatus } from "./providers/registry";
+import {
+  BookVisualContext,
+  ConceptDirection,
+  GeneratedCoverResult,
+  VisualBrief,
+} from "@/types/cover-generator";
+import { buildCoverImagePrompt } from "./prompt-builder";
+import { persistCoverAsset } from "../storage/cover-storage";
+import { CoverPalette, CoverTypography, CoverVersion } from "@/types/book";
 
-class CoverGenerationService {
-  private providers: CoverProviderAdapter[] = [];
-  private curatedProvider: CuratedEditorialProvider;
-
-  constructor() {
-    this.curatedProvider = new CuratedEditorialProvider();
-    const geminiProvider = new GeminiCoverProvider();
-
-    this.providers = [geminiProvider, this.curatedProvider];
+export class RealCoverGenerationService {
+  getStatus() {
+    return getProviderStatus();
   }
 
-  isAIConfigured(): boolean {
-    return this.providers.some((p) => p.isAvailable() && p.name.includes("Gemini"));
+  isConfigured(): boolean {
+    return this.getStatus().configured;
   }
 
-  getActiveProviderName(): string {
-    const active = this.providers.find((p) => p.isAvailable());
-    return active ? active.name : this.curatedProvider.name;
-  }
-
-  async generateCover(context: CoverGenerationContext): Promise<CoverGenerationResult> {
-    // Attempt available AI provider first; gracefully fallback to Curated Editorial engine
-    for (const provider of this.providers) {
-      if (provider.isAvailable()) {
-        try {
-          return await provider.generate(context);
-        } catch (err) {
-          console.warn(`Provider ${provider.name} failed, falling back to next provider:`, err);
-        }
-      }
+  /**
+   * STAGE 1: Visual Interpretation
+   * Analyzes manuscript metadata and generates a structured VisualBrief with 4 distinct concepts.
+   */
+  async interpretBook(context: BookVisualContext, userDirection?: string): Promise<VisualBrief> {
+    const provider = getActiveProvider();
+    if (!provider) {
+      throw new Error(
+        "AI cover generation isn't configured yet. Configure an image-generation provider (such as OPENAI_API_KEY in your .env) to enable this feature."
+      );
     }
 
-    return await this.curatedProvider.generate(context);
+    return await provider.interpretBook(context, userDirection);
   }
 
-  async generateAllDirections(
-    baseContext: Omit<CoverGenerationContext, "direction">
-  ): Promise<Record<CoverDirectionId, CoverGenerationResult>> {
-    const results: Partial<Record<CoverDirectionId, CoverGenerationResult>> = {};
+  /**
+   * STAGE 2: Image Generation
+   * Generates artwork for a specific concept using the active image generation provider (e.g. DALL-E 3).
+   * Persists the resulting image to asset storage and returns a ready-to-bind cover result.
+   */
+  async generateConceptArtwork(
+    context: BookVisualContext,
+    brief: VisualBrief,
+    concept: ConceptDirection,
+    options?: { refinement?: string }
+  ): Promise<GeneratedCoverResult> {
+    const provider = getActiveProvider();
+    if (!provider) {
+      throw new Error(
+        "AI cover generation isn't configured yet. Please configure OPENAI_API_KEY to generate artwork."
+      );
+    }
 
-    await Promise.all(
-      COVER_DIRECTIONS.map(async (dir) => {
-        const res = await this.generateCover({
-          ...baseContext,
-          direction: dir.id,
-        });
-        results[dir.id] = res;
-      })
+    const prompt = buildCoverImagePrompt(brief, concept, context, options?.refinement);
+
+    // Call Stage 2 provider
+    const { imageUrl: rawImageUrl, model, revisedPrompt } = await provider.generateCoverImage(
+      prompt,
+      { size: "1024x1792", quality: "standard" }
     );
 
-    return results as Record<CoverDirectionId, CoverGenerationResult>;
-  }
+    // Download & persist asset so the URL never expires
+    const uniqueId = `cov-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const persistentImageUrl = await persistCoverAsset(rawImageUrl, uniqueId);
 
-  createCoverVersion(result: CoverGenerationResult, versionNumber: number): CoverVersion {
+    const palette: CoverPalette = {
+      clothColor: concept.recommendedPalette.clothColor || "#1b1917",
+      accentColor: concept.recommendedPalette.accentColor || "#d4af37",
+      foilColor: concept.recommendedPalette.foilColor || "#f5e6a8",
+      paperTone: concept.recommendedPalette.paperTone || "cotton",
+      textColor: concept.recommendedPalette.textColor || "#ffffff",
+    };
+
+    const typography: CoverTypography = {
+      titleFont: "serif",
+      style: "debossed-gold",
+    };
+
     return {
-      id: `cov-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      versionNumber,
-      directionId: result.direction,
-      imageUrl: result.imageUrl,
-      generatedPrompt: result.generatedPrompt,
-      palette: result.palette,
-      typography: result.typography,
-      artworkSource: result.artworkSource,
+      id: uniqueId,
+      imageUrl: persistentImageUrl,
+      prompt,
+      revisedPrompt,
+      concept,
+      visualBrief: brief,
+      palette,
+      typography,
+      provider: provider.name,
+      model,
       createdAt: new Date().toISOString(),
     };
   }
+
+  /**
+   * Converts a GeneratedCoverResult into an immutable CoverVersion for local storage & state.
+   */
+  toCoverVersion(result: GeneratedCoverResult, versionNumber: number): CoverVersion {
+    // Map conceptType to valid CoverDirectionId
+    let directionId: "editorial" | "cinematic" | "experimental" | "classic" = "editorial";
+    if (result.concept.conceptType === "cinematic") directionId = "cinematic";
+    else if (result.concept.conceptType === "experimental") directionId = "experimental";
+    else if (result.concept.conceptType === "metaphor") directionId = "classic";
+
+    return {
+      id: result.id,
+      versionNumber,
+      directionId,
+      imageUrl: result.imageUrl,
+      generatedPrompt: result.prompt,
+      palette: result.palette,
+      typography: result.typography,
+      artworkSource: "ai",
+      createdAt: result.createdAt,
+      notes: `${result.concept.name}: ${result.concept.summary}`,
+      provider: result.provider,
+      model: result.model,
+      conceptName: result.concept.name,
+    };
+  }
+
+  getActiveProviderName(): string {
+    const status = this.getStatus();
+    if (status.configured) {
+      return status.activeProvider === "openai"
+        ? "OpenAI (GPT-4o & DALL-E 3)"
+        : "Google Gemini & Imagen 3";
+    }
+    return "Not Configured (Requires OPENAI_API_KEY)";
+  }
 }
 
-export const coverService = new CoverGenerationService();
+export const realCoverService = new RealCoverGenerationService();
+export const coverService = realCoverService;
+

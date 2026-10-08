@@ -72,6 +72,9 @@ export interface CoverVersion {
   artworkSource: "ai" | "template" | "upload" | "curated";
   createdAt: string;
   notes?: string;
+  provider?: string;
+  model?: string;
+  conceptName?: string;
 }
 
 export interface ChapterItem {

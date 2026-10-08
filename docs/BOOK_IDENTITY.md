@@ -2,20 +2,21 @@
 
 ## Overview
 
-In **INKFORGE**, every piece of writing is treated as more than a detached post or CMS document:
+In **INKFORGE**, writing is elevated from ephemeral web articles to bound, archival physical editions:
 
-> **Every piece of writing in INKFORGE can become a visually unique, beautifully bound book.**
+> **"Every book should look like its story."**
 
-When a creator starts a new work, INKFORGE synthesizes the manuscript metadata (title, subtitle, description, genre, themes) to generate a distinctive **Book Identity**. This identity includes:
-1. **Dynamic 3D Book & Cover Art**: Curated or AI-generated fine art with tactile linen binding, custom cloth color palettes, and foil stamped spines.
-2. **Crisp Typographic Compositing**: Pure HTML/CSS typographic overlays in Charter serif and monospace, guaranteeing zero AI hallucinated text and total author editability.
-3. **Adaptive Inside Spread**: The 3D open book spread acts as the author's primary workspace, automatically presenting contextual workflows based on the book's lifecycle state.
+When an author inscribes a manuscript, INKFORGE analyzes the story's actual narrative arc, themes, and conflicts to construct a **Book Identity**:
+1. **Story-Derived Artwork**: Portrait fine-art synthesized via a real two-stage AI pipeline (OpenAI GPT-4o & DALL-E 3) with negative space allocated for typography.
+2. **Crisp HTML/CSS Typography Overlay**: Pure CSS Charter serif and Editorial mono typography with blind debossing and gold foil hot-stamping.
+3. **Cloth Binding & Foil Palette**: Custom buckram, linen, and vellum palettes tailored to the book's mood and genre.
+4. **Interactive 3D Physical Book**: The volume rests on the editorial desk, featuring a reversible hinged front cover board and an **Adaptive Creator Workspace Menu** based on the manuscript's lifecycle state (`NEW`, `IN_PROGRESS`, `READY_TO_PUBLISH`, `PUBLISHED`).
 
 ---
 
 ## 1. Architectural Model & Data Schema
 
-The Book Identity system is typed in [`src/types/book.ts`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/types/book.ts) and backed by a local-first reactive storage manager in [`src/lib/book-store.ts`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/lib/book-store.ts).
+The Book Identity system is typed in [`src/types/book.ts`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/types/book.ts) and [`src/types/cover-generator.ts`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/types/cover-generator.ts), and persisted locally via [`src/lib/book-store.ts`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/lib/book-store.ts).
 
 ### Core Entities
 
@@ -23,127 +24,89 @@ The Book Identity system is typed in [`src/types/book.ts`](file:///Users/kingpin
 classDiagram
     class BookIdentity {
         +string id
+        +string slug
         +string title
         +string subtitle
         +string author
-        +string genre
         +string description
-        +string[] tags
+        +string genre
+        +string mood
+        +string[] keywords
+        +string[] visualThemes
+        +CoverDirectionId coverDirection
+        +BookCoverStore cover
+        +ChapterItem[] chapters
         +BookState state
-        +CoverVersion[] covers
-        +string activeCoverId
-        +number wordCount
-        +number chapterCount
         +string createdAt
         +string updatedAt
     }
 
     class CoverVersion {
         +string id
-        +string versionNumber
-        +CoverDirection direction
+        +number versionNumber
+        +CoverDirectionId directionId
+        +string imageUrl
+        +string generatedPrompt
         +CoverPalette palette
         +CoverTypography typography
-        +string artworkUrl
-        +string promptUsed
+        +string artworkSource
         +string provider
+        +string model
+        +string conceptName
         +string createdAt
     }
 
-    class CoverPalette {
-        +string clothColor
-        +string foilColor
-        +string paperTone
-        +string accentColor
-    }
-
-    class CoverTypography {
-        +string titleFont
-        +string subtitleFont
-        +string authorFont
+    class VisualBrief {
+        +string bookTitle
+        +string subject
+        +string[] themes
+        +string[] visualMetaphors
+        +string[] emotionalTone
+        +string composition
+        +string[] palette
         +string style
+        +ConceptDirection[] concepts
     }
 
-    BookIdentity "1" *-- "many" CoverVersion : versions
-    CoverVersion *-- "1" CoverPalette : styling
-    CoverVersion *-- "1" CoverTypography : layout
+    BookIdentity "1" *-- "many" CoverVersion : cover.versions
+    BookIdentity ..> VisualBrief : derived from
 ```
 
-### Cover Design Directions
+---
 
-Authors can explore or combine 4 signature design directions:
+## 2. The 4 Story-Derived Concept Directions
 
-| Direction | Aesthetic & Materials | Target Writing |
+Instead of preset visual templates, INKFORGE interprets the manuscript into 4 distinct concepts:
+
+| Concept Direction | Symbolic Purpose | Composition Focus |
 | :--- | :--- | :--- |
-| **`editorial`** | Swiss grid, strict typography, duotone color palettes, architectural geometry | Essays, criticism, philosophy, design theory |
-| **`cinematic`** | Moody lighting, atmospheric gradients, atmospheric negative space, rich shadows | Fiction, narrative non-fiction, memoirs, investigative prose |
-| **`experimental`** | Asymmetrical typography, expressive abstract forms, avant-garde framing | Poetry, speculative prose, experimental treatises |
-| **`classic`** | Traditional bookbinding, leather & cloth textures, gold foil stamping, blind debossing | Historical monographs, timeless manifestos, reference folios |
+| **Concept A: Visual Metaphor** | Thematic essence & abstract symbolism | Central conceptual motif, high contrast, clean background |
+| **Concept B: Character & Environment** | Narrative setting & human solitude | Atmospheric horizon, deep spatial perspective, environmental lighting |
+| **Concept C: Minimal Editorial** | Quiet restraint & timeless authority | Vast upper negative space, solitary evocative object, delicate rules |
+| **Concept D: Cinematic & Atmospheric** | Dramatic tension & emotional weight | Chiaroscuro lighting, deep shadows, textured grain |
 
 ---
 
-## 2. Adaptive Creator Workspace Menu
+## 3. Real Server-Side AI Pipeline
 
-When an author opens their book in the 3D folio ([`/books/[id]`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/app/books/%5Bid%5D/page.tsx)), the right-hand inside page renders an **Adaptive Menu** tailored to the book's current lifecycle state:
-
-```mermaid
-stateDiagram-v2
-    [*] --> NEW: Initialize Manuscript
-    NEW --> IN_PROGRESS: Begin Drafting (Word Count > 0)
-    IN_PROGRESS --> READY_TO_PUBLISH: Word Count > Target / Marked Ready
-    READY_TO_PUBLISH --> PUBLISHED: Inscribe Volume
-    PUBLISHED --> [*]
+```
+Browser (Wizard)
+   │
+   ├─► POST /api/covers/interpret  (Stage 1: Generates VisualBrief & 4 concepts)
+   │
+   └─► POST /api/covers/generate   (Stage 2: Synthesizes portrait artwork via DALL-E 3)
 ```
 
-### State-Specific Menu Actions
-
-1. **`NEW` (Fresh Manuscript)**:
-   - Primary Focus: Launching the initial chapter draft (`Begin Writing Chapter I`).
-   - Secondary Focus: Generating or refining the cover aesthetic (`Cover Identity Studio`).
-   - Tertiary Actions: Building the chapter outline, jotting worldbuilding notes.
-
-2. **`IN_PROGRESS` (Active Drafting)**:
-   - Primary Focus: Resuming manuscript composition (`Continue Writing Chapter`).
-   - Secondary Focus: Navigating the manuscript chapter outline.
-   - Tertiary Actions: Archiving cover iterations, proofreading in preview mode.
-
-3. **`READY_TO_PUBLISH` (Manuscript Complete)**:
-   - Primary Focus: Entering reader preview (`Proofread Full Spread`).
-   - Secondary Focus: Final colophon and publication inscription (`Inscribe & Publish`).
-   - Tertiary Actions: Final cover plate inspection.
-
-4. **`PUBLISHED` (Bound Volume)**:
-   - Primary Focus: Immersive reading view (`Read Bound Volume`).
-   - Secondary Focus: Volume metrics (circulation, reading time, reader engagement).
-   - Tertiary Actions: Exporting e-ink folios or print-ready PDF signatures.
+- **Zero Fake Policy**: If `OPENAI_API_KEY` is not present, the system honestly reports status and displays non-AI alternatives: Handcrafted Editorial Templates (Oxford Buckram, Bordeaux Gilt, Nordic Linen, Bookshop Vellum), custom file upload, or plain bookcloth binding.
+- **Persistent Asset Storage**: Generated assets are stored on the server filesystem (`/public/uploads/covers/`) or cloud storage, guaranteeing persistent image availability.
 
 ---
 
-## 3. Physical Book Integration
+## 4. Adaptive Creator Workspace Menu
 
-The dynamic 3D physical book component ([`src/components/landing/PhysicalBook.tsx`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/components/landing/PhysicalBook.tsx)) seamlessly supports both landing page mode (Volume IV flagship edition) and individual manuscript mode (`BookIdentity`):
+When an author opens their book on the editorial desk ([`/books/[id]`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/app/books/%5Bid%5D/page.tsx)), the right-hand inside page renders an **Adaptive Menu** tailored to the manuscript lifecycle:
 
-- **Cloth & Linen Texture**: Dynamically binds with `cover.palette.clothColor` and overlay grain filters.
-- **Foil Typography**: Gold, silver, oxblood, or copper foil rendering for titles and debossed frames.
-- **Spine Labeling**: Realistic 3D spine geometry with rotated vertical title and author inscription.
-- **Inner Spread**:
-  - **Left Folio**: Custom ex-libris bookplate, synopsis, genre tag, target words, and creation timestamp.
-  - **Right Folio**: The Adaptive Creator Menu with interactive status indicators, action routes, and shortcut keys.
-
----
-
-## 4. Workflows & User Journeys
-
-### A. Creating a New Book
-1. Creator clicks **"New Book"** in the top navigation or editorial ledger.
-2. The **Book Creation Wizard** ([`/books/create`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/app/books/create/page.tsx)) guides them through 3 steps:
-   - **Step 1: Manuscript Dossier** (Title, Subtitle, Author, Genre, Synopsis, Visual Themes).
-   - **Step 2: Design Direction** (Editorial, Cinematic, Experimental, Classic).
-   - **Step 3: Cover Identity Studio** (Live 3D Book / Flat Plate preview, palette refinement, instant re-generation).
-3. Clicking **"Bind Book & Enter Studio"** saves the identity to local storage and transitions directly to the 3D book workspace ([`/books/[id]`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/app/books/%5Bid%5D/page.tsx)).
-
-### B. Writing Within a Book's Context
-1. From the book workspace or ledger, clicking **"Write"** navigates to `/write?bookId=[id]`.
-2. The Scribe Studio detects the active volume:
-   - Displays a prominent **Active Book Banner** with spine pill and quick link back to the 3D workspace.
-   - Automatically synchronizes title, genre, and word counts with the persistent book identity.
+- **`NEW`**: Directs author to *"Begin Writing Chapter I"* and explore visual identity.
+- **`IN_PROGRESS`**: Highlights *"Continue Writing"*, word count milestones, and chapter outline.
+- **`READY_TO_PUBLISH`**: Unlocks proofreading spread and publication colophon inscription.
+- **`PUBLISHED`**: Opens reading circulation metrics and e-ink/print export folios.
