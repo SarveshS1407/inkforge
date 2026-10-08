@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
+import { getStoredBooks } from "@/lib/book-store";
+import { BookIdentity } from "@/types/book";
 import {
   FileText,
   Clock,
@@ -12,6 +14,8 @@ import {
   Plus,
   CheckCircle2,
   BookOpen,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 
 interface PostItem {
@@ -71,6 +75,7 @@ const DEFAULT_POSTS: PostItem[] = [
 export default function PostsDashboardPage() {
   const [filter, setFilter] = useState<"ALL" | "DRAFT" | "IN_REVIEW" | "SCHEDULED" | "PUBLISHED">("ALL");
   const [posts, setPosts] = useState<PostItem[]>(DEFAULT_POSTS);
+  const [books, setBooks] = useState<BookIdentity[]>([]);
 
   useEffect(() => {
     try {
@@ -81,6 +86,7 @@ export default function PostsDashboardPage() {
           setPosts([...parsed, ...DEFAULT_POSTS]);
         }
       }
+      setBooks(getStoredBooks());
     } catch (e) {
       console.error("Failed to load local posts", e);
     }
@@ -143,14 +149,81 @@ export default function PostsDashboardPage() {
             </p>
           </div>
 
-          <Link
-            href="/write"
-            className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98]"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Inscribe New Work</span>
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/books/create"
+              className="inline-flex items-center space-x-2 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-[var(--ink-primary)] shadow-xs transition-all hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] active:scale-[0.98]"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-[var(--amber-gold)]" />
+              <span>Create New Book</span>
+            </Link>
+
+            <Link
+              href="/write"
+              className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98]"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Inscribe Manuscript</span>
+            </Link>
+          </div>
         </div>
+
+        {/* Bound Volumes & Custom Books Showcase */}
+        {books.length > 0 && (
+          <section className="mb-12">
+            <div className="mb-4 flex items-center justify-between border-b border-[var(--editorial-rule)] pb-2 font-editorial-mono text-xs">
+              <span className="font-bold uppercase tracking-widest text-[var(--oxblood)]">
+                Bound Volumes &amp; Custom Editions ({books.length})
+              </span>
+              <Link
+                href="/books/create"
+                className="text-[10px] uppercase text-[var(--ink-muted)] hover:text-[var(--oxblood)] hover:underline inline-flex items-center gap-1"
+              >
+                <span>Inscribe Another</span>
+                <ArrowRight className="h-2.5 w-2.5" />
+              </Link>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {books.map((b) => (
+                <Link
+                  key={b.id}
+                  href={`/books/${b.id}`}
+                  className="group rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 transition-all hover:-translate-y-1 hover:border-[var(--oxblood)] hover:shadow-md flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between font-editorial-mono text-[9px] uppercase tracking-wider text-[var(--ink-muted)] mb-2">
+                      <span className="text-[var(--oxblood)] font-bold">{b.genre}</span>
+                      <span>{b.state}</span>
+                    </div>
+
+                    <h3 className="font-editorial-serif text-lg font-bold text-[var(--ink-primary)] group-hover:text-[var(--oxblood)] transition-colors leading-snug">
+                      {b.title}
+                    </h3>
+
+                    {b.subtitle && (
+                      <p className="mt-1 font-editorial-serif italic text-xs text-[var(--ink-secondary)] line-clamp-1">
+                        {b.subtitle}
+                      </p>
+                    )}
+
+                    <p className="mt-2.5 font-editorial-serif text-xs text-[var(--ink-secondary)] leading-relaxed line-clamp-2">
+                      {b.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-[var(--editorial-rule)] flex items-center justify-between font-editorial-mono text-[10px] text-[var(--ink-muted)]">
+                    <span>By {b.author}</span>
+                    <span className="text-[var(--oxblood)] font-bold inline-flex items-center gap-1">
+                      <span>Open Book</span>
+                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Tab Filters */}
         <div className="mb-8 flex flex-wrap items-center gap-2 border-b border-[var(--editorial-rule)] pb-4 font-editorial-mono text-xs">

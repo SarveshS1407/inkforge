@@ -109,6 +109,16 @@ export function Header() {
             ))}
           </div>
 
+          {/* Create Book CTA */}
+          <Link
+            href="/books/create"
+            className="hidden sm:flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-1.5 font-editorial-sans text-xs font-semibold tracking-wider uppercase text-[var(--ink-primary)] shadow-xs transition-all hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] active:scale-[0.98]"
+            title="Inscribe a New Work & AI Cover Identity"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-[var(--amber-gold)]" />
+            <span>Create Book</span>
+          </Link>
+
           {/* Scribe / Studio CTA */}
           <Link
             href="/write"

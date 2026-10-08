@@ -17,13 +17,18 @@ import {
   RotateCcw,
 } from "lucide-react";
 
+import { BookIdentity, CoverVersion } from "@/types/book";
+
 interface PhysicalBookProps {
   isOpen: boolean;
   isOpening?: boolean;
   onOpen: () => void;
   onClose: () => void;
-  onSelectChapter: (chapter: BookChapter) => void;
-  onUnveilFullApp: () => void;
+  onSelectChapter?: (chapter: BookChapter) => void;
+  onUnveilFullApp?: () => void;
+  book?: BookIdentity | null;
+  activeVersion?: CoverVersion | null;
+  onMenuAction?: (actionKey: string) => void;
 }
 
 export function PhysicalBook({
@@ -33,11 +38,51 @@ export function PhysicalBook({
   onClose,
   onSelectChapter,
   onUnveilFullApp,
+  book = null,
+  activeVersion = null,
+  onMenuAction,
 }: PhysicalBookProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeChapterIndex, setActiveChapterIndex] = useState<number>(0);
   const [scale, setScale] = useState<number>(1);
   const [tilt, setTilt] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const activeCover = activeVersion || (book ? book.cover.versions.find((v) => v.id === book.cover.currentVersionId) || book.cover.versions[0] : null);
+
+  const getAdaptiveMenuItems = (state: string) => {
+    switch (state) {
+      case "NEW":
+        return [
+          { key: "write", title: "Begin Writing", subtitle: "Enter the Scribe Studio composition desk", icon: PenTool, roman: "I" },
+          { key: "outline", title: "Outline & Structure", subtitle: "Map out planned chapters and milestones", icon: Layers, roman: "II" },
+          { key: "notes", title: "Story Bible & Notes", subtitle: "Archive character sketches, research, and worldbuilding", icon: BookMarked, roman: "III" },
+          { key: "cover", title: "Cover & Visual Identity", subtitle: "Refine cover artwork, typography, and palette", icon: Compass, roman: "IV" },
+        ];
+      case "READY_TO_PUBLISH":
+        return [
+          { key: "write", title: "Final Polish", subtitle: "Proofread and review manuscript", icon: PenTool, roman: "I" },
+          { key: "preview", title: "Reader Preview", subtitle: "Simulate reading experience across devices", icon: BookOpen, roman: "II" },
+          { key: "metadata", title: "Colophon & Metadata", subtitle: "Configure archival imprint, ISBN, and tags", icon: BookMarked, roman: "III" },
+          { key: "publish", title: "Inscribe & Publish", subtitle: "Commit to public catalog and syndication", icon: ArrowRight, roman: "IV" },
+        ];
+      case "PUBLISHED":
+        return [
+          { key: "read", title: "Read Monograph", subtitle: "Open bound edition in Reader mode", icon: BookOpen, roman: "I" },
+          { key: "write", title: "Edit Manuscript", subtitle: "Inscribe amendments and new editions", icon: PenTool, roman: "II" },
+          { key: "analytics", title: "Reader Ledger", subtitle: "Review reader retention and distribution", icon: Layers, roman: "III" },
+          { key: "cover", title: "Cover Archive", subtitle: "Inspect past cover versions and plates", icon: Compass, roman: "IV" },
+        ];
+      case "IN_PROGRESS":
+      default:
+        return [
+          { key: "write", title: "Continue Writing", subtitle: "Inscribe next chapter in Scribe Studio", icon: PenTool, roman: "I" },
+          { key: "chapters", title: "Chapter Folios", subtitle: "Manage active chapters and word count", icon: Layers, roman: "II" },
+          { key: "notes", title: "Research & Marginalia", subtitle: "Reference story notes and sources", icon: BookMarked, roman: "III" },
+          { key: "cover", title: "Cover & Palette", subtitle: "Refine active cover direction and typography", icon: Compass, roman: "IV" },
+          { key: "preview", title: "Reader Proof", subtitle: "Preview layout in reader typography", icon: BookOpen, roman: "V" },
+        ];
+    }
+  };
 
   // Responsive scale calculator to fit any screen from iPhone to 4K
   useEffect(() => {
@@ -199,86 +244,163 @@ export function PhysicalBook({
             {/* Center Gutter Left Shadow Overlay on the right page */}
             <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/15 to-transparent pointer-events-none z-10" />
 
-            <div>
-              {/* Running Header */}
-              <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-2.5 font-editorial-mono text-[9px] tracking-widest uppercase text-[var(--ink-muted)]">
-                <span>INDEX RATIONIS</span>
-                <span className="font-bold text-[var(--ink-primary)]">TABLE OF CONTENTS</span>
-                <span>p. 2</span>
-              </div>
+            {book ? (
+              <div>
+                {/* Running Header */}
+                <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-2.5 font-editorial-mono text-[9px] tracking-widest uppercase text-[var(--ink-muted)]">
+                  <span>CREATOR WORKSPACE</span>
+                  <span className="font-bold text-[var(--oxblood)]">{book.state}</span>
+                  <span>FOLIO 2</span>
+                </div>
 
-              {/* Title Section */}
-              <div className="mt-5 mb-3">
-                <span className="font-editorial-mono text-[9px] uppercase tracking-[0.25em] text-[var(--oxblood)] font-bold">
-                  Volume IV • Continuous Edition
-                </span>
-                <h3 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)] mt-0.5">
-                  Chapters &amp; Inscriptions
-                </h3>
-              </div>
+                {/* Title Section */}
+                <div className="mt-5 mb-3">
+                  <span className="font-editorial-mono text-[9px] uppercase tracking-[0.25em] text-[var(--oxblood)] font-bold">
+                    Manuscript &amp; Studio Tools
+                  </span>
+                  <h3 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)] mt-0.5 line-clamp-1">
+                    {book.title}
+                  </h3>
+                </div>
 
-              {/* Chapter Items List */}
-              <nav aria-label="Table of Contents Navigation" className="space-y-1.5 mt-3">
-                {BOOK_CHAPTERS.map((chapter, index) => {
-                  const isActive = activeChapterIndex === index;
+                {/* Adaptive Menu List */}
+                <nav aria-label="Creator Tools Navigation" className="space-y-1.5 mt-3">
+                  {getAdaptiveMenuItems(book.state).map((item, index) => {
+                    const isActive = activeChapterIndex === index;
+                    const ItemIcon = item.icon;
 
-                  return (
-                    <div
-                      key={chapter.id}
-                      onMouseEnter={() => setActiveChapterIndex(index)}
-                      onClick={() => {
-                        if (isOpen) onSelectChapter(chapter);
-                      }}
-                      onKeyDown={(e) => {
-                        if (isOpen && (e.key === "Enter" || e.key === " ")) {
-                          e.preventDefault();
-                          onSelectChapter(chapter);
-                        }
-                      }}
-                      role="button"
-                      tabIndex={isOpen ? 0 : -1}
-                      className={`group relative rounded-md p-2.5 border transition-all cursor-pointer select-none ${
-                        isActive
-                          ? "border-[var(--oxblood)] bg-[var(--paper-warm)] shadow-xs translate-x-1"
-                          : "border-transparent hover:border-[var(--paper-border)] hover:bg-[var(--paper-canvas)]"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2.5">
-                        <div className="flex items-start space-x-2.5">
-                          <div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded bg-[var(--paper-surface)] border border-[var(--paper-border)] shadow-2xs">
-                            {getChapterIcon(chapter.id)}
-                          </div>
-
-                          <div>
-                            <div className="flex items-center space-x-1.5">
-                              <span className="font-editorial-mono text-xs font-bold text-[var(--oxblood)]">
-                                {chapter.roman}.
-                              </span>
-                              <span className="font-editorial-serif text-sm font-bold text-[var(--ink-primary)] group-hover:text-[var(--oxblood)] transition-colors">
-                                {chapter.title}
-                              </span>
+                    return (
+                      <div
+                        key={item.key}
+                        onMouseEnter={() => setActiveChapterIndex(index)}
+                        onClick={() => {
+                          if (isOpen) onMenuAction?.(item.key);
+                        }}
+                        onKeyDown={(e) => {
+                          if (isOpen && (e.key === "Enter" || e.key === " ")) {
+                            e.preventDefault();
+                            onMenuAction?.(item.key);
+                          }
+                        }}
+                        role="button"
+                        tabIndex={isOpen ? 0 : -1}
+                        className={`group relative rounded-md p-2.5 border transition-all cursor-pointer select-none ${
+                          isActive
+                            ? "border-[var(--oxblood)] bg-[var(--paper-warm)] shadow-xs translate-x-1"
+                            : "border-transparent hover:border-[var(--paper-border)] hover:bg-[var(--paper-canvas)]"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2.5">
+                          <div className="flex items-start space-x-2.5">
+                            <div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded bg-[var(--paper-surface)] border border-[var(--paper-border)] shadow-2xs">
+                              <ItemIcon className="h-3.5 w-3.5 text-[var(--oxblood)]" />
                             </div>
 
-                            <p className="font-editorial-serif text-[11px] text-[var(--ink-secondary)] leading-snug line-clamp-1">
-                              {chapter.subtitle}
-                            </p>
-                          </div>
-                        </div>
+                            <div>
+                              <div className="flex items-center space-x-1.5">
+                                <span className="font-editorial-mono text-xs font-bold text-[var(--oxblood)]">
+                                  {item.roman}.
+                                </span>
+                                <span className="font-editorial-serif text-sm font-bold text-[var(--ink-primary)] group-hover:text-[var(--oxblood)] transition-colors">
+                                  {item.title}
+                                </span>
+                              </div>
 
-                        {/* Dot Leaders & Folio */}
-                        <div className="flex items-center space-x-1.5 font-editorial-mono text-[9px] text-[var(--ink-muted)] shrink-0 self-center">
-                          <span className="hidden sm:inline tracking-tighter opacity-35">
-                            . . .
-                          </span>
-                          <span className="font-semibold">{chapter.folio}</span>
-                          <ArrowRight className="h-3 w-3 text-[var(--oxblood)] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                              <p className="font-editorial-serif text-[11px] text-[var(--ink-secondary)] leading-snug line-clamp-1">
+                                {item.subtitle}
+                              </p>
+                            </div>
+                          </div>
+
+                          <ArrowRight className="h-3 w-3 text-[var(--oxblood)] self-center opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </nav>
-            </div>
+                    );
+                  })}
+                </nav>
+              </div>
+            ) : (
+              <div>
+                {/* Running Header */}
+                <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-2.5 font-editorial-mono text-[9px] tracking-widest uppercase text-[var(--ink-muted)]">
+                  <span>INDEX RATIONIS</span>
+                  <span className="font-bold text-[var(--ink-primary)]">TABLE OF CONTENTS</span>
+                  <span>p. 2</span>
+                </div>
+
+                {/* Title Section */}
+                <div className="mt-5 mb-3">
+                  <span className="font-editorial-mono text-[9px] uppercase tracking-[0.25em] text-[var(--oxblood)] font-bold">
+                    Volume IV • Continuous Edition
+                  </span>
+                  <h3 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)] mt-0.5">
+                    Chapters &amp; Inscriptions
+                  </h3>
+                </div>
+
+                {/* Chapter Items List */}
+                <nav aria-label="Table of Contents Navigation" className="space-y-1.5 mt-3">
+                  {BOOK_CHAPTERS.map((chapter, index) => {
+                    const isActive = activeChapterIndex === index;
+
+                    return (
+                      <div
+                        key={chapter.id}
+                        onMouseEnter={() => setActiveChapterIndex(index)}
+                        onClick={() => {
+                          if (isOpen) onSelectChapter?.(chapter);
+                        }}
+                        onKeyDown={(e) => {
+                          if (isOpen && (e.key === "Enter" || e.key === " ")) {
+                            e.preventDefault();
+                            onSelectChapter?.(chapter);
+                          }
+                        }}
+                        role="button"
+                        tabIndex={isOpen ? 0 : -1}
+                        className={`group relative rounded-md p-2.5 border transition-all cursor-pointer select-none ${
+                          isActive
+                            ? "border-[var(--oxblood)] bg-[var(--paper-warm)] shadow-xs translate-x-1"
+                            : "border-transparent hover:border-[var(--paper-border)] hover:bg-[var(--paper-canvas)]"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2.5">
+                          <div className="flex items-start space-x-2.5">
+                            <div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded bg-[var(--paper-surface)] border border-[var(--paper-border)] shadow-2xs">
+                              {getChapterIcon(chapter.id)}
+                            </div>
+
+                            <div>
+                              <div className="flex items-center space-x-1.5">
+                                <span className="font-editorial-mono text-xs font-bold text-[var(--oxblood)]">
+                                  {chapter.roman}.
+                                </span>
+                                <span className="font-editorial-serif text-sm font-bold text-[var(--ink-primary)] group-hover:text-[var(--oxblood)] transition-colors">
+                                  {chapter.title}
+                                </span>
+                              </div>
+
+                              <p className="font-editorial-serif text-[11px] text-[var(--ink-secondary)] leading-snug line-clamp-1">
+                                {chapter.subtitle}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Dot Leaders & Folio */}
+                          <div className="flex items-center space-x-1.5 font-editorial-mono text-[9px] text-[var(--ink-muted)] shrink-0 self-center">
+                            <span className="hidden sm:inline tracking-tighter opacity-35">
+                              . . .
+                            </span>
+                            <span className="font-semibold">{chapter.folio}</span>
+                            <ArrowRight className="h-3 w-3 text-[var(--oxblood)] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </nav>
+              </div>
+            )}
 
             {/* Right Page Bottom Folio */}
             <div className="mt-4 pt-3 border-t border-[var(--editorial-rule)] flex items-center justify-between font-editorial-mono text-[8px] uppercase tracking-wider text-[var(--ink-muted)]">
@@ -340,7 +462,7 @@ export function PhysicalBook({
           <div
             role="button"
             tabIndex={isOpen ? -1 : 0}
-            aria-label="Open INKFORGE Volume IV interactive book"
+            aria-label={`Open ${book ? book.title : "INKFORGE Volume IV"} interactive book`}
             onClick={() => {
               if (!isOpen) onOpen();
             }}
@@ -350,33 +472,46 @@ export function PhysicalBook({
                 onOpen();
               }
             }}
-            className={`group absolute inset-0 rounded-r-2xl rounded-l-xs border border-[var(--paper-border)] book-cloth book-board-bevel p-8 sm:p-10 flex flex-col justify-between text-center backface-hidden cursor-pointer select-none transition-shadow duration-300 ${
+            className={`group absolute inset-0 rounded-r-2xl rounded-l-xs border border-[var(--paper-border)] book-cloth book-board-bevel p-8 sm:p-10 flex flex-col justify-between text-center backface-hidden cursor-pointer select-none transition-shadow duration-300 overflow-hidden ${
               isOpen ? "pointer-events-none" : "hover:shadow-2xl"
             }`}
             style={{
               zIndex: 2,
+              backgroundColor: activeCover?.palette?.clothColor || undefined,
             }}
           >
+            {/* Dynamic Cover Artwork Background if present */}
+            {activeCover?.imageUrl && (
+              <>
+                <img
+                  src={activeCover.imageUrl}
+                  alt={book ? book.title : "Cover Artwork"}
+                  className="absolute inset-0 w-full h-full object-cover rounded-r-2xl pointer-events-none opacity-80"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/60 pointer-events-none rounded-r-2xl" />
+              </>
+            )}
+
             {/* Spine Hinge Left Groove Crease */}
-            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/25 via-white/5 to-black/15 pointer-events-none" />
-            <div className="absolute left-8 top-0 bottom-0 w-[1px] bg-[var(--editorial-rule)] opacity-60 pointer-events-none" />
+            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/25 via-white/5 to-black/15 pointer-events-none z-10" />
+            <div className="absolute left-8 top-0 bottom-0 w-[1px] bg-[var(--editorial-rule)] opacity-60 pointer-events-none z-10" />
 
             {/* Inset Blind-Debossed Decorative Frame */}
-            <div className="debossed-frame absolute inset-6 sm:inset-8 border border-[var(--paper-border)] rounded-r-xl pointer-events-none" />
-            <div className="absolute inset-8 sm:inset-10 border border-[var(--editorial-rule)] opacity-35 rounded-r-lg pointer-events-none" />
+            <div className="debossed-frame absolute inset-6 sm:inset-8 border border-[var(--paper-border)]/60 rounded-r-xl pointer-events-none z-10" />
+            <div className="absolute inset-8 sm:inset-10 border border-[var(--editorial-rule)]/40 opacity-35 rounded-r-lg pointer-events-none z-10" />
 
             {/* Top Colophon Imprint */}
-            <div className="relative pt-2 space-y-1 pl-6">
+            <div className="relative pt-2 space-y-1 pl-6 z-20">
               <div className="font-editorial-mono text-[10px] sm:text-xs uppercase tracking-[0.38em] text-[var(--oxblood)] font-bold">
-                I N K F O R G E
+                {book ? book.genre : "I N K F O R G E"}
               </div>
               <div className="font-editorial-mono text-[8px] uppercase tracking-[0.25em] text-[var(--ink-muted)]">
-                Publishing House &amp; Reader • Continuous Edition
+                {book ? `By ${book.author}` : "Publishing House & Reader • Continuous Edition"}
               </div>
             </div>
 
             {/* Center Volume Title & Gold Foil Debossing */}
-            <div className="relative my-auto py-4 space-y-4 pl-6">
+            <div className="relative my-auto py-4 space-y-4 pl-6 z-20">
               {/* Embossed Blind-Stamped Roundel */}
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[var(--paper-border)] bg-[var(--paper-warm)] shadow-xs transition-transform group-hover:scale-105">
                 <span className="font-editorial-serif text-2xl font-bold text-[var(--oxblood)]">
@@ -386,27 +521,26 @@ export function PhysicalBook({
 
               <div className="space-y-1.5">
                 <div className="font-editorial-mono text-xs uppercase tracking-[0.32em] text-[var(--amber-gold)] font-bold">
-                  VOLUME IV
+                  {book ? (book.subtitle ? book.subtitle.slice(0, 36) : "MANUSCRIPT") : "VOLUME IV"}
                 </div>
                 <h1 className="font-editorial-serif text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-primary)] leading-[1.12]">
-                  A Living <br />
-                  Digital Book
+                  {book ? book.title : <>A Living <br /> Digital Book</>}
                 </h1>
               </div>
 
-              <p className="mx-auto max-w-xs font-editorial-serif text-xs sm:text-sm text-[var(--ink-secondary)] italic leading-relaxed">
-                &ldquo;Crafting systems that endure: the philosophy of long-horizon software.&rdquo;
+              <p className="mx-auto max-w-xs font-editorial-serif text-xs sm:text-sm text-[var(--ink-secondary)] italic leading-relaxed line-clamp-2">
+                {book ? `"${book.description}"` : `“Crafting systems that endure: the philosophy of long-horizon software.”`}
               </p>
 
               <div className="pt-1 font-editorial-mono text-[9px] uppercase tracking-widest text-[var(--ink-muted)]">
-                Autumn MMXXVI • Press IF-2026
+                {book ? `${book.mood} • Inkforge Edition` : "Autumn MMXXVI • Press IF-2026"}
               </div>
             </div>
 
             {/* Bottom Invitation to Open */}
-            <div className="relative pt-4 border-t border-[var(--editorial-rule)] pl-6 space-y-2.5">
+            <div className="relative pt-4 border-t border-[var(--editorial-rule)] pl-6 space-y-2.5 z-20">
               <div className="inline-flex items-center space-x-2 rounded-full bg-[var(--oxblood)] px-5 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all group-hover:bg-[var(--oxblood-hover)] group-hover:shadow-md group-hover:scale-[1.02]">
-                <span>Open Volume IV</span>
+                <span>{book ? "Open Workspace" : "Open Volume IV"}</span>
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </div>
 
@@ -432,8 +566,10 @@ export function PhysicalBook({
             <div>
               {/* Running Header */}
               <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-2.5 font-editorial-mono text-[9px] tracking-widest uppercase text-[var(--ink-muted)]">
-                <span>FOLIO IV</span>
-                <span className="font-bold text-[var(--oxblood)]">AUTUMN MMXXVI</span>
+                <span>{book ? "EX LIBRIS" : "FOLIO IV"}</span>
+                <span className="font-bold text-[var(--oxblood)]">
+                  {book ? book.genre.toUpperCase() : "AUTUMN MMXXVI"}
+                </span>
                 <span>p. 1</span>
               </div>
 
@@ -447,47 +583,51 @@ export function PhysicalBook({
 
                 <div className="space-y-0.5">
                   <div className="font-editorial-mono text-[8px] uppercase tracking-[0.28em] text-[var(--ink-muted)]">
-                    The Scribe&apos;s Frontispiece
+                    {book ? `Author: ${book.author}` : "The Scribe's Frontispiece"}
                   </div>
-                  <h2 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)]">
-                    Inkforge Publishing
+                  <h2 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)] line-clamp-1">
+                    {book ? book.title : "Inkforge Publishing"}
                   </h2>
                 </div>
 
-                {/* Classical Architectural Epigraph */}
+                {/* Classical Epigraph */}
                 <div className="mx-auto max-w-xs rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-4 text-left shadow-2xs">
-                  <p className="font-editorial-serif italic text-xs text-[var(--ink-secondary)] leading-relaxed">
-                    &ldquo;A digital publishing platform inspired by books, literary journals, and independent presses. Built not to imitate paper, but to give software the enduring stillness of literature.&rdquo;
+                  <p className="font-editorial-serif italic text-xs text-[var(--ink-secondary)] leading-relaxed line-clamp-3">
+                    {book
+                      ? `"${book.description}"`
+                      : "“A digital publishing platform inspired by books, literary journals, and independent presses. Built not to imitate paper, but to give software the enduring stillness of literature.”"}
                   </p>
                   <div className="mt-2 font-editorial-mono text-[8px] tracking-wider text-[var(--oxblood)] uppercase font-semibold text-right">
-                    — The Editorial Preface
+                    {book ? `— ${book.author}` : "— The Editorial Preface"}
                   </div>
                 </div>
               </div>
 
-              {/* Edition Almanac Quick Statistics */}
+              {/* Edition Almanac / Book Metrics */}
               <div className="mt-6 grid grid-cols-2 gap-2 text-center font-editorial-mono text-[10px]">
                 <div className="rounded border border-[var(--paper-border)] bg-[var(--paper-warm)] p-2">
                   <div className="font-bold font-editorial-serif text-sm text-[var(--ink-primary)]">
-                    38
+                    {book ? `${book.chapters.length} Ch.` : "38"}
                   </div>
                   <div className="text-[8px] uppercase tracking-wider text-[var(--ink-muted)]">
-                    Monographs
+                    {book ? "Chapters" : "Monographs"}
                   </div>
                 </div>
 
                 <div className="rounded border border-[var(--paper-border)] bg-[var(--paper-warm)] p-2">
                   <div className="font-bold font-editorial-serif text-sm text-[var(--oxblood)]">
-                    100%
+                    {book
+                      ? `${book.chapters.reduce((acc, c) => acc + c.wordCount, 0)} w`
+                      : "100%"}
                   </div>
                   <div className="text-[8px] uppercase tracking-wider text-[var(--ink-muted)]">
-                    Local Scribe
+                    {book ? "Words" : "Local Scribe"}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Left Page Controls: Close Cover & Direct to Gazetteer */}
+            {/* Left Page Controls */}
             <div className="mt-4 pt-3 border-t border-[var(--editorial-rule)] flex items-center justify-between text-xs">
               <button
                 onClick={onClose}
@@ -498,13 +638,23 @@ export function PhysicalBook({
                 <span>Close Cover</span>
               </button>
 
-              <button
-                onClick={onUnveilFullApp}
-                className="inline-flex items-center space-x-1 font-editorial-sans text-[10px] uppercase tracking-wider text-[var(--oxblood)] font-semibold hover:underline"
-              >
-                <span>Direct to Gazetteer</span>
-                <ArrowRight className="h-2.5 w-2.5" />
-              </button>
+              {book ? (
+                <button
+                  onClick={() => onMenuAction?.("cover")}
+                  className="inline-flex items-center space-x-1 font-editorial-sans text-[10px] uppercase tracking-wider text-[var(--oxblood)] font-semibold hover:underline"
+                >
+                  <span>Edit Identity</span>
+                  <Compass className="h-2.5 w-2.5" />
+                </button>
+              ) : (
+                <button
+                  onClick={onUnveilFullApp}
+                  className="inline-flex items-center space-x-1 font-editorial-sans text-[10px] uppercase tracking-wider text-[var(--oxblood)] font-semibold hover:underline"
+                >
+                  <span>Direct to Gazetteer</span>
+                  <ArrowRight className="h-2.5 w-2.5" />
+                </button>
+              )}
             </div>
           </div>
         </div>

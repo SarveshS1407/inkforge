@@ -1,5 +1,34 @@
 # INKFORGE — Release Changelog
 
+## [0.6.0] — 2026-10-08
+
+### Added: AI Book Identity & Adaptive Cover Experience
+- **Signature Feature: Every Piece of Writing Becomes a Book**:
+  - Transitioned platform paradigm from simple post creation to rich, bound book authorship.
+  - Manuscripts are bound with custom title, subtitle, author imprint, genre, synopses, and persistent visual identity.
+- **AI-Assisted Cover Generation & Multi-Tier Art Engine**:
+  - Architected provider abstraction ([`src/lib/cover-generator/service.ts`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/lib/cover-generator/service.ts)) with honest capability reporting.
+  - Transparent support for Gemini API (`GeminiCoverProvider`) when `GEMINI_API_KEY` is present.
+  - Zero-dependency built-in **Curated Editorial Art Engine** (`CuratedEditorialProvider`) generating rich SVG/Canvas fine-art compositions across 4 signature directions (`editorial`, `cinematic`, `experimental`, `classic`).
+  - Negative space enforcement and strict prompt anti-text guidelines in [`prompt-builder.ts`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/lib/cover-generator/prompt-builder.ts).
+- **Crisp Typographic Compositing Layer**:
+  - Never bakes AI-hallucinated glyphs into raster images.
+  - Composites tack-sharp HTML/CSS typography (Charter serif & Editorial mono) over generative art with foil finishes, linen cloth textures, and debossed framing.
+- **Local-First Book Store & Version Archive**:
+  - Reactive local storage persistence ([`src/lib/book-store.ts`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/lib/book-store.ts)).
+  - Non-destructive cover versioning (`CoverVersion[]`) allowing infinite branching, version comparison, and restoration.
+- **Adaptive Creator Workspace Menu**:
+  - Upgraded 3D Physical Book (`PhysicalBook.tsx`) inside spread to render contextual workspace menus based on manuscript state (`NEW`, `IN_PROGRESS`, `READY_TO_PUBLISH`, `PUBLISHED`).
+  - Seamless navigation to Scribe Studio (`/write?bookId=...`), Outline, Notes, Cover Archive, and Reader Preview.
+- **New Routes & Integration**:
+  - `/books/create`: 3-step creation wizard (Manuscript Dossier → Direction Choice → Cover Identity Studio).
+  - `/books/[id]`: Dedicated 3D physical book workspace.
+  - Scribe Studio (`/write`): Displays active volume spine banner and synchronizes word counts to book identity.
+  - Editorial Ledger (`/posts`): Features "Bound Volumes & Custom Editions" shelf with 3D/flat preview cards.
+  - Global Header (`Header.tsx`): Prominent "New Book" action CTA.
+- **Documentation**:
+  - Added [`docs/BOOK_IDENTITY.md`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/docs/BOOK_IDENTITY.md) and [`docs/AI_COVER_GENERATION.md`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/docs/AI_COVER_GENERATION.md).
+
 ## [0.5.0] — 2026-10-08
 
 ### Enhanced: Realistic Physical 3D Book Reconstruction

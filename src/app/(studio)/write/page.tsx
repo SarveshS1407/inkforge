@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
 import { Editor } from "@/components/editor/Editor";
+import { getBookById, saveBook } from "@/lib/book-store";
+import { BookIdentity } from "@/types/book";
 import {
   Save,
   Send,
@@ -14,9 +18,15 @@ import {
   Eye,
   Edit3,
   Target,
+  ArrowLeft,
+  ArrowRight,
 } from "lucide-react";
 
-export default function WritePage() {
+function WritePageContent() {
+  const searchParams = useSearchParams();
+  const bookId = searchParams.get("bookId");
+  const [activeBook, setActiveBook] = useState<BookIdentity | null>(null);
+
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [contentHtml, setContentHtml] = useState("");
@@ -31,6 +41,17 @@ export default function WritePage() {
   const TARGET_WORDS = 1200;
 
   useEffect(() => {
+    if (bookId) {
+      const book = getBookById(bookId);
+      if (book) {
+        setActiveBook(book);
+        setTitle(book.title);
+        setExcerpt(book.description);
+        setPublication(book.genre);
+        return;
+      }
+    }
+
     const savedDraft = localStorage.getItem("inkforge_active_draft");
     if (savedDraft) {
       try {
@@ -44,7 +65,7 @@ export default function WritePage() {
         console.error("Failed to parse saved draft", e);
       }
     }
-  }, []);
+  }, [bookId]);
 
   const handleSave = async (targetStatus = status) => {
     setIsSaving(true);
@@ -86,6 +107,20 @@ export default function WritePage() {
       }
 
       localStorage.setItem("inkforge_all_posts", JSON.stringify(existing));
+
+      if (activeBook) {
+        const updatedBook: BookIdentity = {
+          ...activeBook,
+          title: title || activeBook.title,
+          description: excerpt || activeBook.description,
+          chapters:
+            activeBook.chapters.length > 0
+              ? [{ ...activeBook.chapters[0], wordCount: words, excerpt }]
+              : [{ id: "ch-1", title: title || "Chapter I", order: 1, wordCount: words, status: "DRAFT" }],
+          state: "IN_PROGRESS",
+        };
+        saveBook(updatedBook);
+      }
     } catch (err) {
       console.error("Persistence error", err);
     }
@@ -112,6 +147,33 @@ export default function WritePage() {
       <Header />
 
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+        {/* Active Book Identity Banner if present */}
+        {activeBook && (
+          <div className="mb-6 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-warm)] p-4 flex items-center justify-between shadow-2xs">
+            <div className="flex items-center space-x-3">
+              <BookOpen className="h-4 w-4 text-[var(--oxblood)]" />
+              <div>
+                <span className="font-editorial-mono text-[9px] uppercase tracking-wider text-[var(--ink-muted)]">
+                  Active Volume Manuscript • {activeBook.genre}
+                </span>
+                <h4 className="font-editorial-serif text-sm font-bold text-[var(--ink-primary)]">
+                  {activeBook.title}{" "}
+                  <span className="font-normal italic text-xs text-[var(--ink-secondary)]">
+                    by {activeBook.author}
+                  </span>
+                </h4>
+              </div>
+            </div>
+            <Link
+              href={`/books/${activeBook.id}`}
+              className="inline-flex items-center space-x-1 font-editorial-mono text-[10px] uppercase text-[var(--oxblood)] hover:underline font-bold"
+            >
+              <span>Book Workspace</span>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        )}
+
         {/* The Scribe Master Desk Header */}
         <div className="mb-8 flex flex-col gap-4 border-b border-[var(--editorial-rule)] pb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -285,3 +347,20 @@ export default function WritePage() {
     </div>
   );
 }
+
+export default function WritePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[var(--paper)] flex items-center justify-center">
+          <div className="font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] animate-pulse">
+            Loading Manuscript Studio...
+          </div>
+        </div>
+      }
+    >
+      <WritePageContent />
+    </Suspense>
+  );
+}
+
