@@ -1,5 +1,17 @@
 # INKFORGE — Release Changelog
 
+## [0.5.0] — 2026-10-08
+
+### Enhanced: Realistic Physical 3D Book Reconstruction
+- **Unified 3D Anatomy (`PhysicalBook.tsx`)**:
+  - Replaced conditional component swapping with a continuous 3D physical book DOM hierarchy.
+  - Implemented reversible hinged front cover board (`rotateY(0deg)` to `rotateY(-180deg)`) pivoting at the spine joint.
+  - Added physical 22px stacked fore-edge paper block (`.fore-edge-pages`), head/tail edges, and traditional woven silk headbands (`.spine-headband`).
+  - Added center binding gutter valley with sewn signature stitches (`.gutter-valley-shadow`).
+  - Added dynamic desk cast shadow (`.desk-shadow-closed` to `.desk-shadow-open`) and camera stage auto-centering along `translateX`.
+  - Added interactive mouse-tracking parallax tilt with reduced-motion fallback.
+  - Responsive dynamic scale calibration supporting mobile through ultra-wide viewports.
+
 ## [0.4.0] — 2026-10-08
 
 ### Added: Signature Interactive Book Landing Page & Navigation System

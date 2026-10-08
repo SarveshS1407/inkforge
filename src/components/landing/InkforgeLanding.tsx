@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useCallback, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { BookShell } from "./BookShell";
-import { BookCover } from "./BookCover";
-import { TableOfContents } from "./TableOfContents";
+import { PhysicalBook } from "./PhysicalBook";
 import { AuthorsModal } from "./AuthorsModal";
 import { ColophonModal } from "./ColophonModal";
 import { BookState, BookChapter } from "./types";
@@ -32,11 +30,7 @@ export function InkforgeLanding({ children }: InkforgeLandingProps) {
   }, []);
 
   const handleOpenBook = useCallback(() => {
-    setBookState("opening");
-    const timeout = setTimeout(() => {
-      setBookState("open");
-    }, 400);
-    return () => clearTimeout(timeout);
+    setBookState("open");
   }, []);
 
   const handleCloseBook = useCallback(() => {
@@ -131,25 +125,15 @@ export function InkforgeLanding({ children }: InkforgeLandingProps) {
       </header>
 
       {/* Main Interactive Book Stage */}
-      <main className="flex-1 flex items-center justify-center py-6 sm:py-10">
-        <BookShell state={bookState}>
-          {bookState === "closed" || bookState === "opening" ? (
-            <div className="book-flip-transition">
-              <BookCover
-                onOpen={handleOpenBook}
-                isOpening={bookState === "opening"}
-              />
-            </div>
-          ) : (
-            <div className="book-flip-transition animate-fade-in">
-              <TableOfContents
-                onSelectChapter={handleSelectChapter}
-                onCloseBook={handleCloseBook}
-                onUnveilFullApp={handleUnveilFullApp}
-              />
-            </div>
-          )}
-        </BookShell>
+      <main className="flex-1 flex items-center justify-center py-4 sm:py-8 px-2 sm:px-4">
+        <PhysicalBook
+          isOpen={bookState === "open"}
+          isOpening={bookState === "opening"}
+          onOpen={handleOpenBook}
+          onClose={handleCloseBook}
+          onSelectChapter={handleSelectChapter}
+          onUnveilFullApp={handleUnveilFullApp}
+        />
       </main>
 
       {/* Bottom Stage Footer */}
