@@ -221,3 +221,171 @@ export const TableBlock = Node.create({
     ];
   },
 });
+
+// ============================================================================
+// 6. FONT FAMILY MARK (Curated Editorial Font Families)
+// ============================================================================
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    fontFamily: {
+      setFontFamily: (font: string) => ReturnType;
+      unsetFontFamily: () => ReturnType;
+    };
+    fontSize: {
+      setFontSize: (size: string) => ReturnType;
+      unsetFontSize: () => ReturnType;
+    };
+  }
+}
+
+export const FONT_FAMILY_STYLES: Record<string, { label: string; style: string; className: string }> = {
+  "editorial-serif": {
+    label: "Editorial Serif",
+    style: "font-family: var(--font-editorial-serif, 'Newsreader', Georgia, serif);",
+    className: "font-editorial-serif",
+  },
+  "editorial-sans": {
+    label: "Editorial Sans",
+    style: "font-family: var(--font-editorial-sans, Inter, sans-serif);",
+    className: "font-editorial-sans",
+  },
+  "editorial-mono": {
+    label: "Editorial Mono",
+    style: "font-family: var(--font-editorial-mono, monospace);",
+    className: "font-editorial-mono",
+  },
+  "garamond": {
+    label: "Classical Garamond",
+    style: "font-family: 'EB Garamond', Garamond, Georgia, serif;",
+    className: "font-serif",
+  },
+  "georgia": {
+    label: "Literary Georgia",
+    style: "font-family: Georgia, 'Times New Roman', serif;",
+    className: "font-serif",
+  },
+};
+
+export const FontFamily = Mark.create({
+  name: "fontFamily",
+
+  addAttributes() {
+    return {
+      font: {
+        default: "editorial-serif",
+        parseHTML: (element) => element.getAttribute("data-font-family") || "editorial-serif",
+        renderHTML: (attributes) => ({
+          "data-font-family": attributes.font,
+          style: FONT_FAMILY_STYLES[attributes.font]?.style,
+        }),
+      },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "span[data-font-family]",
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ["span", mergeAttributes(HTMLAttributes), 0];
+  },
+
+  addCommands() {
+    return {
+      setFontFamily:
+        (font: string) =>
+        ({ chain }) => {
+          return chain().setMark(this.name, { font }).run();
+        },
+      unsetFontFamily:
+        () =>
+        ({ chain }) => {
+          return chain().unsetMark(this.name).run();
+        },
+    };
+  },
+});
+
+// ============================================================================
+// 7. FONT SIZE MARK (Editorial Typographic Scale)
+// ============================================================================
+export const FONT_SIZE_STYLES: Record<string, { label: string; size: string; style: string; className: string }> = {
+  "sm": {
+    label: "Small · 14px",
+    size: "sm",
+    style: "font-size: 0.875rem; line-height: 1.6;",
+    className: "text-sm",
+  },
+  "base": {
+    label: "Normal · 16px",
+    size: "base",
+    style: "font-size: 1rem; line-height: 1.7;",
+    className: "text-base",
+  },
+  "lg": {
+    label: "Reading · 18px",
+    size: "lg",
+    style: "font-size: 1.125rem; line-height: 1.8;",
+    className: "text-lg",
+  },
+  "xl": {
+    label: "Lead · 22px",
+    size: "xl",
+    style: "font-size: 1.375rem; line-height: 1.7;",
+    className: "text-xl",
+  },
+  "2xl": {
+    label: "Display · 28px",
+    size: "2xl",
+    style: "font-size: 1.75rem; line-height: 1.5;",
+    className: "text-2xl font-medium",
+  },
+};
+
+export const FontSize = Mark.create({
+  name: "fontSize",
+
+  addAttributes() {
+    return {
+      size: {
+        default: "lg",
+        parseHTML: (element) => element.getAttribute("data-font-size") || "lg",
+        renderHTML: (attributes) => ({
+          "data-font-size": attributes.size,
+          style: FONT_SIZE_STYLES[attributes.size]?.style,
+        }),
+      },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "span[data-font-size]",
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ["span", mergeAttributes(HTMLAttributes), 0];
+  },
+
+  addCommands() {
+    return {
+      setFontSize:
+        (size: string) =>
+        ({ chain }) => {
+          return chain().setMark(this.name, { size }).run();
+        },
+      unsetFontSize:
+        () =>
+        ({ chain }) => {
+          return chain().unsetMark(this.name).run();
+        },
+    };
+  },
+});

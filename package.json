@@ -14,7 +14,8 @@
     "db:verify": "jiti src/scripts/verify_backend.ts",
     "verify:phase2b": "jiti src/scripts/verify_phase_2b.ts",
     "verify:phase3": "jiti src/scripts/verify_phase_3.ts",
-    "verify:phase4": "jiti src/scripts/verify_phase_4.ts"
+    "verify:phase4": "jiti src/scripts/verify_phase_4.ts",
+    "verify:phase5": "jiti src/scripts/verify_phase_5.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",

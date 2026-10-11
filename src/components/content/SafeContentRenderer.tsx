@@ -86,6 +86,52 @@ function renderProseMirrorNode(
             );
             break;
           }
+          case "fontFamily": {
+            const font = mark.attrs?.font || "editorial-serif";
+            const fontFamilyStyle =
+              font === "editorial-sans"
+                ? "var(--font-editorial-sans, Inter, sans-serif)"
+                : font === "editorial-mono"
+                ? "var(--font-editorial-mono, monospace)"
+                : font === "garamond"
+                ? "'EB Garamond', Garamond, Georgia, serif"
+                : font === "georgia"
+                ? "Georgia, serif"
+                : "var(--font-editorial-serif, Georgia, serif)";
+            result = (
+              <span
+                key={markKey}
+                data-font-family={font}
+                style={{ fontFamily: fontFamilyStyle }}
+              >
+                {result}
+              </span>
+            );
+            break;
+          }
+          case "fontSize": {
+            const size = mark.attrs?.size || "lg";
+            const fontSizeStyle =
+              size === "sm"
+                ? "0.875rem"
+                : size === "base"
+                ? "1rem"
+                : size === "xl"
+                ? "1.375rem"
+                : size === "2xl"
+                ? "1.75rem"
+                : "1.125rem";
+            result = (
+              <span
+                key={markKey}
+                data-font-size={size}
+                style={{ fontSize: fontSizeStyle }}
+              >
+                {result}
+              </span>
+            );
+            break;
+          }
           default:
             break;
         }

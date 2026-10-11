@@ -35,8 +35,10 @@ import {
   Share2,
   Lock,
   Globe,
+  Sparkles,
 } from "lucide-react";
 import { SafeContentRenderer } from "@/components/content/SafeContentRenderer";
+import { AiCopilotPanel } from "@/components/editor/AiCopilotPanel";
 
 const Editor = dynamic(
   () => import("@/components/editor/Editor").then((mod) => mod.Editor),
@@ -74,6 +76,8 @@ function WritePageContent() {
 
   const [proofMode, setProofMode] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [aiCopilotOpen, setAiCopilotOpen] = useState(false);
+  const [editorInstance, setEditorInstance] = useState<any>(null);
 
   // Revision History State
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -195,12 +199,16 @@ function WritePageContent() {
     router.push("/write");
   };
 
-  // Keyboard shortcut Cmd+S / Ctrl+S
+  // Keyboard shortcuts: Cmd+S (Save), Cmd+J (AI Copilot toggle)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
         doc.manualSave();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        setAiCopilotOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -302,8 +310,21 @@ function WritePageContent() {
             </button>
             <button
               type="button"
+              onClick={() => setAiCopilotOpen((prev) => !prev)}
+              className={`inline-flex items-center space-x-1.5 rounded-md border px-2.5 py-1 text-xs font-editorial-sans transition-colors cursor-pointer ${
+                aiCopilotOpen
+                  ? "bg-[var(--oxblood-subtle)] border-[var(--oxblood)] text-[var(--oxblood)] font-semibold"
+                  : "border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--ink-secondary)] hover:border-[var(--oxblood)]"
+              }`}
+              title="Toggle AI Writing Copilot (Cmd+J)"
+            >
+              <Sparkles className="h-3 w-3 text-[var(--oxblood)]" />
+              <span>AI</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setFocusMode(false)}
-              className="inline-flex items-center space-x-1.5 rounded-md bg-[var(--paper-warm)] border border-[var(--paper-border)] px-3 py-1 font-editorial-sans text-xs text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] hover:border-[var(--oxblood)] transition-colors"
+              className="inline-flex items-center space-x-1.5 rounded-md bg-[var(--paper-warm)] border border-[var(--paper-border)] px-3 py-1 font-editorial-sans text-xs text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] hover:border-[var(--oxblood)] transition-colors cursor-pointer"
             >
               <Minimize2 className="h-3 w-3" />
               <span>Exit Focus Mode</span>
@@ -312,7 +333,7 @@ function WritePageContent() {
         </aside>
       )}
 
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+      <main className={`mx-auto px-4 py-8 sm:px-6 sm:py-10 transition-all duration-300 ${aiCopilotOpen ? "max-w-7xl" : "max-w-5xl"}`}>
         {/* Version Conflict Modal / Alert */}
         {doc.conflictData && (
           <div className="mb-8 rounded-xl border border-[var(--oxblood)] bg-[var(--oxblood-subtle)] p-6 shadow-md animate-in fade-in">
@@ -555,6 +576,21 @@ function WritePageContent() {
                   <span>{proofMode ? "Editor" : "Preview"}</span>
                 </button>
 
+                {/* AI Copilot Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setAiCopilotOpen(!aiCopilotOpen)}
+                  className={`h-9 inline-flex items-center space-x-1.5 rounded-md px-3 text-xs font-editorial-sans border transition-colors shadow-2xs cursor-pointer ${
+                    aiCopilotOpen
+                      ? "bg-[var(--oxblood-subtle)] border-[var(--oxblood)] text-[var(--oxblood)] font-semibold"
+                      : "border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--ink-secondary)] hover:border-[var(--oxblood)] hover:text-[var(--ink-primary)]"
+                  }`}
+                  title="Toggle AI Writing Copilot (Cmd+J)"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-[var(--oxblood)]" />
+                  <span className="hidden sm:inline">AI Copilot</span>
+                </button>
+
                 {/* Primary: Manual Save */}
                 <button
                   type="button"
@@ -737,11 +773,29 @@ function WritePageContent() {
           </div>
         ) : (
           <div className="mb-12">
-            <Editor
-              initialContent={doc.contentHtml}
-              documentKey={doc.documentId || "new"}
-              onChange={doc.handleEditorChange}
-            />
+            <div className="flex flex-col lg:flex-row gap-6 items-start">
+              <div className={`transition-all duration-300 w-full ${aiCopilotOpen ? "lg:w-3/5 xl:w-2/3" : "w-full"}`}>
+                <Editor
+                  initialContent={doc.contentHtml}
+                  documentKey={doc.documentId || "new"}
+                  onChange={doc.handleEditorChange}
+                  onEditorReady={(ed) => setEditorInstance(ed)}
+                  onOpenAiCopilot={() => setAiCopilotOpen(true)}
+                />
+              </div>
+
+              {aiCopilotOpen && (
+                <div className="w-full lg:w-2/5 xl:w-1/3 shrink-0 rounded-xl overflow-hidden border border-[var(--paper-border)] shadow-md sticky top-4">
+                  <AiCopilotPanel
+                    isOpen={aiCopilotOpen}
+                    onClose={() => setAiCopilotOpen(false)}
+                    editor={editorInstance}
+                    documentId={doc.documentId || undefined}
+                    documentTitle={doc.title}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         )}
 

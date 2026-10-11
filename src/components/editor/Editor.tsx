@@ -11,6 +11,10 @@ import {
   CustomLink,
   CustomImage,
   TableBlock,
+  FontFamily,
+  FontSize,
+  FONT_FAMILY_STYLES,
+  FONT_SIZE_STYLES,
 } from "./extensions";
 import {
   Bold,
@@ -39,6 +43,8 @@ import {
   Check,
   RemoveFormatting,
   ExternalLink,
+  Type,
+  Baseline,
 } from "lucide-react";
 
 interface EditorProps {
@@ -46,6 +52,8 @@ interface EditorProps {
   placeholder?: string;
   documentKey?: string | null;
   onChange?: (data: { html: string; json: object; text: string }) => void;
+  onEditorReady?: (editor: any) => void;
+  onOpenAiCopilot?: () => void;
 }
 
 export function Editor({
@@ -53,9 +61,13 @@ export function Editor({
   placeholder = "Start writing your piece... Use the toolbar above for formatting",
   documentKey,
   onChange,
+  onEditorReady,
+  onOpenAiCopilot,
 }: EditorProps) {
   // Popover & modal states
   const [insertMenuOpen, setInsertMenuOpen] = useState(false);
+  const [fontMenuOpen, setFontMenuOpen] = useState(false);
+  const [sizeMenuOpen, setSizeMenuOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
@@ -63,13 +75,21 @@ export function Editor({
   const [imageTitle, setImageTitle] = useState("");
 
   const insertMenuRef = useRef<HTMLDivElement>(null);
+  const fontMenuRef = useRef<HTMLDivElement>(null);
+  const sizeMenuRef = useRef<HTMLDivElement>(null);
   const lastLoadedDocKeyRef = useRef<string | null | undefined>(documentKey);
 
-  // Close insert popover on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (insertMenuRef.current && !insertMenuRef.current.contains(event.target as Node)) {
         setInsertMenuOpen(false);
+      }
+      if (fontMenuRef.current && !fontMenuRef.current.contains(event.target as Node)) {
+        setFontMenuOpen(false);
+      }
+      if (sizeMenuRef.current && !sizeMenuRef.current.contains(event.target as Node)) {
+        setSizeMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -94,6 +114,8 @@ export function Editor({
       CustomLink,
       CustomImage,
       TableBlock,
+      FontFamily,
+      FontSize,
       Placeholder.configure({
         placeholder,
       }),
@@ -141,11 +163,20 @@ export function Editor({
     }
   }, [editor, initialContent, documentKey]);
 
+  // Notify parent component when editor is ready
+  useEffect(() => {
+    if (editor && onEditorReady) {
+      onEditorReady(editor);
+    }
+  }, [editor, onEditorReady]);
+
   // Close menus/dialogs on ESC key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setInsertMenuOpen(false);
+        setFontMenuOpen(false);
+        setSizeMenuOpen(false);
         setLinkDialogOpen(false);
         setImageDialogOpen(false);
       }
@@ -221,10 +252,17 @@ export function Editor({
     setInsertMenuOpen(false);
   }, [editor]);
 
-  // Clear Formatting
+  // Clear Formatting & Reset Typography
   const handleClearFormatting = useCallback(() => {
     if (!editor) return;
-    editor.chain().focus().unsetAllMarks().clearNodes().run();
+    editor
+      .chain()
+      .focus()
+      .unsetAllMarks()
+      .unsetFontFamily()
+      .unsetFontSize()
+      .clearNodes()
+      .run();
   }, [editor]);
 
   if (!editor) {
@@ -314,6 +352,140 @@ export function Editor({
           >
             H3
           </button>
+        </div>
+
+        {/* Group Divider */}
+        <div className="h-4 w-[1px] bg-[var(--editorial-rule)] mx-1" aria-hidden="true" />
+
+        {/* GROUP: TYPOGRAPHY (Font Family & Scale) */}
+        <div className="flex items-center space-x-1">
+          {/* Font Family Dropdown */}
+          <div className="relative" ref={fontMenuRef}>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setFontMenuOpen(!fontMenuOpen)}
+              className={`flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2 py-1 text-xs font-editorial-sans text-[var(--ink-primary)] shadow-2xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] cursor-pointer ${
+                editor.isActive("fontFamily") ? "border-[var(--oxblood)] text-[var(--oxblood)] font-semibold" : ""
+              }`}
+              title="Select Font Family"
+              aria-label="Font Family Selector"
+              aria-haspopup="true"
+              aria-expanded={fontMenuOpen}
+            >
+              <Type className="h-3.5 w-3.5 text-[var(--oxblood)]" />
+              <span className="hidden sm:inline text-[11px] truncate max-w-[85px]">
+                {FONT_FAMILY_STYLES[editor.getAttributes("fontFamily").font]?.label || "Font"}
+              </span>
+              <ChevronDown className="h-3 w-3 opacity-60" />
+            </button>
+
+            {fontMenuOpen && (
+              <div className="absolute left-0 top-full mt-1.5 z-50 w-48 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-1.5 shadow-xl animate-in fade-in slide-in-from-top-1 text-xs font-editorial-sans">
+                <div className="px-2 py-1 text-[9px] font-editorial-mono uppercase tracking-wider text-[var(--ink-muted)] border-b border-[var(--editorial-rule)] mb-1">
+                  Typography Families
+                </div>
+                {Object.entries(FONT_FAMILY_STYLES).map(([key, def]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      editor.chain().focus().setFontFamily(key).run();
+                      setFontMenuOpen(false);
+                    }}
+                    className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left transition-colors cursor-pointer ${
+                      editor.isActive("fontFamily", { font: key })
+                        ? "bg-[var(--oxblood-subtle)] text-[var(--oxblood)] font-bold"
+                        : "hover:bg-[var(--paper-warm)] text-[var(--ink-primary)]"
+                    }`}
+                  >
+                    <span className={def.className}>{def.label}</span>
+                    {editor.isActive("fontFamily", { font: key }) && (
+                      <Check className="h-3 w-3 text-[var(--oxblood)]" />
+                    )}
+                  </button>
+                ))}
+                <div className="pt-1 mt-1 border-t border-[var(--editorial-rule)]">
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      editor.chain().focus().unsetFontFamily().run();
+                      setFontMenuOpen(false);
+                    }}
+                    className="w-full text-left rounded-md px-2.5 py-1 text-[10px] text-[var(--ink-muted)] hover:text-[var(--oxblood)] transition-colors cursor-pointer"
+                  >
+                    Default Typography
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Font Size Dropdown */}
+          <div className="relative" ref={sizeMenuRef}>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setSizeMenuOpen(!sizeMenuOpen)}
+              className={`flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2 py-1 text-xs font-editorial-sans text-[var(--ink-primary)] shadow-2xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] cursor-pointer ${
+                editor.isActive("fontSize") ? "border-[var(--oxblood)] text-[var(--oxblood)] font-semibold" : ""
+              }`}
+              title="Select Font Scale"
+              aria-label="Font Size Selector"
+              aria-haspopup="true"
+              aria-expanded={sizeMenuOpen}
+            >
+              <Baseline className="h-3.5 w-3.5 text-[var(--oxblood)]" />
+              <span className="hidden sm:inline text-[11px] truncate max-w-[65px]">
+                {FONT_SIZE_STYLES[editor.getAttributes("fontSize").size]?.size.toUpperCase() || "Size"}
+              </span>
+              <ChevronDown className="h-3 w-3 opacity-60" />
+            </button>
+
+            {sizeMenuOpen && (
+              <div className="absolute left-0 top-full mt-1.5 z-50 w-44 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-1.5 shadow-xl animate-in fade-in slide-in-from-top-1 text-xs font-editorial-sans">
+                <div className="px-2 py-1 text-[9px] font-editorial-mono uppercase tracking-wider text-[var(--ink-muted)] border-b border-[var(--editorial-rule)] mb-1">
+                  Typographic Scale
+                </div>
+                {Object.entries(FONT_SIZE_STYLES).map(([key, def]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      editor.chain().focus().setFontSize(key).run();
+                      setSizeMenuOpen(false);
+                    }}
+                    className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left transition-colors cursor-pointer ${
+                      editor.isActive("fontSize", { size: key })
+                        ? "bg-[var(--oxblood-subtle)] text-[var(--oxblood)] font-bold"
+                        : "hover:bg-[var(--paper-warm)] text-[var(--ink-primary)]"
+                    }`}
+                  >
+                    <span>{def.label}</span>
+                    {editor.isActive("fontSize", { size: key }) && (
+                      <Check className="h-3 w-3 text-[var(--oxblood)]" />
+                    )}
+                  </button>
+                ))}
+                <div className="pt-1 mt-1 border-t border-[var(--editorial-rule)]">
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      editor.chain().focus().unsetFontSize().run();
+                      setSizeMenuOpen(false);
+                    }}
+                    className="w-full text-left rounded-md px-2.5 py-1 text-[10px] text-[var(--ink-muted)] hover:text-[var(--oxblood)] transition-colors cursor-pointer"
+                  >
+                    Default Scale (18px)
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Group Divider */}
@@ -627,8 +799,25 @@ export function Editor({
           <LinkIcon className="h-3.5 w-3.5" />
         </button>
 
-        {/* GROUP 5: HISTORY (Undo / Redo) */}
-        <div className="ml-auto flex items-center space-x-1">
+        {/* GROUP 5: AI WRITING COPILOT ENTRY POINT */}
+        {onOpenAiCopilot && (
+          <div className="ml-auto flex items-center pr-1.5">
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={onOpenAiCopilot}
+              className="flex items-center space-x-1.5 rounded-md border border-[var(--oxblood)]/40 bg-[var(--oxblood-subtle)] px-2.5 py-1 text-xs font-editorial-sans font-semibold text-[var(--oxblood)] shadow-2xs hover:bg-[var(--oxblood)] hover:text-white transition-all cursor-pointer"
+              title="Open AI Writing Copilot"
+              aria-label="Open AI Writing Copilot"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="font-bold">AI Copilot</span>
+            </button>
+          </div>
+        )}
+
+        {/* GROUP 6: HISTORY (Undo / Redo) */}
+        <div className={`${onOpenAiCopilot ? "" : "ml-auto"} flex items-center space-x-1`}>
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
