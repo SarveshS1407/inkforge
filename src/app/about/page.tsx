@@ -22,7 +22,7 @@ export default function AboutPage() {
       <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         {/* Breadcrumb Navigation */}
         <div className="mb-6 flex items-center space-x-2 font-editorial-mono text-[10px] uppercase tracking-widest text-[var(--ink-muted)]">
-          <Link href="/" className="hover:text-[var(--oxblood)] transition-colors">
+          <Link href="/" className="hover:text-[var(--oxblood)] transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded-xs">
             Home
           </Link>
           <span>/</span>
@@ -167,7 +167,7 @@ export default function AboutPage() {
         <div className="mt-12 pt-8 border-t border-[var(--editorial-rule)] flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link
             href="/"
-            className="font-editorial-mono text-xs uppercase tracking-wider text-[var(--ink-secondary)] hover:text-[var(--oxblood)] transition-colors"
+            className="font-editorial-mono text-xs uppercase tracking-wider text-[var(--ink-secondary)] hover:text-[var(--oxblood)] transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded-xs"
           >
             ← Return to Homepage
           </Link>
@@ -175,13 +175,13 @@ export default function AboutPage() {
           <div className="flex items-center space-x-3">
             <Link
               href="/discover"
-              className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 font-editorial-sans text-xs uppercase tracking-wider text-[var(--ink-primary)] hover:border-[var(--oxblood)] transition-colors"
+              className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 font-editorial-sans text-xs uppercase tracking-wider text-[var(--ink-primary)] hover:border-[var(--oxblood)] transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] focus-visible:ring-offset-2"
             >
               Explore Discover
             </Link>
             <Link
               href="/write"
-              className="rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white hover:bg-[var(--oxblood-hover)] transition-colors"
+              className="rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white hover:bg-[var(--oxblood-hover)] transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] focus-visible:ring-offset-2"
             >
               Start Writing
             </Link>

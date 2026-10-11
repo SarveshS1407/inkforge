@@ -151,16 +151,8 @@ export default function PostsDashboardPage() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/books/create"
-              className="inline-flex items-center space-x-2 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-[var(--ink-primary)] shadow-xs transition-all hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] active:scale-[0.98]"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-[var(--amber-gold)]" />
-              <span>Create New Book</span>
-            </Link>
-
-            <Link
               href="/write"
-              className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98]"
+              className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)]"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Inscribe Manuscript</span>
@@ -248,14 +240,23 @@ export default function PostsDashboardPage() {
         {/* Manuscript List */}
         <div className="space-y-4">
           {filteredPosts.length === 0 ? (
-            <div className="book-jacket rounded-xl p-12 text-center">
-              <BookOpen className="mx-auto h-8 w-8 text-[var(--ink-muted)] mb-3" />
-              <h3 className="font-editorial-serif text-base font-bold text-[var(--ink-primary)]">
+            <div className="book-jacket rounded-xl p-12 text-center space-y-3">
+              <BookOpen className="mx-auto h-8 w-8 text-[var(--oxblood)] mb-1 opacity-70" />
+              <h3 className="font-editorial-serif text-lg font-bold text-[var(--ink-primary)]">
                 No manuscripts filed in this index
               </h3>
-              <p className="mt-1 font-editorial-serif italic text-xs text-[var(--ink-secondary)]">
-                Open the Scribe studio desk to begin drafting a new monograph.
+              <p className="font-editorial-serif italic text-xs text-[var(--ink-secondary)] max-w-sm mx-auto">
+                Every draft you compose in the Scribe Studio is automatically saved here to your local registry.
               </p>
+              <div className="pt-2">
+                <Link
+                  href="/write"
+                  className="inline-flex items-center space-x-1.5 rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs hover:bg-[var(--oxblood-hover)] transition-all"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Compose First Manuscript</span>
+                </Link>
+              </div>
             </div>
           ) : (
             filteredPosts.map((post) => (

@@ -135,7 +135,7 @@ export default function AuthorsPage() {
                 </span>
                 <Link
                   href={`/read/${author.featuredStory.slug}`}
-                  className="group flex items-center justify-between p-3 rounded-lg bg-[var(--paper-canvas)] border border-[var(--paper-border)] hover:border-[var(--oxblood)] transition-all"
+                  className="group flex items-center justify-between p-3 rounded-lg bg-[var(--paper-canvas)] border border-[var(--paper-border)] hover:border-[var(--oxblood)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)]"
                 >
                   <span className="font-editorial-serif font-bold text-xs sm:text-sm text-[var(--ink-primary)] group-hover:text-[var(--oxblood)] line-clamp-1 transition-colors">
                     {author.featuredStory.title}
@@ -163,7 +163,7 @@ export default function AuthorsPage() {
           <div className="pt-2">
             <Link
               href="/write"
-              className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-6 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white hover:bg-[var(--oxblood-hover)] shadow-xs transition-all"
+              className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-6 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white hover:bg-[var(--oxblood-hover)] shadow-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] focus-visible:ring-offset-2"
             >
               <span>Open Scribe Studio &amp; Begin Drafting</span>
               <ArrowRight className="h-3.5 w-3.5" />

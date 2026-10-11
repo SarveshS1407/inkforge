@@ -259,8 +259,10 @@ export default function HelpPage() {
                   className="rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] overflow-hidden shadow-xs transition-colors hover:border-[var(--oxblood)]/50"
                 >
                   <button
+                    type="button"
                     onClick={() => toggleItem(idx)}
-                    className="w-full flex items-center justify-between p-5 text-left font-editorial-serif text-base sm:text-lg font-bold text-[var(--ink-primary)] hover:text-[var(--oxblood)] transition-colors"
+                    aria-expanded={isOpen}
+                    className="w-full flex items-center justify-between p-5 text-left font-editorial-serif text-base sm:text-lg font-bold text-[var(--ink-primary)] hover:text-[var(--oxblood)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)]"
                   >
                     <span>{item.question}</span>
                     <ChevronDown

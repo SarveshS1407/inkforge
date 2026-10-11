@@ -130,41 +130,19 @@ export default function HomePage() {
   return (
     <InkforgeLanding>
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-        {/* Title Frontispiece Banner */}
-        <section className="border-b border-[var(--editorial-rule)] pb-12 text-center">
-          <div className="inline-flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] mb-4">
-            <span>Autumn Anthology</span>
-            <span>•</span>
-            <span>Volume IV</span>
-            <span>•</span>
-            <span className="font-bold">A Living Digital Book</span>
-          </div>
-
-          <h1 className="font-editorial-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-[var(--ink-primary)] leading-[1.05]">
-            Where Great Writing <br className="hidden sm:inline" />
-            Becomes Literature.
-          </h1>
-
-          <p className="mx-auto mt-5 max-w-2xl font-editorial-serif text-lg sm:text-xl text-[var(--ink-secondary)] italic leading-relaxed">
-            &ldquo;A beautifully designed book that learned how to move.&rdquo;
-          </p>
-
-          <div className="mt-8 flex items-center justify-center space-x-4">
-            <Link
-              href="/write"
-              className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-5 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98]"
-            >
-              <span>Start Writing</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-
-            <Link
-              href="/discover"
-              className="inline-flex items-center space-x-2 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-5 py-2.5 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-[var(--ink-secondary)] shadow-xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--ink-primary)] active:scale-[0.98]"
-            >
-              <Compass className="h-3.5 w-3.5" />
-              <span>Discover Catalog</span>
-            </Link>
+        {/* Curated Publication Frontispiece Ribbon */}
+        <section className="border-b border-[var(--editorial-rule)] pb-6 mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-editorial-mono text-xs uppercase tracking-widest text-[var(--ink-muted)]">
+            <div className="flex items-center space-x-2">
+              <span className="font-bold text-[var(--oxblood)]">AUTUMN ANTHOLOGY</span>
+              <span>•</span>
+              <span>VOLUME IV COMPILATION</span>
+              <span>•</span>
+              <span className="hidden md:inline">CURATED MONOGRAPHS &amp; DISPATCHES</span>
+            </div>
+            <div className="text-[11px] text-[var(--oxblood)] font-bold tracking-wider">
+              CURRENT EDITION
+            </div>
           </div>
         </section>
 
@@ -288,12 +266,14 @@ export default function HomePage() {
             </div>
 
             {/* Living Interactive Filter */}
-            <div className="flex flex-wrap items-center gap-1.5 font-editorial-mono text-[10px] tracking-wider uppercase">
+            <div className="flex flex-wrap items-center gap-1.5 font-editorial-mono text-[10px] tracking-wider uppercase" role="group" aria-label="Subject filter">
               {["ALL", "SYSTEMS CRAFT", "LITERARY ECOLOGY", "DIGITAL THEORY"].map((cat) => (
                 <button
                   key={cat}
+                  type="button"
+                  aria-pressed={selectedCategory === cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-2.5 py-1 rounded transition-colors ${
+                  className={`px-2.5 py-1 rounded transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] ${
                     selectedCategory === cat
                       ? "bg-[var(--oxblood)] text-white font-bold"
                       : "bg-[var(--paper-warm)] text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] border border-[var(--paper-border)]"
@@ -317,7 +297,7 @@ export default function HomePage() {
                     <span>{story.folio}</span>
                   </div>
 
-                  <Link href={`/read/${story.slug}`}>
+                  <Link href={`/read/${story.slug}`} className="focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] rounded-xs">
                     <h4 className="font-editorial-serif text-xl font-bold leading-snug text-[var(--ink-primary)] transition-colors group-hover:text-[var(--oxblood)]">
                       {story.title}
                     </h4>
@@ -353,14 +333,21 @@ export default function HomePage() {
                 Thematic Slipcases &amp; Bound Volumes
               </h3>
             </div>
-            <BookOpen className="h-5 w-5 text-[var(--oxblood)]" />
+            <Link
+              href="/collections"
+              className="text-xs font-editorial-mono uppercase tracking-wider text-[var(--oxblood)] hover:underline inline-flex items-center space-x-1 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded-xs"
+            >
+              <span>View All Collections</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             {CURATED_VOLUMES.map((vol) => (
-              <div
+              <Link
                 key={vol.number}
-                className={`rounded-lg border bg-[var(--paper-surface)] p-5 transition-transform hover:-translate-y-1 shadow-xs ${vol.color}`}
+                href="/collections"
+                className={`block rounded-lg border bg-[var(--paper-surface)] p-5 transition-transform hover:-translate-y-1 shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] ${vol.color}`}
               >
                 <div className="font-editorial-mono text-[10px] tracking-widest uppercase text-[var(--amber-gold)] font-bold">
                   {vol.number}
@@ -374,7 +361,7 @@ export default function HomePage() {
                 <div className="mt-4 font-editorial-mono text-[10px] tracking-wider text-[var(--ink-muted)] uppercase">
                   {vol.count}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>

@@ -4,6 +4,46 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 export type PaperTone = "cotton" | "vellum" | "inkwell";
 
+export interface ThemeOption {
+  id: PaperTone;
+  name: string;
+  shortLabel: string;
+  description: string;
+  swatchBg: string;
+  swatchBorder: string;
+  inkPreview: string;
+}
+
+export const THEME_OPTIONS: ThemeOption[] = [
+  {
+    id: "cotton",
+    name: "Cotton Ivory",
+    shortLabel: "Cotton",
+    description: "Natural warm ivory newsprint",
+    swatchBg: "#fbf9f4",
+    swatchBorder: "#e4dccb",
+    inkPreview: "#1d1917",
+  },
+  {
+    id: "vellum",
+    name: "Bookshop Vellum",
+    shortLabel: "Vellum",
+    description: "Warm amber antiquarian paper",
+    swatchBg: "#f4eee2",
+    swatchBorder: "#d7c7ab",
+    inkPreview: "#221914",
+  },
+  {
+    id: "inkwell",
+    name: "Midnight Buckram",
+    shortLabel: "Buckram",
+    description: "Library night cloth (Dark)",
+    swatchBg: "#16171b",
+    swatchBorder: "#2a2d35",
+    inkPreview: "#ede8df",
+  },
+];
+
 interface EditionContextType {
   tone: PaperTone;
   setTone: (tone: PaperTone) => void;

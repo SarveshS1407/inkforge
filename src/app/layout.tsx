@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-[var(--paper-bg)] text-[var(--ink-primary)] antialiased selection:bg-[#86212b]/15 selection:text-[#86212b]">
+      <body className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)] antialiased selection:bg-[var(--oxblood)] selection:text-white">
         <EditionProvider>{children}</EditionProvider>
       </body>
     </html>

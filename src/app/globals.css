@@ -81,6 +81,22 @@
   }
 }
 
+:focus-visible {
+  outline: 2px solid var(--oxblood);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Typographic Foundations & Ligatures */
 .font-editorial-serif {
   font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, "Times New Roman", serif;
@@ -340,42 +356,71 @@
   background-position: 0 0, 1.5px 1.5px;
 }
 
-/* 3mm Hardcover board edge thickness bevel */
+/* Master Permanent Midnight Buckram Bookcloth (Deep Obsidian & Library Cloth) */
+.book-cloth-permanent {
+  background-color: #121316;
+  background-image: 
+    radial-gradient(ellipse at 35% 25%, rgba(255, 255, 255, 0.09) 0%, transparent 60%),
+    radial-gradient(ellipse at 75% 85%, rgba(131, 30, 38, 0.16) 0%, transparent 55%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 45%, rgba(0, 0, 0, 0.35) 100%),
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 0),
+    radial-gradient(rgba(0, 0, 0, 0.35) 1px, transparent 0);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 3px 3px, 3px 3px;
+  background-position: 0 0, 0 0, 0 0, 0 0, 1.5px 1.5px;
+  color: #f7f3ea;
+}
+
+/* 3.5mm Hardcover board edge thickness bevel with micro-wear */
 .book-board-bevel {
   box-shadow:
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.2),
-    inset 1px 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset -1px -1px 2px 0 rgba(0, 0, 0, 0.35);
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.18),
+    inset 1.5px 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset -1.5px -1.5px 3px 0 rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Realistic 3D Fore-Edge Paper Block (hundreds of stacked leaves) */
+/* French Groove / Spine Joint Crease */
+.french-groove {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.45) 0%,
+    rgba(0, 0, 0, 0.2) 30%,
+    rgba(255, 255, 255, 0.08) 48%,
+    rgba(255, 255, 255, 0.15) 52%,
+    rgba(0, 0, 0, 0.25) 75%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  box-shadow: inset 1px 0 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Realistic 3D Fore-Edge Paper Block (hundreds of stacked deckled leaves) */
 .fore-edge-pages {
   background: 
-    linear-gradient(90deg, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0.02) 25%, transparent 60%, rgba(0,0,0,0.08) 100%),
+    linear-gradient(90deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.04) 25%, transparent 60%, rgba(0,0,0,0.12) 100%),
     repeating-linear-gradient(
       180deg,
-      var(--paper-vellum) 0px,
-      var(--paper-vellum) 1.5px,
-      var(--paper-warm) 1.5px,
-      var(--paper-warm) 3px,
-      var(--editorial-rule) 3px,
-      var(--editorial-rule) 3.5px
+      #f3ecde 0px,
+      #f3ecde 1.5px,
+      #ede4d0 1.5px,
+      #ede4d0 3px,
+      #dcd0bc 3px,
+      #dcd0bc 3.5px
     );
   box-shadow: 
-    inset 2px 0 4px rgba(0, 0, 0, 0.25),
-    3px 0 6px -1px rgba(0, 0, 0, 0.2);
+    inset 2.5px 0 5px rgba(0, 0, 0, 0.3),
+    4px 0 8px -2px rgba(0, 0, 0, 0.25);
 }
 
-/* Top and bottom head/tail paper stack edges */
+/* Top and bottom head/tail paper stack edges with gilded trim */
 .head-edge-pages {
   background: 
-    linear-gradient(180deg, rgba(0,0,0,0.18) 0%, transparent 70%),
+    linear-gradient(180deg, rgba(0,0,0,0.22) 0%, transparent 70%),
     repeating-linear-gradient(
       90deg,
-      var(--paper-vellum) 0px,
-      var(--paper-vellum) 1.5px,
-      var(--paper-warm) 1.5px,
-      var(--paper-warm) 3px
+      #f3ecde 0px,
+      #f3ecde 1.5px,
+      #ede4d0 1.5px,
+      #ede4d0 3px
     );
 }
 
@@ -385,8 +430,8 @@
     90deg,
     var(--oxblood) 0px,
     var(--oxblood) 4px,
-    var(--amber-gold) 4px,
-    var(--amber-gold) 8px
+    #cfa14b 4px,
+    #cfa14b 8px
   );
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
@@ -394,17 +439,41 @@
 /* Inset blind-debossed frame with physical micro-shadows */
 .debossed-frame {
   box-shadow: 
-    inset 1.5px 1.5px 3px rgba(0, 0, 0, 0.4),
-    inset -1px -1px 2px rgba(255, 255, 255, 0.12),
-    0 1px 1px rgba(255, 255, 255, 0.08);
+    inset 1.5px 1.5px 3px rgba(0, 0, 0, 0.5),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.08),
+    0 1px 1px rgba(255, 255, 255, 0.06);
 }
 
-/* Hot-stamped metallic gold foil */
+/* Hot-stamped burnished gold foil debossing */
 .gold-foil-stamp {
-  background: linear-gradient(135deg, #d8ad56 0%, #faebbe 20%, #bf8a2b 45%, #fae6a6 68%, #8e6216 100%);
+  background: linear-gradient(135deg, #d8b065 0%, #faebc3 22%, #ba8930 48%, #fae8b0 70%, #94691e 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.65));
+}
+
+/* Subtle burnished gold for secondary rules and accents */
+.gold-foil-subtle {
+  color: #cfa85b;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Physical Letterpress Bookplate Inset (Blind-embossed with gold trim) */
+.letterpress-bookplate {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0.38) 100%);
+  box-shadow: 
+    inset 1.5px 1.5px 3px rgba(0, 0, 0, 0.6),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.07),
+    0 1px 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(207, 168, 91, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.letterpress-bookplate:hover {
+  border-color: rgba(207, 168, 91, 0.7);
+  box-shadow: 
+    inset 1px 1px 2px rgba(0, 0, 0, 0.5),
+    0 0 12px rgba(207, 168, 91, 0.2);
 }
 
 /* Center gutter valley and sewn binding shadow */

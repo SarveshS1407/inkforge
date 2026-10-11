@@ -17,6 +17,7 @@ import {
   BookmarkCheck,
   Maximize2,
   Minimize2,
+  Compass,
 } from "lucide-react";
 
 interface Story {
@@ -116,6 +117,32 @@ const STORIES: Record<string, Story> = {
       "This separation allows real-time collaborative editing, granular version diffing, and automated transforms into multiple output formats including clean HTML, Markdown, and syndication feeds.",
     ],
     pullquote: "A document tree should be an expressive abstract canvas, not a fragile bundle of tags.",
+    nextStory: {
+      slug: "crafting-systems-that-endure",
+      chapter: "CHAPTER I",
+      title: "Crafting Systems That Endure: The Philosophy of Long-Horizon Software",
+    },
+  },
+  "notes-on-local-first-autosave": {
+    slug: "notes-on-local-first-autosave",
+    chapter: "DISPATCH IV",
+    folio: "FOLIO 55–64",
+    issue: "ISSUE IV • AUTUMN 2026",
+    title: "The Scribe's Sanctuary: Local-First Draft Persistence in Uncertain Networks",
+    subtitle: "An exploration of resilient state architectures that guarantee no author ever loses a syllable.",
+    author: "Sarah Lindqvist",
+    role: "Staff Fellow",
+    date: "October 1, 2026",
+    readingTime: "5 min read",
+    readingMinutesTotal: 5,
+    publication: "Systems & Theory",
+    content: [
+      "A writer sits with a cursor blinking in the twilight. Thoughts arrive in fragile cadence. If a browser tab crashes or a Wi-Fi handshake drops, the loss of an unfinished paragraph can sever the thread of an entire morning.",
+      "Local-first software represents a moral imperative for digital tools. By prioritizing client-side persistent storage through localStorage and IndexedDB, we invert the conventional cloud dependency.",
+      "Every keystroke is committed to the local sanctuary before any network synchronization is attempted. The network becomes a transport mechanism rather than a single point of failure.",
+      "When authors trust their tools implicitly, cognitive overhead dissolves into pure concentration.",
+    ],
+    pullquote: "Local-first software represents a moral imperative: no author should ever lose a syllable to network turbulence.",
     nextStory: {
       slug: "crafting-systems-that-endure",
       chapter: "CHAPTER I",
@@ -226,38 +253,65 @@ export default function StoryReaderPage() {
       />
 
       {/* Main Header (Hidden in Solitary Reading Mode) */}
-      {!solitaryMode && <Header />}
+      {!solitaryMode ? (
+        <Header />
+      ) : (
+        /* Solitary Immersion Exit Banner */
+        <div className="sticky top-0 z-40 border-b border-[var(--editorial-rule)] bg-[var(--paper-canvas)]/90 backdrop-blur-xs px-4 py-2 font-editorial-mono text-[10px] uppercase tracking-wider text-[var(--ink-muted)] flex items-center justify-between">
+          <span>Solitary Reading Mode Active</span>
+          <button
+            type="button"
+            onClick={() => setSolitaryMode(false)}
+            className="flex items-center space-x-1 text-[var(--oxblood)] font-bold hover:underline"
+          >
+            <Minimize2 className="h-3 w-3" />
+            <span>Exit Solitary Mode</span>
+          </button>
+        </div>
+      )}
 
-      <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+      <article className={`mx-auto px-4 py-12 sm:px-6 ${solitaryMode ? "max-w-2xl" : "max-w-4xl"}`}>
         {/* Navigation & Reader Folio Bar */}
         <div className="mb-8 flex flex-wrap items-center justify-between border-b border-[var(--editorial-rule)] pb-4 font-editorial-mono text-xs tracking-widest uppercase text-[var(--ink-muted)] gap-3">
           <Link
             href="/"
-            className="inline-flex items-center space-x-1.5 transition-colors hover:text-[var(--oxblood)]"
+            className="inline-flex items-center space-x-1.5 transition-colors hover:text-[var(--oxblood)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-1"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Return to Frontispiece</span>
           </Link>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             {/* Solitary Immersion Mode Toggle */}
             <button
               type="button"
               onClick={() => setSolitaryMode(!solitaryMode)}
-              className="flex items-center space-x-1 hover:text-[var(--oxblood)] transition-colors"
+              className="flex items-center space-x-1 hover:text-[var(--oxblood)] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-1"
               title={solitaryMode ? "Exit Solitary Mode" : "Enter Solitary Reading Mode"}
             >
-              {solitaryMode ? <Minimize2 className="h-3.5 w-3.5 text-[var(--oxblood)]" /> : <Maximize2 className="h-3.5 w-3.5" />}
-              <span className="hidden sm:inline">{solitaryMode ? "Library" : "Solitary"}</span>
+              {solitaryMode ? (
+                <Minimize2 className="h-3.5 w-3.5 text-[var(--oxblood)]" />
+              ) : (
+                <Maximize2 className="h-3.5 w-3.5" />
+              )}
+              <span className="hidden sm:inline">{solitaryMode ? "Standard" : "Solitary"}</span>
             </button>
 
             {/* Type Scale Controls */}
-            <div className="flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-1.5 py-0.5 text-[10px]">
+            <div
+              role="group"
+              aria-label="Text Size Scale"
+              className="flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-1.5 py-0.5 text-[10px]"
+            >
               <span className="text-[var(--ink-muted)] mr-1">TYPE:</span>
               <button
                 type="button"
                 onClick={() => setFontSize("standard")}
-                className={`px-1 rounded ${fontSize === "standard" ? "font-bold text-[var(--oxblood)]" : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"}`}
+                className={`px-1 rounded ${
+                  fontSize === "standard"
+                    ? "font-bold text-[var(--oxblood)] bg-[var(--paper-warm)] shadow-xs"
+                    : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"
+                }`}
                 title="Standard type scale"
               >
                 A
@@ -265,10 +319,26 @@ export default function StoryReaderPage() {
               <button
                 type="button"
                 onClick={() => setFontSize("large")}
-                className={`px-1 rounded ${fontSize === "large" ? "font-bold text-[var(--oxblood)] text-[11px]" : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)] text-[11px]"}`}
+                className={`px-1 rounded ${
+                  fontSize === "large"
+                    ? "font-bold text-[var(--oxblood)] bg-[var(--paper-warm)] shadow-xs"
+                    : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"
+                }`}
                 title="Large type scale"
               >
                 A+
+              </button>
+              <button
+                type="button"
+                onClick={() => setFontSize("generous")}
+                className={`px-1 rounded ${
+                  fontSize === "generous"
+                    ? "font-bold text-[var(--oxblood)] bg-[var(--paper-warm)] shadow-xs"
+                    : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"
+                }`}
+                title="Generous type scale"
+              >
+                A++
               </button>
             </div>
 
@@ -276,7 +346,7 @@ export default function StoryReaderPage() {
             <button
               type="button"
               onClick={toggleBookmark}
-              className={`flex items-center space-x-1 transition-colors ${
+              className={`flex items-center space-x-1 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-1 ${
                 isBookmarked ? "text-[var(--oxblood)] font-bold" : "hover:text-[var(--oxblood)]"
               }`}
               title="Bookmark this monograph"
@@ -293,14 +363,14 @@ export default function StoryReaderPage() {
             <button
               type="button"
               onClick={copyUrl}
-              className="flex items-center space-x-1 hover:text-[var(--oxblood)] transition-colors"
+              className="flex items-center space-x-1 hover:text-[var(--oxblood)] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-1"
               title="Copy citation link"
             >
               {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Share2 className="h-3.5 w-3.5" />}
               <span className="hidden sm:inline">{copiedLink ? "Copied" : "Cite"}</span>
             </button>
 
-            <span>
+            <span className="hidden md:inline">
               {story.chapter} • {story.folio}
             </span>
           </div>
@@ -348,17 +418,17 @@ export default function StoryReaderPage() {
           </div>
         </header>
 
-        {/* Monograph Body with Renaissance Marginalia Layout */}
-        <div className="grid lg:grid-cols-12 gap-8 items-start">
-          {/* Main Prose Text (9 cols) */}
-          <div className="lg:col-span-9 space-y-6 font-editorial-serif text-[var(--ink-primary)] transition-all">
+        {/* Monograph Body */}
+        <div className={solitaryMode ? "space-y-6" : "grid lg:grid-cols-12 gap-8 items-start"}>
+          {/* Main Prose Text */}
+          <div className={`${solitaryMode ? "w-full" : "lg:col-span-9"} space-y-6 font-editorial-serif text-[var(--ink-primary)] transition-all`}>
             {story.content.map((paragraph, idx) => (
               <p
                 key={idx}
                 className={`${getProseTextSize()} ${idx === 0 ? "drop-cap" : ""}`}
               >
                 {paragraph}
-                {/* Embedded footnote trigger anchors on relevant paragraphs */}
+                {/* Embedded footnote trigger anchors */}
                 {story.footnotes && idx === 1 && (
                   <sup
                     className="ml-1 cursor-pointer font-editorial-mono font-bold text-[var(--oxblood)] hover:underline"
@@ -388,27 +458,29 @@ export default function StoryReaderPage() {
             )}
           </div>
 
-          {/* Marginalia Sidebar with Interactive Anchor Highlighting */}
-          <aside className="hidden lg:block lg:col-span-3 space-y-6 font-editorial-sans text-xs text-[var(--ink-secondary)] border-l border-[var(--editorial-rule)] pl-5">
-            <div className="font-editorial-mono text-[9px] uppercase tracking-widest text-[var(--oxblood)] font-bold">
-              Marginalia &amp; Apparatus
-            </div>
+          {/* Marginalia Sidebar (Displayed in standard mode on large screens) */}
+          {!solitaryMode && (
+            <aside className="hidden lg:block lg:col-span-3 space-y-6 font-editorial-sans text-xs text-[var(--ink-secondary)] border-l border-[var(--editorial-rule)] pl-5">
+              <div className="font-editorial-mono text-[9px] uppercase tracking-widest text-[var(--oxblood)] font-bold">
+                Marginalia &amp; Apparatus
+              </div>
 
-            {story.footnotes &&
-              story.footnotes.map((fn) => (
-                <div
-                  key={fn.id}
-                  className={`marginalia-item space-y-1 ${activeFootnote === fn.id ? "active" : ""}`}
-                >
-                  <span className="font-editorial-mono text-[10px] font-bold text-[var(--oxblood)]">
-                    [{fn.id}]
-                  </span>
-                  <p className="text-[11px] leading-relaxed text-[var(--ink-muted)] italic">
-                    {fn.sideNote || fn.text}
-                  </p>
-                </div>
-              ))}
-          </aside>
+              {story.footnotes &&
+                story.footnotes.map((fn) => (
+                  <div
+                    key={fn.id}
+                    className={`marginalia-item space-y-1 ${activeFootnote === fn.id ? "active" : ""}`}
+                  >
+                    <span className="font-editorial-mono text-[10px] font-bold text-[var(--oxblood)]">
+                      [{fn.id}]
+                    </span>
+                    <p className="text-[11px] leading-relaxed text-[var(--ink-muted)] italic">
+                      {fn.sideNote || fn.text}
+                    </p>
+                  </div>
+                ))}
+            </aside>
+          )}
         </div>
 
         {/* Ornamental Divider */}
@@ -416,7 +488,7 @@ export default function StoryReaderPage() {
           <span>✦ • ✦</span>
         </div>
 
-        {/* Footnotes Section on Mobile / Below fold */}
+        {/* Footnotes Section */}
         {story.footnotes && (
           <div className="my-10 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-warm)] p-6 font-editorial-sans text-xs text-[var(--ink-secondary)]">
             <h4 className="font-editorial-mono font-bold uppercase tracking-wider text-[var(--oxblood)] mb-3">
@@ -438,7 +510,10 @@ export default function StoryReaderPage() {
             <div className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
               Proceed to Next Chapter
             </div>
-            <Link href={`/read/${story.nextStory.slug}`} className="group block mt-2">
+            <Link
+              href={`/read/${story.nextStory.slug}`}
+              className="group block mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] rounded-md"
+            >
               <span className="font-editorial-mono text-xs text-[var(--ink-muted)]">
                 {story.nextStory.chapter}
               </span>

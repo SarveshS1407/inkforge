@@ -179,8 +179,17 @@ export default function CollectionsPage() {
               return (
                 <div
                   key={col.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
                   onClick={() => setActiveCollectionId(col.id)}
-                  className={`group relative rounded-xl border p-5 transition-all cursor-pointer select-none ${
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveCollectionId(col.id);
+                    }
+                  }}
+                  className={`group relative rounded-xl border p-5 transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] ${
                     isSelected
                       ? "border-[var(--oxblood)] bg-[var(--paper-surface)] shadow-md ring-1 ring-[var(--oxblood)]"
                       : "border-[var(--paper-border)] bg-[var(--paper-surface)]/60 hover:border-[var(--oxblood)]/50 hover:bg-[var(--paper-surface)]"
