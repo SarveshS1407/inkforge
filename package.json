@@ -11,7 +11,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:verify": "jiti src/scripts/verify_backend.ts"
+    "db:verify": "jiti src/scripts/verify_backend.ts",
+    "verify:phase2b": "jiti src/scripts/verify_phase_2b.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",

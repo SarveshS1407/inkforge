@@ -44,12 +44,14 @@ import {
 interface EditorProps {
   initialContent?: string;
   placeholder?: string;
+  documentKey?: string | null;
   onChange?: (data: { html: string; json: object; text: string }) => void;
 }
 
 export function Editor({
   initialContent = "",
   placeholder = "Start writing your piece... Use the toolbar above for formatting",
+  documentKey,
   onChange,
 }: EditorProps) {
   // Popover & modal states
@@ -61,6 +63,7 @@ export function Editor({
   const [imageTitle, setImageTitle] = useState("");
 
   const insertMenuRef = useRef<HTMLDivElement>(null);
+  const lastLoadedDocKeyRef = useRef<string | null | undefined>(documentKey);
 
   // Close insert popover on outside click
   useEffect(() => {
@@ -123,12 +126,20 @@ export function Editor({
     immediatelyRender: false,
   });
 
-  // Synchronize initial content if loaded asynchronously (e.g. from localStorage)
+  // Synchronize initial content or load new document on documentKey change
   useEffect(() => {
-    if (editor && initialContent && editor.isEmpty) {
+    if (!editor) return;
+
+    if (documentKey !== undefined && documentKey !== lastLoadedDocKeyRef.current) {
+      lastLoadedDocKeyRef.current = documentKey;
+      editor.commands.setContent(initialContent || "");
+      return;
+    }
+
+    if (initialContent && editor.isEmpty) {
       editor.commands.setContent(initialContent);
     }
-  }, [editor, initialContent]);
+  }, [editor, initialContent, documentKey]);
 
   // Close menus/dialogs on ESC key
   useEffect(() => {
