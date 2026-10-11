@@ -35,6 +35,7 @@ model User {
   posts               Post[]
   memberships         PublicationMember[]
   ownedPublications   Publication[]        @relation("PublicationOwner")
+  collections         Collection[]         @relation("UserCollections")
 
   @@index([email])
   @@index([username])
@@ -170,6 +171,7 @@ model Post {
 
   revisions          PostRevision[]
   tags               PostTag[]
+  collectionItems    CollectionItem[]
 
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
@@ -219,4 +221,41 @@ model PostTag {
   @@id([postId, tagId])
   @@index([postId])
   @@index([tagId])
+}
+
+// ============================================================================
+// 6. COLLECTIONS & CURATED READING LISTS
+// ============================================================================
+
+model Collection {
+  id          String           @id @default(uuid())
+  title       String
+  slug        String
+  description String?
+  isPublic    Boolean          @default(true)
+  ownerId     String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  owner       User             @relation("UserCollections", fields: [ownerId], references: [id], onDelete: Cascade)
+  items       CollectionItem[]
+
+  @@unique([ownerId, slug])
+  @@index([ownerId])
+  @@index([isPublic])
+}
+
+model CollectionItem {
+  id           String     @id @default(uuid())
+  collectionId String
+  postId       String
+  orderIndex   Int        @default(0)
+  addedAt      DateTime   @default(now())
+
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, postId])
+  @@index([collectionId])
+  @@index([postId])
 }

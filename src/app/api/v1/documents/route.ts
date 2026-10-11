@@ -12,6 +12,9 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status") || undefined;
     const publicationId = searchParams.get("publicationId") || undefined;
     const authorId = searchParams.get("authorId") || undefined;
+    const search = searchParams.get("search") || undefined;
+    const sortBy = (searchParams.get("sortBy") as any) || undefined;
+    const readingTimeFilter = (searchParams.get("readingTime") as any) || undefined;
     const limit = searchParams.get("limit")
       ? parseInt(searchParams.get("limit")!, 10)
       : 20;
@@ -28,6 +31,9 @@ export async function GET(req: NextRequest) {
       status,
       publicationId,
       authorId,
+      search,
+      sortBy,
+      readingTimeFilter,
       limit,
       offset,
     });

@@ -23,6 +23,7 @@ import {
   Edit3,
 } from "lucide-react";
 import { SafeContentRenderer } from "@/components/content/SafeContentRenderer";
+import { AddToCollectionModal } from "@/components/collections/AddToCollectionModal";
 
 interface Story {
   id?: string;
@@ -33,6 +34,7 @@ interface Story {
   title: string;
   subtitle?: string;
   author: string;
+  authorUsername?: string;
   role?: string;
   date: string;
   readingTime: string;
@@ -167,6 +169,7 @@ export default function StoryReaderPage() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [fontSize, setFontSize] = useState<"standard" | "large" | "generous">("standard");
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [activeFootnote, setActiveFootnote] = useState<number | null>(null);
   const [solitaryMode, setSolitaryMode] = useState(false);
@@ -199,6 +202,7 @@ export default function StoryReaderPage() {
                 title: doc.title,
                 subtitle: doc.excerpt || "",
                 author: doc.author?.displayName || doc.author?.username || "Resident Author",
+                authorUsername: doc.author?.username,
                 role: "Author & Scribe",
                 date: doc.publishedAt
                   ? new Date(doc.publishedAt).toLocaleDateString("en-US", {
@@ -471,21 +475,29 @@ export default function StoryReaderPage() {
               </button>
             </div>
 
-            {/* Bookmark Folio Ribbon Action */}
+            {/* Bookmark & Save to Collection Action */}
             <button
               type="button"
-              onClick={toggleBookmark}
-              className={`flex items-center space-x-1 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-1 ${
+              onClick={() => {
+                if (story.id) {
+                  setIsCollectionModalOpen(true);
+                } else {
+                  toggleBookmark();
+                }
+              }}
+              className={`flex items-center space-x-1 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-1 cursor-pointer ${
                 isBookmarked ? "text-[var(--oxblood)] font-bold" : "hover:text-[var(--oxblood)]"
               }`}
-              title="Bookmark this monograph"
+              title={story.id ? "Save monograph to collection" : "Bookmark this monograph"}
             >
               {isBookmarked ? (
                 <BookmarkCheck className="h-3.5 w-3.5 fill-[var(--oxblood)] text-[var(--oxblood)]" />
               ) : (
                 <Bookmark className="h-3.5 w-3.5" />
               )}
-              <span className="hidden sm:inline">{isBookmarked ? "Bookmarked" : "Bookmark"}</span>
+              <span className="hidden sm:inline">
+                {story.id ? "Save to Collection" : isBookmarked ? "Bookmarked" : "Bookmark"}
+              </span>
             </button>
 
             {/* Citation Share */}
@@ -539,7 +551,16 @@ export default function StoryReaderPage() {
                 {story.author[0]}
               </div>
               <div>
-                <p className="font-semibold text-[var(--ink-primary)]">{story.author}</p>
+                {story.authorUsername ? (
+                  <Link
+                    href={`/authors/${story.authorUsername}`}
+                    className="font-semibold text-[var(--ink-primary)] hover:text-[var(--oxblood)] transition-colors inline-block focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded"
+                  >
+                    {story.author}
+                  </Link>
+                ) : (
+                  <p className="font-semibold text-[var(--ink-primary)]">{story.author}</p>
+                )}
                 <p className="text-[11px] text-[var(--ink-muted)]">{story.role}</p>
               </div>
             </div>
@@ -690,6 +711,16 @@ export default function StoryReaderPage() {
           </div>
         </footer>
       </article>
+
+      {/* Add To Collection Modal */}
+      {story.id && (
+        <AddToCollectionModal
+          isOpen={isCollectionModalOpen}
+          onClose={() => setIsCollectionModalOpen(false)}
+          postId={story.id}
+          postTitle={story.title}
+        />
+      )}
     </div>
   );
 }

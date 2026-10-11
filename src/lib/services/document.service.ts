@@ -92,6 +92,9 @@ export interface ListDocumentsParams {
   status?: string;
   publicationId?: string;
   authorId?: string;
+  search?: string;
+  sortBy?: "newest" | "oldest" | "readingTime" | "title";
+  readingTimeFilter?: "short" | "medium" | "long";
   limit?: number;
   offset?: number;
 }
@@ -130,9 +133,15 @@ export class DocumentService {
       status,
       publicationId,
       authorId,
+      search,
+      sortBy = "newest",
+      readingTimeFilter,
       limit = 20,
       offset = 0,
     } = params;
+
+    const safeLimit = Math.min(Math.max(limit, 1), 50);
+    const safeOffset = Math.max(offset, 0);
 
     const where: Record<string, unknown> = {};
 
@@ -165,12 +174,53 @@ export class DocumentService {
       }
     }
 
+    // Search query filter (title, subtitle, excerpt, author name)
+    if (search && search.trim().length > 0) {
+      const q = search.trim();
+      where.OR = [
+        { title: { contains: q } },
+        { subtitle: { contains: q } },
+        { excerpt: { contains: q } },
+        { author: { displayName: { contains: q } } },
+        { author: { username: { contains: q } } },
+      ];
+    }
+
+    // Reading time filter
+    if (readingTimeFilter) {
+      if (readingTimeFilter === "short") {
+        where.readingTimeMinutes = { lte: 4 };
+      } else if (readingTimeFilter === "medium") {
+        where.readingTimeMinutes = { gte: 5, lte: 10 };
+      } else if (readingTimeFilter === "long") {
+        where.readingTimeMinutes = { gt: 10 };
+      }
+    }
+
+    // Deterministic ordering with tie-breaker
+    let orderBy: any[];
+    switch (sortBy) {
+      case "oldest":
+        orderBy = [{ publishedAt: "asc" }, { createdAt: "asc" }, { id: "asc" }];
+        break;
+      case "readingTime":
+        orderBy = [{ readingTimeMinutes: "desc" }, { id: "desc" }];
+        break;
+      case "title":
+        orderBy = [{ title: "asc" }, { id: "desc" }];
+        break;
+      case "newest":
+      default:
+        orderBy = [{ publishedAt: "desc" }, { updatedAt: "desc" }, { id: "desc" }];
+        break;
+    }
+
     const [items, total] = await Promise.all([
       prisma.post.findMany({
         where,
-        take: Math.min(limit, 100),
-        skip: offset,
-        orderBy: { updatedAt: "desc" },
+        take: safeLimit,
+        skip: safeOffset,
+        orderBy,
         include: {
           author: {
             select: {
@@ -192,7 +242,7 @@ export class DocumentService {
       prisma.post.count({ where }),
     ]);
 
-    return { items, total, limit, offset };
+    return { items, total, limit: safeLimit, offset: safeOffset };
   }
 
   /**
