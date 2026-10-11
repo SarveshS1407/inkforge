@@ -20,6 +20,11 @@ import {
   Loader2,
   Trash2,
   AlertCircle,
+  Share2,
+  Lock,
+  Send,
+  Check,
+  Copy,
 } from "lucide-react";
 
 interface PostItem {
@@ -221,6 +226,63 @@ export default function PostsDashboardPage() {
       await loadDocuments();
     } catch (e) {
       console.error("Delete error:", e);
+    }
+  };
+
+  // Handle publishing a manuscript from ledger
+  const handlePublishPost = async (post: PostItem) => {
+    try {
+      const res = await fetch(`/api/v1/documents/${post.id}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expectedVersion: post.version }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error?.message || "Failed to publish manuscript.");
+        return;
+      }
+      setStatusNotice(`"${post.title}" is now published and live in the public archive!`);
+      setTimeout(() => setStatusNotice(null), 5000);
+      await loadDocuments();
+    } catch {
+      alert("Network error while publishing manuscript.");
+    }
+  };
+
+  // Handle unpublishing a manuscript from ledger
+  const handleUnpublishPost = async (post: PostItem) => {
+    const confirmUnpublish = window.confirm(
+      `Are you sure you wish to unpublish "${post.title}"? It will be removed from public feeds and converted to a private draft.`
+    );
+    if (!confirmUnpublish) return;
+
+    try {
+      const res = await fetch(`/api/v1/documents/${post.id}/unpublish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expectedVersion: post.version }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error?.message || "Failed to unpublish manuscript.");
+        return;
+      }
+      setStatusNotice(`"${post.title}" unpublished and converted back to a private draft.`);
+      setTimeout(() => setStatusNotice(null), 5000);
+      await loadDocuments();
+    } catch {
+      alert("Network error while unpublishing manuscript.");
+    }
+  };
+
+  // Handle copying share URL
+  const handleSharePost = (post: PostItem) => {
+    if (typeof window !== "undefined") {
+      const url = `${window.location.origin}/read/${post.slug}`;
+      navigator.clipboard.writeText(url);
+      setStatusNotice(`Canonical URL copied to clipboard: ${url}`);
+      setTimeout(() => setStatusNotice(null), 4000);
     }
   };
 
@@ -476,20 +538,72 @@ export default function PostsDashboardPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2 shrink-0">
-                  <Link
-                    href={`/read/${post.slug}`}
-                    className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-warm)] px-3 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] shadow-xs"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    <span>Read</span>
-                  </Link>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  {post.status === "PUBLISHED" ? (
+                    <>
+                      <Link
+                        href={`/read/${post.slug}`}
+                        target="_blank"
+                        className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-warm)] px-2.5 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] shadow-xs"
+                        title="Read public edition"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>Read</span>
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSharePost(post)}
+                        className="flex items-center space-x-1.5 rounded-md border border-[var(--oxblood)] bg-[var(--oxblood-subtle)] px-2.5 py-1.5 font-editorial-mono text-xs text-[var(--oxblood)] hover:bg-[var(--oxblood)] hover:text-white transition-colors shadow-xs cursor-pointer"
+                        title="Copy public link"
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                        <span>Share</span>
+                      </button>
+
+                      {!post.id.startsWith("sample-") && !post.isLocalOnly && (
+                        <button
+                          type="button"
+                          onClick={() => handleUnpublishPost(post)}
+                          className="flex items-center space-x-1 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1.5 font-editorial-mono text-xs text-[var(--ink-secondary)] hover:text-[var(--oxblood)] hover:border-[var(--oxblood)] transition-colors shadow-xs cursor-pointer"
+                          title="Convert to private draft"
+                        >
+                          <Lock className="h-3 w-3" />
+                          <span>Unpublish</span>
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href={`/read/${post.slug}?preview=true`}
+                        className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-warm)] px-2.5 py-1.5 font-editorial-mono text-xs text-[var(--ink-muted)] hover:text-[var(--ink-primary)] transition-colors shadow-xs"
+                        title="View private reader preview"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>Preview</span>
+                      </Link>
+
+                      {!post.id.startsWith("sample-") && !post.isLocalOnly && (
+                        <button
+                          type="button"
+                          onClick={() => handlePublishPost(post)}
+                          className="flex items-center space-x-1 rounded-md bg-[var(--oxblood)] text-white px-2.5 py-1.5 font-editorial-mono text-xs font-semibold hover:bg-[var(--oxblood-hover)] transition-colors shadow-xs cursor-pointer"
+                          title="Publish manuscript"
+                        >
+                          <Send className="h-3 w-3" />
+                          <span>Publish</span>
+                        </button>
+                      )}
+                    </>
+                  )}
 
                   <Link
                     href={post.isLocalOnly ? "/write" : `/write?id=${post.id}`}
-                    className="flex items-center space-x-1.5 rounded-md bg-[var(--oxblood)] text-white px-3 py-1.5 font-editorial-mono text-xs transition-colors hover:bg-[var(--oxblood-hover)] shadow-xs"
+                    className="flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1.5 font-editorial-mono text-xs text-[var(--ink-primary)] transition-colors hover:border-[var(--oxblood)] shadow-xs"
+                    title="Edit in Writer Studio"
                   >
-                    <Edit3 className="h-3.5 w-3.5" />
+                    <Edit3 className="h-3.5 w-3.5 text-[var(--oxblood)]" />
                     <span>Inscribe</span>
                   </Link>
 

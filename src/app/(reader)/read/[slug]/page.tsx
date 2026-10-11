@@ -18,25 +18,33 @@ import {
   Maximize2,
   Minimize2,
   Compass,
+  Loader2,
+  Lock,
+  Edit3,
 } from "lucide-react";
+import { SafeContentRenderer } from "@/components/content/SafeContentRenderer";
 
 interface Story {
+  id?: string;
   slug: string;
-  chapter: string;
-  folio: string;
-  issue: string;
+  chapter?: string;
+  folio?: string;
+  issue?: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   author: string;
-  role: string;
+  role?: string;
   date: string;
   readingTime: string;
   readingMinutesTotal: number;
   publication: string;
-  content: string[];
+  content?: string[];
+  contentHtml?: string | null;
+  contentJson?: string | object | null;
   pullquote?: string;
   footnotes?: { id: number; text: string; sideNote?: string }[];
   nextStory?: { slug: string; title: string; chapter: string };
+  isDraft?: boolean;
 }
 
 const STORIES: Record<string, Story> = {
@@ -163,6 +171,80 @@ export default function StoryReaderPage() {
   const [activeFootnote, setActiveFootnote] = useState<number | null>(null);
   const [solitaryMode, setSolitaryMode] = useState(false);
 
+  const [loadedStory, setLoadedStory] = useState<Story | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isNotFound, setIsNotFound] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    setIsLoading(true);
+    setIsNotFound(false);
+
+    async function loadMonograph() {
+      // 1. Try dynamic database API first
+      try {
+        const res = await fetch(`/api/v1/documents/by-slug/${slug}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            const doc = json.data;
+            const isDraft = doc.status !== "PUBLISHED";
+            if (mounted) {
+              setLoadedStory({
+                id: doc.id,
+                slug: doc.slug,
+                chapter: isDraft ? "PRIVATE DRAFT" : "FOLIO EDITION",
+                folio: isDraft ? "UNPUBLISHED" : `v${doc.version}`,
+                issue: isDraft ? "INKFORGE AUTHOR SANCTUARY" : "INKFORGE PRESS ARCHIVE",
+                title: doc.title,
+                subtitle: doc.excerpt || "",
+                author: doc.author?.displayName || doc.author?.username || "Resident Author",
+                role: "Author & Scribe",
+                date: doc.publishedAt
+                  ? new Date(doc.publishedAt).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : `Inscribed ${new Date(doc.createdAt).toLocaleDateString()}`,
+                readingTime: `${doc.readingTimeMinutes || 3} min read`,
+                readingMinutesTotal: doc.readingTimeMinutes || 3,
+                publication: doc.publication?.name || "Independent Press",
+                contentHtml: doc.contentHtml,
+                contentJson: doc.contentJson,
+                isDraft,
+              });
+              setIsLoading(false);
+              return;
+            }
+          }
+        }
+      } catch {
+        // Continue to static fallback
+      }
+
+      // 2. Check static curated stories
+      if (STORIES[slug]) {
+        if (mounted) {
+          setLoadedStory(STORIES[slug]);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // 3. Neither exists: return 404
+      if (mounted) {
+        setIsNotFound(true);
+        setIsLoading(false);
+      }
+    }
+
+    loadMonograph();
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
+
   useEffect(() => {
     const handleScroll = () => {
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -202,24 +284,6 @@ export default function StoryReaderPage() {
     }
   };
 
-  const story = STORIES[slug] || {
-    slug,
-    chapter: "MANUSCRIPT",
-    folio: "FOLIO ARCHIVE",
-    issue: "INKFORGE PRESS ARCHIVE",
-    title: slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-    subtitle: "A monograph from the Inkforge Studio archive.",
-    author: "Inkforge Author",
-    role: "Staff Contributor",
-    date: "Recent Edition",
-    readingTime: "3 min read",
-    readingMinutesTotal: 3,
-    publication: "The Collective",
-    content: [
-      "This piece was authored and published via the Inkforge Writer Studio. Explore the studio to create and publish your own stories with living editorial typography.",
-    ],
-  };
-
   const copyUrl = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
@@ -239,6 +303,52 @@ export default function StoryReaderPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[var(--paper-canvas)] flex items-center justify-center">
+        <div className="font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] animate-pulse flex items-center space-x-2">
+          <Loader2 className="h-4 w-4 animate-spin text-[var(--oxblood)]" />
+          <span>Unfolding Archival Folio...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isNotFound || !loadedStory) {
+    return (
+      <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
+        <Header />
+        <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6">
+          <div className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)] mb-3">
+            FOLIO NOT FOUND • ERROR 404
+          </div>
+          <h1 className="font-editorial-serif text-4xl sm:text-5xl font-bold tracking-tight text-[var(--ink-primary)]">
+            A Blank Leaf in the Archive
+          </h1>
+          <p className="mt-4 max-w-md font-editorial-serif italic text-base text-[var(--ink-secondary)] leading-relaxed">
+            The requested monograph does not exist in the public archive or has been converted to an unindexed private draft.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs hover:bg-[var(--oxblood-hover)]"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Return to Frontispiece</span>
+            </Link>
+            <Link
+              href="/discover"
+              className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 font-editorial-sans text-xs uppercase tracking-wider text-[var(--ink-primary)] hover:border-[var(--oxblood)]"
+            >
+              Explore Discover
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const story = loadedStory;
   const remainingMinutes = Math.max(
     1,
     Math.ceil(story.readingMinutesTotal * (1 - scrollProgress / 100))
@@ -267,6 +377,25 @@ export default function StoryReaderPage() {
             <Minimize2 className="h-3 w-3" />
             <span>Exit Solitary Mode</span>
           </button>
+        </div>
+      )}
+
+      {/* Private Draft Preview Top Banner */}
+      {story.isDraft && (
+        <div className="sticky top-0 z-50 bg-[var(--oxblood-subtle)] border-b border-[var(--oxblood)]/40 px-4 py-2.5 font-editorial-mono text-xs text-[var(--oxblood)] flex items-center justify-between">
+          <div className="flex items-center space-x-2 font-bold">
+            <Lock className="h-3.5 w-3.5" />
+            <span>PRIVATE AUTHOR PREVIEW • UNPUBLISHED DRAFT (NOT ACCESSIBLE TO PUBLIC)</span>
+          </div>
+          {story.id && (
+            <Link
+              href={`/write?id=${story.id}`}
+              className="hover:underline flex items-center space-x-1 font-bold text-[var(--oxblood)]"
+            >
+              <Edit3 className="h-3 w-3" />
+              <span>Return to Studio</span>
+            </Link>
+          )}
         </div>
       )}
 
@@ -360,15 +489,21 @@ export default function StoryReaderPage() {
             </button>
 
             {/* Citation Share */}
-            <button
-              type="button"
-              onClick={copyUrl}
-              className="flex items-center space-x-1 hover:text-[var(--oxblood)] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-1"
-              title="Copy citation link"
-            >
-              {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Share2 className="h-3.5 w-3.5" />}
-              <span className="hidden sm:inline">{copiedLink ? "Copied" : "Cite"}</span>
-            </button>
+            {!story.isDraft ? (
+              <button
+                type="button"
+                onClick={copyUrl}
+                className="flex items-center space-x-1 hover:text-[var(--oxblood)] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-1 cursor-pointer"
+                title="Copy public citation link"
+              >
+                {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Share2 className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">{copiedLink ? "Link Copied!" : "Share / Cite"}</span>
+              </button>
+            ) : (
+              <span className="font-editorial-mono text-[10px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-800">
+                Private Draft
+              </span>
+            )}
 
             <span className="hidden md:inline">
               {story.chapter} • {story.folio}
@@ -391,9 +526,11 @@ export default function StoryReaderPage() {
             {story.title}
           </h1>
 
-          <p className="mt-5 font-editorial-serif text-lg sm:text-xl text-[var(--ink-secondary)] italic leading-relaxed">
-            {story.subtitle}
-          </p>
+          {story.subtitle && (
+            <p className="mt-5 font-editorial-serif text-lg sm:text-xl text-[var(--ink-secondary)] italic leading-relaxed">
+              {story.subtitle}
+            </p>
+          )}
 
           {/* Byline and Dynamic Reading Progress */}
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-[var(--editorial-rule)] py-4 font-editorial-sans text-xs text-[var(--ink-muted)]">
@@ -422,33 +559,41 @@ export default function StoryReaderPage() {
         <div className={solitaryMode ? "space-y-6" : "grid lg:grid-cols-12 gap-8 items-start"}>
           {/* Main Prose Text */}
           <div className={`${solitaryMode ? "w-full" : "lg:col-span-9"} space-y-6 font-editorial-serif text-[var(--ink-primary)] transition-all`}>
-            {story.content.map((paragraph, idx) => (
-              <p
-                key={idx}
-                className={`${getProseTextSize()} ${idx === 0 ? "drop-cap" : ""}`}
-              >
-                {paragraph}
-                {/* Embedded footnote trigger anchors */}
-                {story.footnotes && idx === 1 && (
-                  <sup
-                    className="ml-1 cursor-pointer font-editorial-mono font-bold text-[var(--oxblood)] hover:underline"
-                    onMouseEnter={() => setActiveFootnote(1)}
-                    onMouseLeave={() => setActiveFootnote(null)}
-                  >
-                    [1]
-                  </sup>
-                )}
-                {story.footnotes && idx === 3 && (
-                  <sup
-                    className="ml-1 cursor-pointer font-editorial-mono font-bold text-[var(--oxblood)] hover:underline"
-                    onMouseEnter={() => setActiveFootnote(2)}
-                    onMouseLeave={() => setActiveFootnote(null)}
-                  >
-                    [2]
-                  </sup>
-                )}
-              </p>
-            ))}
+            {story.content ? (
+              story.content.map((paragraph, idx) => (
+                <p
+                  key={idx}
+                  className={`${getProseTextSize()} ${idx === 0 ? "drop-cap" : ""}`}
+                >
+                  {paragraph}
+                  {/* Embedded footnote trigger anchors */}
+                  {story.footnotes && idx === 1 && (
+                    <sup
+                      className="ml-1 cursor-pointer font-editorial-mono font-bold text-[var(--oxblood)] hover:underline"
+                      onMouseEnter={() => setActiveFootnote(1)}
+                      onMouseLeave={() => setActiveFootnote(null)}
+                    >
+                      [1]
+                    </sup>
+                  )}
+                  {story.footnotes && idx === 3 && (
+                    <sup
+                      className="ml-1 cursor-pointer font-editorial-mono font-bold text-[var(--oxblood)] hover:underline"
+                      onMouseEnter={() => setActiveFootnote(2)}
+                      onMouseLeave={() => setActiveFootnote(null)}
+                    >
+                      [2]
+                    </sup>
+                  )}
+                </p>
+              ))
+            ) : (
+              <SafeContentRenderer
+                contentJson={story.contentJson}
+                contentHtml={story.contentHtml}
+                className={`space-y-6 font-editorial-serif text-[var(--ink-primary)] ${getProseTextSize()}`}
+              />
+            )}
 
             {/* Editorial Pullquote */}
             {story.pullquote && (

@@ -32,7 +32,11 @@ import {
   RotateCcw,
   CloudUpload,
   X,
+  Share2,
+  Lock,
+  Globe,
 } from "lucide-react";
+import { SafeContentRenderer } from "@/components/content/SafeContentRenderer";
 
 const Editor = dynamic(
   () => import("@/components/editor/Editor").then((mod) => mod.Editor),
@@ -83,6 +87,34 @@ function WritePageContent() {
 
   // Copied State
   const [copiedConflict, setCopiedConflict] = useState(false);
+  const [copiedShare, setCopiedShare] = useState(false);
+
+  // Publishing Workflow Modal & State
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
+
+  const handlePublishClick = async () => {
+    setIsPublishing(true);
+    const result = await doc.publishManuscript();
+    setIsPublishing(false);
+    if (result.success && result.data) {
+      const canonical = result.data.canonicalUrl || `/read/${result.data.slug}`;
+      setPublishedUrl(canonical);
+      setPublishModalOpen(true);
+    }
+  };
+
+  const handleUnpublishClick = async () => {
+    const confirm = window.confirm(
+      "Are you sure you wish to unpublish this manuscript? It will be removed from public feeds and converted back into a private draft."
+    );
+    if (!confirm) return;
+    setIsUnpublishing(true);
+    await doc.unpublishManuscript();
+    setIsUnpublishing(false);
+  };
 
   // Check unmigrated local drafts on mount
   useEffect(() => {
@@ -535,16 +567,54 @@ function WritePageContent() {
                   <span>{doc.saveStatus === "saving" ? "Saving..." : "Save"}</span>
                 </button>
 
-                {/* Primary: Publish */}
-                <button
-                  type="button"
-                  onClick={() => doc.handleStatusChange("PUBLISHED")}
-                  className="h-9 inline-flex items-center space-x-1.5 rounded-md bg-[var(--oxblood)] px-4 text-xs font-editorial-sans font-semibold uppercase tracking-wider text-white shadow-2xs hover:bg-[var(--oxblood-hover)] transition-all active:scale-[0.98] cursor-pointer"
-                  title="Publish piece to public archive"
-                >
-                  <Send className="h-3.5 w-3.5" />
-                  <span>Publish</span>
-                </button>
+                {/* Publish & Publication Actions */}
+                {doc.status === "PUBLISHED" ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const slug = doc.title ? doc.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") : doc.documentId;
+                        setPublishedUrl(`/read/${slug}`);
+                        setPublishModalOpen(true);
+                      }}
+                      className="h-9 inline-flex items-center space-x-1.5 rounded-md border border-[var(--oxblood)] bg-[var(--oxblood-subtle)] px-3 text-xs font-editorial-sans font-semibold text-[var(--oxblood)] hover:bg-[var(--oxblood)] hover:text-white shadow-2xs transition-all cursor-pointer"
+                      title="Share published public link"
+                    >
+                      <Share2 className="h-3.5 w-3.5" />
+                      <span>Share Folio</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleUnpublishClick}
+                      disabled={isUnpublishing}
+                      className="h-9 inline-flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 text-xs font-editorial-sans text-[var(--ink-secondary)] hover:text-[var(--oxblood)] hover:border-[var(--oxblood)] shadow-2xs transition-colors cursor-pointer disabled:opacity-40"
+                      title="Convert back to private draft"
+                    >
+                      {isUnpublishing ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Lock className="h-3.5 w-3.5" />
+                      )}
+                      <span>{isUnpublishing ? "Unpublishing..." : "Unpublish"}</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handlePublishClick}
+                    disabled={isPublishing || doc.saveStatus === "saving"}
+                    className="h-9 inline-flex items-center space-x-1.5 rounded-md bg-[var(--oxblood)] px-4 text-xs font-editorial-sans font-semibold uppercase tracking-wider text-white shadow-2xs hover:bg-[var(--oxblood-hover)] transition-all active:scale-[0.98] cursor-pointer disabled:opacity-40"
+                    title="Publish manuscript to public reader archive"
+                  >
+                    {isPublishing ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Send className="h-3.5 w-3.5" />
+                    )}
+                    <span>{isPublishing ? "Publishing..." : "Publish"}</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -635,10 +705,20 @@ function WritePageContent() {
 
         {/* PREVIEW MODE vs LIVE WRITING CANVAS */}
         {proofMode ? (
-          <div className="book-jacket rounded-xl p-8 sm:p-12 mb-12 shadow-xs">
+          <div className="book-jacket rounded-xl p-8 sm:p-12 mb-12 shadow-xs border border-[var(--oxblood)]/30 relative">
             <div className="mb-4 flex items-center justify-between font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] pb-3 border-b border-[var(--editorial-rule)]">
-              <span>READER PREVIEW INSPECTION</span>
-              <span>{doc.publication}</span>
+              <div className="flex items-center space-x-2 font-bold">
+                <span className="h-2 w-2 rounded-full bg-[var(--oxblood)] animate-pulse" />
+                <span>PRIVATE READER PREVIEW INSPECTION</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setProofMode(false)}
+                className="text-xs hover:underline flex items-center space-x-1 cursor-pointer"
+              >
+                <Edit3 className="h-3 w-3" />
+                <span>Return to Editor</span>
+              </button>
             </div>
             <h2 className="font-editorial-serif text-3xl sm:text-4xl font-bold text-[var(--ink-primary)]">
               {doc.title || "Untitled Document"}
@@ -648,12 +728,12 @@ function WritePageContent() {
                 {doc.excerpt}
               </p>
             )}
-            <div
-              className="mt-8 font-editorial-serif text-lg leading-[1.88] text-[var(--ink-primary)] space-y-4"
-              dangerouslySetInnerHTML={{
-                __html: doc.contentHtml || "<p class='italic text-[var(--ink-muted)]'>No prose inscribed yet.</p>",
-              }}
-            />
+            <div className="mt-8">
+              <SafeContentRenderer
+                contentJson={doc.contentJson}
+                contentHtml={doc.contentHtml}
+              />
+            </div>
           </div>
         ) : (
           <div className="mb-12">
@@ -678,6 +758,100 @@ function WritePageContent() {
           </div>
         )}
       </main>
+
+      {/* PUBLICATION SUCCESS & SHARING MODAL */}
+      {publishModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setPublishModalOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-lg rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8 shadow-2xl space-y-5"
+          >
+            <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-3">
+              <div className="flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-wider text-[var(--oxblood)] font-bold">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span>Manuscript Published to Ledger</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPublishModalOpen(false)}
+                className="rounded-md p-1 text-[var(--ink-muted)] hover:text-[var(--ink-primary)] cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)]">
+                &ldquo;{doc.title}&rdquo; is now public.
+              </h3>
+              <p className="font-editorial-serif italic text-sm text-[var(--ink-secondary)] leading-relaxed">
+                Your monograph is officially preserved and live in the public reader index. Readers can explore your thoughts through classical editorial typography.
+              </p>
+
+              <div className="p-3.5 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-warm)] space-y-1.5">
+                <div className="font-editorial-mono text-[10px] uppercase tracking-wider text-[var(--ink-muted)]">
+                  Canonical Public URL
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    readOnly
+                    type="text"
+                    value={
+                      typeof window !== "undefined"
+                        ? `${window.location.origin}${publishedUrl || `/read/${doc.documentId}`}`
+                        : publishedUrl || ""
+                    }
+                    className="w-full bg-[var(--paper-surface)] px-2.5 py-1.5 rounded border border-[var(--paper-border)] font-editorial-mono text-xs text-[var(--ink-primary)] select-all focus:outline-hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url =
+                        typeof window !== "undefined"
+                          ? `${window.location.origin}${publishedUrl || `/read/${doc.documentId}`}`
+                          : publishedUrl || "";
+                      navigator.clipboard.writeText(url);
+                      setCopiedShare(true);
+                      setTimeout(() => setCopiedShare(false), 2000);
+                    }}
+                    className="shrink-0 inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-md bg-[var(--oxblood)] text-white text-xs font-editorial-mono font-bold hover:bg-[var(--oxblood-hover)] transition-colors cursor-pointer"
+                  >
+                    {copiedShare ? (
+                      <Check className="h-3.5 w-3.5 text-white" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                    <span>{copiedShare ? "Copied" : "Copy"}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--editorial-rule)]">
+              <Link
+                href={publishedUrl || `/read/${doc.documentId}`}
+                target="_blank"
+                className="inline-flex items-center space-x-1.5 font-editorial-sans text-xs font-semibold text-[var(--oxblood)] hover:underline"
+              >
+                <span>Open Reader Edition</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setPublishModalOpen(false)}
+                className="px-4 py-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-warm)] text-xs font-editorial-sans text-[var(--ink-primary)] hover:border-[var(--oxblood)] transition-colors cursor-pointer"
+              >
+                Continue Inscribing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* REVISION HISTORY MODAL */}
       {historyOpen && (

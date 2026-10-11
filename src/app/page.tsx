@@ -1,8 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { InkforgeLanding } from "@/components/landing/InkforgeLanding";
+
+interface AnthologyStory {
+  slug: string;
+  category: string;
+  chapter: string;
+  folio: string;
+  title: string;
+  excerpt: string;
+  author: string;
+  role: string;
+  date: string;
+  readingTime: string;
+  publication: string;
+}
 import {
   BookOpen,
   ArrowRight,
@@ -121,9 +135,62 @@ const CURATED_VOLUMES = [
 ];
 
 export default function HomePage() {
+  const [anthology, setAnthology] = useState<AnthologyStory[]>(ANTHOLOGY_STORIES);
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
 
-  const filteredAnthology = ANTHOLOGY_STORIES.filter(
+  useEffect(() => {
+    let isMounted = true;
+    async function loadPublished() {
+      try {
+        const res = await fetch("/api/v1/documents?status=PUBLISHED&limit=10");
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!isMounted || !json.success || !Array.isArray(json.data)) return;
+
+        const dbStories: AnthologyStory[] = json.data.map((item: any, idx: number) => ({
+          slug: item.slug,
+          category: "SYSTEMS CRAFT",
+          chapter: `FOLIO ${idx + 1}`,
+          folio: "INSCRIBED",
+          title: item.title,
+          excerpt:
+            item.excerpt ||
+            (item.contentHtml
+              ? item.contentHtml.replace(/<[^>]+>/g, "").slice(0, 160) + "..."
+              : "A recently inscribed monograph published on Inkforge."),
+          author: item.author?.displayName || item.author?.username || "Resident Author",
+          role: "Published Author",
+          date: item.publishedAt
+            ? new Date(item.publishedAt).toLocaleDateString("en-US", {
+                month: "short",
+                year: "numeric",
+              })
+            : "Autumn 2026",
+          readingTime: "4 min read",
+          publication: "Inkforge Press",
+        }));
+
+        const seen = new Set<string>();
+        const combined: AnthologyStory[] = [];
+        for (const s of [...dbStories, ...ANTHOLOGY_STORIES]) {
+          if (!seen.has(s.slug)) {
+            seen.add(s.slug);
+            combined.push(s);
+          }
+        }
+        setAnthology(combined);
+      } catch (err) {
+        console.warn("Could not fetch published documents for Homepage:", err);
+      }
+    }
+
+    loadPublished();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredAnthology = anthology.filter(
     (story) => selectedCategory === "ALL" || story.category === selectedCategory
   );
 

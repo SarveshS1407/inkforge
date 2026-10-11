@@ -499,6 +499,185 @@ export function useStudioDocument({
     [executeSave]
   );
 
+  // Explicit Publish Workflow Action
+  const publishManuscript = useCallback(async () => {
+    const state = stateRef.current;
+    const cleanTitle = state.title.trim();
+    if (!cleanTitle) {
+      setErrorMessage("Document title cannot be blank before publication.");
+      return { success: false, error: "Title required" };
+    }
+    const cleanText = state.contentHtml.replace(/<[^>]*>/g, " ").trim();
+    if (!cleanText) {
+      setErrorMessage("Manuscript must contain meaningful prose before publication.");
+      return { success: false, error: "Content required" };
+    }
+
+    setSaveStatus("saving");
+    setErrorMessage(null);
+
+    let targetId = state.documentId;
+    let currentVer = state.version;
+
+    try {
+      if (!targetId) {
+        // Create as draft first to obtain a permanent ID and slug
+        const createRes = await fetch("/api/v1/documents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: cleanTitle,
+            excerpt: state.excerpt,
+            contentHtml: state.contentHtml,
+            contentJson:
+              typeof state.contentJson === "object" && state.contentJson !== null
+                ? JSON.stringify(state.contentJson)
+                : state.contentJson,
+            status: "DRAFT",
+          }),
+        });
+
+        const createData = await createRes.json();
+        if (!createRes.ok || !createData.success) {
+          setSaveStatus("error");
+          setErrorMessage(createData.error?.message || "Failed to initialize document for publication.");
+          return { success: false, error: createData.error?.message };
+        }
+
+        targetId = createData.data.id;
+        currentVer = createData.data.version;
+        setDocumentId(targetId);
+        setVersion(currentVer);
+
+        if (typeof window !== "undefined" && targetId) {
+          const url = new URL(window.location.href);
+          url.searchParams.set("id", targetId);
+          window.history.replaceState({}, "", url.toString());
+        }
+      } else if (state.isDirty) {
+        // Flush any unsaved keystrokes first
+        const saveRes = await fetch(`/api/v1/documents/${targetId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: cleanTitle,
+            excerpt: state.excerpt,
+            contentHtml: state.contentHtml,
+            contentJson:
+              typeof state.contentJson === "object" && state.contentJson !== null
+                ? JSON.stringify(state.contentJson)
+                : state.contentJson,
+            status: state.status,
+            expectedVersion: currentVer,
+          }),
+        });
+
+        const saveData = await saveRes.json();
+        if (saveRes.status === 409) {
+          setSaveStatus("conflict");
+          setConflictData({
+            serverVersion: saveData.error?.details?.currentVersion || currentVer + 1,
+            serverUpdatedAt: saveData.error?.details?.currentUpdatedAt,
+            localTitle: cleanTitle,
+            localContentHtml: state.contentHtml,
+            localContentJson: state.contentJson,
+          });
+          return { success: false, error: "Version conflict" };
+        }
+
+        if (saveRes.ok && saveData.success) {
+          currentVer = saveData.data.version;
+          setVersion(currentVer);
+        }
+      }
+
+      // Now invoke dedicated publish endpoint
+      const pubRes = await fetch(`/api/v1/documents/${targetId}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expectedVersion: currentVer }),
+      });
+
+      const pubData = await pubRes.json();
+      if (pubRes.status === 409) {
+        setSaveStatus("conflict");
+        setConflictData({
+          serverVersion: pubData.error?.details?.currentVersion || currentVer + 1,
+          serverUpdatedAt: pubData.error?.details?.currentUpdatedAt,
+          localTitle: cleanTitle,
+          localContentHtml: state.contentHtml,
+          localContentJson: state.contentJson,
+        });
+        return { success: false, error: "Version conflict" };
+      }
+
+      if (pubRes.ok && pubData.success) {
+        setStatus("PUBLISHED");
+        setVersion(pubData.data.version);
+        setSaveStatus("saved");
+        setIsDirty(false);
+        setLastSavedAt(new Date());
+        DraftManager.clearRecoveryBuffer(targetId);
+        return { success: true, data: pubData.data };
+      }
+
+      setSaveStatus("error");
+      setErrorMessage(pubData.error?.message || "Failed to publish manuscript.");
+      return { success: false, error: pubData.error?.message };
+    } catch {
+      setSaveStatus("error");
+      setErrorMessage("Network error during publication.");
+      return { success: false, error: "Network error" };
+    }
+  }, []);
+
+  // Explicit Unpublish Action
+  const unpublishManuscript = useCallback(async () => {
+    const state = stateRef.current;
+    if (!state.documentId) return { success: false, error: "No document saved" };
+
+    setSaveStatus("saving");
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch(`/api/v1/documents/${state.documentId}/unpublish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expectedVersion: state.version }),
+      });
+
+      const data = await res.json();
+      if (res.status === 409) {
+        setSaveStatus("conflict");
+        setConflictData({
+          serverVersion: data.error?.details?.currentVersion || state.version + 1,
+          serverUpdatedAt: data.error?.details?.currentUpdatedAt,
+          localTitle: state.title,
+          localContentHtml: state.contentHtml,
+          localContentJson: state.contentJson,
+        });
+        return { success: false, error: "Version conflict" };
+      }
+
+      if (res.ok && data.success) {
+        setStatus("DRAFT");
+        setVersion(data.data.version);
+        setSaveStatus("saved");
+        setIsDirty(false);
+        setLastSavedAt(new Date());
+        return { success: true, data: data.data };
+      }
+
+      setSaveStatus("error");
+      setErrorMessage(data.error?.message || "Failed to unpublish manuscript.");
+      return { success: false, error: data.error?.message };
+    } catch {
+      setSaveStatus("error");
+      setErrorMessage("Network error during unpublication.");
+      return { success: false, error: "Network error" };
+    }
+  }, []);
+
   // 4. Version Conflict Resolution Handlers
   const resolveConflictKeepMine = useCallback(async () => {
     if (!documentId) return;
@@ -625,6 +804,8 @@ export function useStudioDocument({
     handleEditorChange,
     handleStatusChange,
     manualSave,
+    publishManuscript,
+    unpublishManuscript,
     resolveConflictKeepMine,
     resolveConflictLoadServer,
   };

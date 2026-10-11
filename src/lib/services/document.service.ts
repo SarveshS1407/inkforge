@@ -55,6 +55,38 @@ async function generateUniqueSlug(baseTitle: string, currentId?: string): Promis
   }
 }
 
+function hasMeaningfulContent(html?: string | null, json?: string | null): boolean {
+  if (html) {
+    const cleanText = html
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&#39;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, "&")
+      .trim();
+    if (cleanText.length > 0) return true;
+  }
+  if (json) {
+    try {
+      const parsed = typeof json === "string" ? JSON.parse(json) : json;
+      const text = extractTextFromProseMirror(parsed).trim();
+      if (text.length > 0) return true;
+    } catch {
+      // ignore parse error
+    }
+  }
+  return false;
+}
+
+function extractTextFromProseMirror(node: any): string {
+  if (!node) return "";
+  if (typeof node.text === "string") return node.text;
+  if (Array.isArray(node.content)) {
+    return node.content.map(extractTextFromProseMirror).join(" ");
+  }
+  return "";
+}
+
 export interface ListDocumentsParams {
   requesterId?: string;
   status?: string;
@@ -65,6 +97,28 @@ export interface ListDocumentsParams {
 }
 
 export class DocumentService {
+  /**
+   * Validate that a document meets standards for publication.
+   */
+  static validateForPublishing(
+    title: string,
+    contentHtml?: string | null,
+    contentJson?: string | null
+  ) {
+    if (!title || title.trim().length === 0) {
+      throw new ValidationError("Document title is required before publication.");
+    }
+    const cleanTitle = title.trim();
+    if (cleanTitle.length < 2) {
+      throw new ValidationError("Document title must be at least 2 characters long.");
+    }
+    if (!hasMeaningfulContent(contentHtml, contentJson)) {
+      throw new ValidationError(
+        "Manuscript must contain meaningful prose before publication. Blank or empty documents cannot be published."
+      );
+    }
+  }
+
   /**
    * List documents with security rules:
    * Public requests only see published documents.
@@ -91,12 +145,24 @@ export class DocumentService {
     }
 
     // Security Filter:
-    // If not specifying requester or requester is querying someone else,
-    // restrict strictly to published documents.
-    if (!requesterId || (authorId && authorId !== requesterId)) {
+    if (!requesterId) {
+      // Unauthenticated callers can strictly only see PUBLISHED documents
       where.status = "PUBLISHED";
-    } else if (status) {
-      where.status = status;
+    } else if (status === "PUBLISHED") {
+      // Caller explicitly requested public published feed
+      where.status = "PUBLISHED";
+    } else {
+      // Non-published status or studio listing: enforce strict author ownership
+      if (authorId && authorId !== requesterId) {
+        // Querying another author's posts: restrict strictly to PUBLISHED
+        where.status = "PUBLISHED";
+      } else {
+        // Author querying their own posts (studio dashboard)
+        where.authorId = requesterId;
+        if (status) {
+          where.status = status;
+        }
+      }
     }
 
     const [items, total] = await Promise.all([
@@ -168,6 +234,7 @@ export class DocumentService {
 
   /**
    * Retrieve a single document by public slug.
+   * If unpublished and requester is not the author, returns NotFoundError to prevent disclosure.
    */
   static async getDocumentBySlug(slug: string, requesterId?: string) {
     const document = await prisma.post.findUnique({
@@ -196,7 +263,7 @@ export class DocumentService {
     }
 
     if (document.status !== "PUBLISHED" && document.authorId !== requesterId) {
-      throw new ForbiddenError("This document has not been published yet.");
+      throw new NotFoundError(`Document with slug '${slug}' not found`);
     }
 
     return document;
@@ -290,16 +357,22 @@ export class DocumentService {
       slug = await generateUniqueSlug(input.title, existing.id);
     }
 
+    const nextTitle = input.title !== undefined ? input.title.trim() : existing.title;
     const nextHtml = input.contentHtml !== undefined ? input.contentHtml : existing.contentHtml;
     const nextJson = input.contentJson !== undefined ? input.contentJson : existing.contentJson;
     const wordCount = extractWordCount(nextHtml, nextJson);
     const readingTimeMinutes = calculateReadingMinutes(wordCount);
 
     const willBePublished = input.status === "PUBLISHED";
+    if (willBePublished) {
+      this.validateForPublishing(nextTitle, nextHtml, nextJson);
+    }
+
     const publishedAt =
       willBePublished && !existing.publishedAt
         ? new Date()
         : existing.publishedAt;
+    const canonicalUrl = willBePublished ? (existing.canonicalUrl || `/read/${slug}`) : existing.canonicalUrl;
 
     // Execute revision creation and document update atomically in a single transaction
     const updated = await prisma.$transaction(async (tx) => {
@@ -336,6 +409,7 @@ export class DocumentService {
           readingTimeMinutes,
           coverImageUrl: input.coverImageUrl !== undefined ? input.coverImageUrl : undefined,
           publishedAt,
+          canonicalUrl,
           scheduledFor: input.scheduledFor !== undefined ? (input.scheduledFor ? new Date(input.scheduledFor) : null) : undefined,
           publicationId: input.publicationId !== undefined ? input.publicationId : undefined,
         },
@@ -348,11 +422,156 @@ export class DocumentService {
               avatarUrl: true,
             },
           },
+          publication: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
         },
       });
     });
 
     return updated;
+  }
+
+  /**
+   * Explicitly publish an existing manuscript.
+   */
+  static async publishDocument(id: string, requesterId: string, expectedVersion?: number) {
+    const existing = await prisma.post.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new NotFoundError(`Document with ID '${id}' not found`);
+    }
+
+    if (existing.authorId !== requesterId) {
+      throw new ForbiddenError("You can only publish documents you own.");
+    }
+
+    if (expectedVersion !== undefined && expectedVersion !== existing.version) {
+      throw new VersionConflictError(existing.version, expectedVersion, {
+        documentId: id,
+        currentUpdatedAt: existing.updatedAt,
+      });
+    }
+
+    this.validateForPublishing(existing.title, existing.contentHtml, existing.contentJson);
+
+    const canonicalUrl = `/read/${existing.slug}`;
+    const nextVersion = existing.version + 1;
+    const publishedAt = existing.publishedAt || new Date();
+
+    const published = await prisma.$transaction(async (tx) => {
+      await tx.postRevision.create({
+        data: {
+          postId: existing.id,
+          version: existing.version,
+          title: existing.title,
+          contentJson: existing.contentJson || JSON.stringify({ type: "doc" }),
+          wordCount: extractWordCount(existing.contentHtml, existing.contentJson),
+          excerpt: existing.excerpt,
+        },
+      });
+
+      return await tx.post.update({
+        where: { id },
+        data: {
+          status: "PUBLISHED",
+          publishedAt,
+          canonicalUrl,
+          version: nextVersion,
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+            },
+          },
+          publication: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+      });
+    });
+
+    return published;
+  }
+
+  /**
+   * Explicitly unpublish a published work, converting it back to a private draft.
+   */
+  static async unpublishDocument(id: string, requesterId: string, expectedVersion?: number) {
+    const existing = await prisma.post.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new NotFoundError(`Document with ID '${id}' not found`);
+    }
+
+    if (existing.authorId !== requesterId) {
+      throw new ForbiddenError("You can only unpublish documents you own.");
+    }
+
+    if (expectedVersion !== undefined && expectedVersion !== existing.version) {
+      throw new VersionConflictError(existing.version, expectedVersion, {
+        documentId: id,
+        currentUpdatedAt: existing.updatedAt,
+      });
+    }
+
+    const nextVersion = existing.version + 1;
+
+    const unpublished = await prisma.$transaction(async (tx) => {
+      await tx.postRevision.create({
+        data: {
+          postId: existing.id,
+          version: existing.version,
+          title: existing.title,
+          contentJson: existing.contentJson || JSON.stringify({ type: "doc" }),
+          wordCount: extractWordCount(existing.contentHtml, existing.contentJson),
+          excerpt: existing.excerpt,
+        },
+      });
+
+      return await tx.post.update({
+        where: { id },
+        data: {
+          status: "DRAFT",
+          version: nextVersion,
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+            },
+          },
+          publication: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+      });
+    });
+
+    return unpublished;
   }
 
   /**

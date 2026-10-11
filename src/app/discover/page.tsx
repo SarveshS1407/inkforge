@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
 import {
@@ -83,10 +83,61 @@ const TOPICS = [
 ];
 
 export default function DiscoverPage() {
+  const [stories, setStories] = useState<Story[]>(ALL_STORIES);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("ALL");
 
-  const filteredStories = ALL_STORIES.filter((story) => {
+  useEffect(() => {
+    let isMounted = true;
+    async function loadPublishedStories() {
+      try {
+        const res = await fetch("/api/v1/documents?status=PUBLISHED&limit=50");
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!isMounted || !json.success || !Array.isArray(json.data)) return;
+
+        const dbStories: Story[] = json.data.map((item: any) => ({
+          slug: item.slug,
+          category: "SYSTEMS CRAFT",
+          title: item.title,
+          excerpt:
+            item.excerpt ||
+            (item.contentHtml
+              ? item.contentHtml.replace(/<[^>]+>/g, "").slice(0, 160) + "..."
+              : "A recently inscribed monograph published on Inkforge."),
+          author: item.author?.displayName || item.author?.username || "Resident Author",
+          role: "Published Author",
+          date: item.publishedAt
+            ? new Date(item.publishedAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : "Recently Published",
+          readingTime: "4 min read",
+        }));
+
+        const seen = new Set<string>();
+        const combined: Story[] = [];
+        for (const s of [...dbStories, ...ALL_STORIES]) {
+          if (!seen.has(s.slug)) {
+            seen.add(s.slug);
+            combined.push(s);
+          }
+        }
+        setStories(combined);
+      } catch (err) {
+        console.warn("Could not fetch published documents for Discover feed:", err);
+      }
+    }
+
+    loadPublishedStories();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredStories = stories.filter((story) => {
     const matchesTopic = selectedTopic === "ALL" || story.category === selectedTopic;
     const matchesSearch =
       story.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -96,8 +147,8 @@ export default function DiscoverPage() {
   });
 
   const getTopicCount = (topic: string) => {
-    if (topic === "ALL") return ALL_STORIES.length;
-    return ALL_STORIES.filter((s) => s.category === topic).length;
+    if (topic === "ALL") return stories.length;
+    return stories.filter((s) => s.category === topic).length;
   };
 
   return (
