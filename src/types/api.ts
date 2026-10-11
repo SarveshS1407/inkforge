@@ -103,3 +103,35 @@ export interface AuthUserResponse {
     location: string | null;
   } | null;
 }
+
+export interface UpdateProfileInput {
+  displayName?: string;
+  username?: string;
+  bio?: string;
+  avatarUrl?: string;
+  websiteUrl?: string;
+  location?: string;
+}
+
+export interface PublicAuthorResponse {
+  id: string;
+  username: string;
+  displayName: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  role: string;
+  createdAt: Date;
+  websiteUrl?: string | null;
+  location?: string | null;
+  posts: Array<{
+    id: string;
+    title: string;
+    subtitle: string | null;
+    slug: string;
+    excerpt: string | null;
+    readingTimeMinutes: number;
+    publishedAt: Date | null;
+    canonicalUrl: string | null;
+  }>;
+}
+

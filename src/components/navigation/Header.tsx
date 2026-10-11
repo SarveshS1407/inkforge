@@ -19,6 +19,7 @@ import {
   FileText,
   ChevronDown,
   LogOut,
+  Edit3,
 } from "lucide-react";
 
 interface AuthUser {
@@ -376,6 +377,24 @@ export function Header() {
                     </div>
 
                     <Link
+                      href={`/authors/${user.username}`}
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded text-xs font-editorial-sans text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] hover:bg-[var(--paper-warm)] transition-colors"
+                    >
+                      <User className="h-3.5 w-3.5 text-[var(--amber-gold)]" />
+                      <span>My Public Profile</span>
+                    </Link>
+
+                    <Link
+                      href="/profile"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded text-xs font-editorial-sans text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] hover:bg-[var(--paper-warm)] transition-colors"
+                    >
+                      <Edit3 className="h-3.5 w-3.5 text-[var(--ink-muted)]" />
+                      <span>Edit Author Profile</span>
+                    </Link>
+
+                    <Link
                       href="/posts"
                       onClick={() => setUserMenuOpen(false)}
                       className="flex items-center space-x-2 px-3 py-2 rounded text-xs font-editorial-sans text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] hover:bg-[var(--paper-warm)] transition-colors"
@@ -490,6 +509,39 @@ export function Header() {
                 </Link>
               ))}
             </div>
+
+            {/* Author Folio Workspace (Mobile Drawer) */}
+            {user && (
+              <div className="border-t border-[var(--editorial-rule)] pt-3.5 space-y-1">
+                <span className="font-editorial-mono text-[9px] uppercase tracking-widest text-[var(--oxblood)] font-bold block mb-1">
+                  Author Folio &amp; Workspace
+                </span>
+                <Link
+                  href={`/authors/${user.username}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 px-3 min-h-[44px] rounded-md font-editorial-sans text-xs uppercase tracking-wider text-[var(--ink-secondary)] hover:bg-[var(--paper-warm)] transition-colors"
+                >
+                  <User className="h-3.5 w-3.5 text-[var(--amber-gold)]" />
+                  <span>My Public Profile</span>
+                </Link>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 px-3 min-h-[44px] rounded-md font-editorial-sans text-xs uppercase tracking-wider text-[var(--ink-secondary)] hover:bg-[var(--paper-warm)] transition-colors"
+                >
+                  <Edit3 className="h-3.5 w-3.5 text-[var(--ink-muted)]" />
+                  <span>Edit Author Profile</span>
+                </Link>
+                <Link
+                  href="/posts"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 px-3 min-h-[44px] rounded-md font-editorial-sans text-xs uppercase tracking-wider text-[var(--ink-secondary)] hover:bg-[var(--paper-warm)] transition-colors"
+                >
+                  <FileText className="h-3.5 w-3.5 text-[var(--oxblood)]" />
+                  <span>My Drafts &amp; Ledger</span>
+                </Link>
+              </div>
+            )}
 
             {/* Reading Theme Selector (Mobile Drawer Edition) */}
             <div className="border-t border-[var(--editorial-rule)] pt-3.5">

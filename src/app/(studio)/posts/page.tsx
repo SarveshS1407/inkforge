@@ -25,7 +25,16 @@ import {
   Send,
   Check,
   Copy,
+  User,
 } from "lucide-react";
+
+interface AuthUser {
+  id: string;
+  email: string;
+  username: string;
+  displayName: string | null;
+  role: string;
+}
 
 interface PostItem {
   id: string;
@@ -87,6 +96,7 @@ export default function PostsDashboardPage() {
   const [filter, setFilter] = useState<"ALL" | "DRAFT" | "IN_REVIEW" | "SCHEDULED" | "PUBLISHED">("ALL");
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [books, setBooks] = useState<BookIdentity[]>([]);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMigrating, setIsMigrating] = useState(false);
   const [statusNotice, setStatusNotice] = useState<string | null>(null);
@@ -94,6 +104,25 @@ export default function PostsDashboardPage() {
   const loadDocuments = useCallback(async () => {
     setIsLoading(true);
     let serverItems: PostItem[] = [];
+    let isAuthenticated = false;
+
+    // 0. Check authenticated author identity
+    try {
+      const meRes = await fetch("/api/v1/auth/me");
+      if (meRes.ok) {
+        const meJson = await meRes.json();
+        if (meJson.success && meJson.data) {
+          setCurrentUser(meJson.data);
+          isAuthenticated = true;
+        } else {
+          setCurrentUser(null);
+        }
+      } else {
+        setCurrentUser(null);
+      }
+    } catch {
+      setCurrentUser(null);
+    }
 
     // 1. Fetch server documents from authenticated API
     try {
@@ -149,7 +178,12 @@ export default function PostsDashboardPage() {
     // 3. Combine server items, local items, and default samples if empty
     const combined = [...serverItems, ...localItems];
     if (combined.length === 0) {
-      setPosts(DEFAULT_POSTS);
+      // If user is authenticated, respect their empty ledger and avoid confusing them with other authors' sample posts
+      if (isAuthenticated) {
+        setPosts([]);
+      } else {
+        setPosts(DEFAULT_POSTS);
+      }
     } else {
       setPosts(combined);
     }
@@ -369,8 +403,13 @@ export default function PostsDashboardPage() {
         {/* Page Heading */}
         <div className="mb-8 flex flex-col gap-4 border-b border-[var(--editorial-rule)] pb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
-              Registry &amp; Publishing Catalogue
+            <div className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)] flex items-center gap-2">
+              <span>Registry &amp; Publishing Catalogue</span>
+              {currentUser && (
+                <span className="text-[var(--ink-muted)]">
+                  · Author: @{currentUser.username}
+                </span>
+              )}
             </div>
             <h1 className="mt-1 font-editorial-serif text-3xl sm:text-4xl font-bold text-[var(--ink-primary)]">
               The Editorial Ledger
@@ -380,7 +419,17 @@ export default function PostsDashboardPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {currentUser && (
+              <Link
+                href={`/authors/${currentUser.username}`}
+                className="inline-flex items-center space-x-1.5 rounded-md border border-[var(--paper-border)] bg-[var(--paper-warm)] px-3 py-2 font-editorial-mono text-xs text-[var(--ink-primary)] transition-all hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] shadow-xs"
+                title="View your public author folio"
+              >
+                <User className="h-3.5 w-3.5 text-[var(--oxblood)]" />
+                <span>Public Folio</span>
+              </Link>
+            )}
             <Link
               href="/write"
               className="inline-flex items-center space-x-2 rounded-md bg-[var(--oxblood)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-[var(--oxblood-hover)] hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)]"

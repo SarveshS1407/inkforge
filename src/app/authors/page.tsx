@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
-import { Users, Feather, BookOpen, ArrowRight, Clock } from "lucide-react";
+import { Users, Feather, BookOpen, ArrowRight, Clock, User } from "lucide-react";
 
 interface AuthorProfile {
   name: string;
@@ -15,6 +16,17 @@ interface AuthorProfile {
     title: string;
     readingTime: string;
   };
+}
+
+interface InscribedAuthor {
+  id: string;
+  username: string;
+  displayName: string;
+  bio?: string | null;
+  avatarUrl?: string | null;
+  role: string;
+  createdAt: string;
+  publishedCount: number;
 }
 
 const AUTHORS: AuthorProfile[] = [
@@ -69,6 +81,28 @@ const AUTHORS: AuthorProfile[] = [
 ];
 
 export default function AuthorsPage() {
+  const [registeredAuthors, setRegisteredAuthors] = useState<InscribedAuthor[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadAuthors() {
+      try {
+        const res = await fetch("/api/v1/authors");
+        if (!res.ok) return;
+        const json = await res.json();
+        if (isMounted && json.success && Array.isArray(json.data)) {
+          setRegisteredAuthors(json.data);
+        }
+      } catch {
+        // Fallback to static fellows
+      }
+    }
+    loadAuthors();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
@@ -96,6 +130,74 @@ export default function AuthorsPage() {
             Discover the thinkers, researchers, and essayists publishing longform work across the INKFORGE catalog.
           </p>
         </header>
+
+        {/* Registered Inscribed Authors (Live from Database) */}
+        {registeredAuthors.length > 0 && (
+          <section className="mb-14">
+            <div className="mb-6 border-b border-[var(--editorial-rule)] pb-3 flex items-baseline justify-between">
+              <div>
+                <span className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
+                  Live Registry
+                </span>
+                <h2 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)]">
+                  Inscribed Scribes &amp; Authors
+                </h2>
+              </div>
+              <span className="font-editorial-mono text-xs text-[var(--ink-muted)]">
+                {registeredAuthors.length} registered
+              </span>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+              {registeredAuthors.map((author) => (
+                <Link
+                  key={author.id}
+                  href={`/authors/${author.username}`}
+                  className="book-jacket group rounded-xl p-6 transition-all hover:border-[var(--oxblood)] shadow-xs flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--oxblood-subtle)] border border-[var(--oxblood)] font-editorial-serif font-bold text-lg text-[var(--oxblood)] shadow-2xs">
+                        {author.displayName[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <h3 className="font-editorial-serif text-lg font-bold text-[var(--ink-primary)] group-hover:text-[var(--oxblood)] transition-colors line-clamp-1">
+                          {author.displayName}
+                        </h3>
+                        <p className="font-editorial-mono text-xs text-[var(--ink-muted)]">
+                          @{author.username}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="font-editorial-serif text-xs text-[var(--ink-secondary)] italic line-clamp-2 leading-relaxed">
+                      {author.bio || "Inscribed author at the INKFORGE Publishing Sanctuary."}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-[var(--editorial-rule)] flex items-center justify-between font-editorial-mono text-[10px] text-[var(--ink-muted)]">
+                    <span className="text-[var(--oxblood)] font-semibold">
+                      {author.publishedCount} Published Folio{author.publishedCount === 1 ? "" : "s"}
+                    </span>
+                    <span className="text-[var(--oxblood)] font-bold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                      <span>View Folio →</span>
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Curated Fellows Header */}
+        <div className="mb-6 border-b border-[var(--editorial-rule)] pb-3">
+          <span className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
+            Fellowship Archive
+          </span>
+          <h2 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)]">
+            Founding Editorial Fellows
+          </h2>
+        </div>
 
         {/* Authors Grid */}
         <section className="grid gap-6 md:grid-cols-2 mb-12">
