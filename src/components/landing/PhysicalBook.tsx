@@ -51,6 +51,10 @@ export function PhysicalBook({
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [mobileFolio, setMobileFolio] = useState<"contents" | "colophon">("contents");
   const [allowTransition, setAllowTransition] = useState<boolean>(!skipInitialAnimation);
+  const [isLifting, setIsLifting] = useState<boolean>(false);
+
+  // Touch gesture tracking for mobile folio swiping
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // Dimensions of a single page/board
   const PAGE_WIDTH = 430;
@@ -69,12 +73,79 @@ export function PhysicalBook({
     }
   }, [skipInitialAnimation]);
 
+  // Physical 3D lift-off sequence when volume opens or closes
+  useEffect(() => {
+    if (allowTransition) {
+      setIsLifting(true);
+      const timer = setTimeout(() => {
+        setIsLifting(false);
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, allowTransition]);
+
   // Default to the interactive Table of Contents on open
   useEffect(() => {
     if (isOpen) {
       setMobileFolio("contents");
     }
   }, [isOpen]);
+
+  // Subtle tactile haptic impulse
+  const triggerHaptic = useCallback((ms = 12) => {
+    if (typeof window !== "undefined" && typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(ms);
+      } catch {}
+    }
+  }, []);
+
+  // Keyboard navigation: Close on Escape, Arrow keys switch folios when open on mobile
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        triggerHaptic(8);
+        onClose();
+      } else if (isMobile && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        triggerHaptic(6);
+        setMobileFolio((prev) => (prev === "contents" ? "colophon" : "contents"));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, isMobile, onClose, triggerHaptic]);
+
+  // Touch gesture handlers for mobile swipe between folios
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current || !isMobile || !isOpen) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartRef.current.x;
+    const dy = touch.clientY - touchStartRef.current.y;
+    touchStartRef.current = null;
+
+    // Detect horizontal swipe if delta exceeds 38px and exceeds vertical delta
+    if (Math.abs(dx) > 38 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      if (dx < 0 && mobileFolio === "colophon") {
+        // Swiped left: go to Contents (Folio II)
+        triggerHaptic(14);
+        setMobileFolio("contents");
+      } else if (dx > 0 && mobileFolio === "contents") {
+        // Swiped right: go to Colophon (Folio I)
+        triggerHaptic(14);
+        setMobileFolio("colophon");
+      }
+    }
+  }, [isMobile, isOpen, mobileFolio, triggerHaptic]);
 
   const activeCover = activeVersion || (book ? book.cover.versions.find((v) => v.id === book.cover.currentVersionId) || book.cover.versions[0] : null);
 
@@ -199,44 +270,87 @@ export function PhysicalBook({
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative flex flex-col items-center justify-center py-4 sm:py-10 perspective-book select-none w-full max-w-full overflow-x-clip"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="relative flex flex-col items-center justify-center py-4 sm:py-10 perspective-book select-none w-full max-w-full overflow-x-clip touch-pan-y"
       style={{
         minHeight: `${PAGE_HEIGHT * scale + (isMobile ? 36 : 60)}px`,
       }}
     >
-      {/* Mobile Folio Tabs (Folio I: Colophon / Folio II: Contents) */}
+      {/* Mobile Folio Tabs (Folio I: Colophon / Folio II: Contents) with Swipe Hint */}
       {isMobile && isOpen && (
-        <div className="flex items-center justify-center gap-2 mb-3 z-40 animate-fade-in touch-manipulation">
-          <button
-            type="button"
-            onClick={() => setMobileFolio("colophon")}
-            aria-pressed={mobileFolio === "colophon"}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-full font-editorial-mono text-[9.5px] tracking-widest uppercase transition-all flex items-center gap-1.5 shadow-2xs touch-tactile ${
-              mobileFolio === "colophon"
-                ? "bg-[var(--oxblood)] text-white font-bold ring-1 ring-[var(--oxblood)]"
-                : "bg-[var(--paper-surface)] text-[var(--ink-secondary)] border border-[var(--paper-border)] hover:border-[var(--oxblood)]"
-            }`}
-          >
-            <span>Folio I: Colophon</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileFolio("contents")}
-            aria-pressed={mobileFolio === "contents"}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-full font-editorial-mono text-[9.5px] tracking-widest uppercase transition-all flex items-center gap-1.5 shadow-2xs touch-tactile ${
-              mobileFolio === "contents"
-                ? "bg-[var(--oxblood)] text-white font-bold ring-1 ring-[var(--oxblood)]"
-                : "bg-[var(--paper-surface)] text-[var(--ink-secondary)] border border-[var(--paper-border)] hover:border-[var(--oxblood)]"
-            }`}
-          >
-            <span>Folio II: Contents</span>
-          </button>
+        <div className="flex flex-col items-center gap-1.5 mb-3 z-40 animate-fade-in touch-manipulation">
+          <div className="flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic(10);
+                setMobileFolio("colophon");
+              }}
+              aria-pressed={mobileFolio === "colophon"}
+              className={`min-h-[40px] px-4 py-2 rounded-full font-editorial-mono text-[10px] tracking-widest uppercase transition-all flex items-center gap-1.5 shadow-2xs touch-tactile cursor-pointer ${
+                mobileFolio === "colophon"
+                  ? "bg-[var(--oxblood)] text-white font-bold ring-2 ring-[var(--oxblood)]/40 shadow-xs"
+                  : "bg-[var(--paper-surface)] text-[var(--ink-secondary)] border border-[var(--paper-border)] hover:border-[var(--oxblood)]"
+              }`}
+            >
+              <span>Folio I: Colophon</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic(10);
+                setMobileFolio("contents");
+              }}
+              aria-pressed={mobileFolio === "contents"}
+              className={`min-h-[40px] px-4 py-2 rounded-full font-editorial-mono text-[10px] tracking-widest uppercase transition-all flex items-center gap-1.5 shadow-2xs touch-tactile cursor-pointer ${
+                mobileFolio === "contents"
+                  ? "bg-[var(--oxblood)] text-white font-bold ring-2 ring-[var(--oxblood)]/40 shadow-xs"
+                  : "bg-[var(--paper-surface)] text-[var(--ink-secondary)] border border-[var(--paper-border)] hover:border-[var(--oxblood)]"
+              }`}
+            >
+              <span>Folio II: Contents</span>
+            </button>
+          </div>
+          <p className="font-editorial-mono text-[8.5px] uppercase tracking-wider text-[var(--ink-muted)] opacity-70">
+            Swipe left / right or tap tabs to turn page
+          </p>
         </div>
       )}
 
-      {/* Scaled 3D Book Stage Container */}
+      {/* Mobile Folio Edge Curl Hints */}
+      {isMobile && isOpen && (
+        <>
+          {mobileFolio === "contents" && (
+            <div
+              onClick={() => {
+                triggerHaptic(10);
+                setMobileFolio("colophon");
+              }}
+              className="folio-curl-hint left-1 sm:left-4 z-40 cursor-pointer pointer-events-auto"
+              title="Turn back to Folio I: Colophon"
+              aria-label="Previous Folio"
+            />
+          )}
+          {mobileFolio === "colophon" && (
+            <div
+              onClick={() => {
+                triggerHaptic(10);
+                setMobileFolio("contents");
+              }}
+              className="folio-curl-hint right-1 sm:right-4 rotate-180 z-40 cursor-pointer pointer-events-auto"
+              title="Turn forward to Folio II: Contents"
+              aria-label="Next Folio"
+            />
+          )}
+        </>
+      )}
+
+      {/* Scaled 3D Book Stage Container with Lift-Off Elevation */}
       <div
-        className={`preserve-3d ${allowTransition ? "transition-transform duration-1000 ease-out" : ""}`}
+        className={`preserve-3d ${allowTransition ? "transition-transform duration-1000 ease-out" : ""} ${
+          isLifting ? "book-stage-lift" : ""
+        }`}
         style={{
           transform: `scale(${scale}) translateX(${stageTranslateX}px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
           width: `${PAGE_WIDTH * 2}px`,
@@ -597,6 +711,9 @@ export function PhysicalBook({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/60 pointer-events-none rounded-r-2xl" />
               </>
             )}
+
+            {/* Specular lighting sheen across book cloth during turning */}
+            <div className="book-cover-sheen" />
 
             {/* Spine Hinge French Groove & Crease (Realistic Joint Indentation) */}
             <div className="french-groove absolute left-6 top-0 bottom-0 w-3 pointer-events-none z-10" />

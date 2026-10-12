@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
 import { AddToCollectionModal } from "@/components/collections/AddToCollectionModal";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import {
   Compass,
   Search,
@@ -212,6 +213,9 @@ export default function DiscoverPage() {
     readingTimeFilter !== "all" ||
     sortBy !== "newest";
 
+  // Progressive GPU-accelerated scroll reveals
+  useScrollReveal([filteredStories, isLoading]);
+
   return (
     <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
@@ -230,7 +234,7 @@ export default function DiscoverPage() {
         </div>
 
         {/* Masthead */}
-        <header className="border-b border-[var(--editorial-rule)] pb-10 mb-8">
+        <header className="scroll-ink-reveal border-b border-[var(--editorial-rule)] pb-10 mb-8">
           <div className="inline-flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] mb-3 font-bold">
             <Compass className="h-4 w-4" />
             <span>Catalog &amp; Explorations</span>
@@ -409,10 +413,11 @@ export default function DiscoverPage() {
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
-              {filteredStories.map((story) => (
+              {filteredStories.map((story, index) => (
                 <article
                   key={story.slug}
-                  className="rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-7 flex flex-col justify-between space-y-4 shadow-xs hover:border-[var(--oxblood)]/60 hover:shadow-md transition-all group relative"
+                  style={{ "--stagger-index": index % 8 } as React.CSSProperties}
+                  className="scroll-stagger-child rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-7 flex flex-col justify-between space-y-4 shadow-xs hover:border-[var(--oxblood)]/60 hover:shadow-md transition-all group relative"
                 >
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between font-editorial-mono text-[10px] uppercase tracking-widest text-[var(--oxblood)] font-semibold">
@@ -522,8 +527,8 @@ export default function DiscoverPage() {
           )}
         </section>
 
-        {/* Explore Collections & Authors Banners */}
-        <section className="grid gap-6 sm:grid-cols-2 mb-12">
+        {/* Explore Collections & Authors Banners: Pop-in Reveal */}
+        <section className="scroll-pop-reveal grid gap-6 sm:grid-cols-2 mb-12">
           <Link
             href="/collections"
             className="group rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 space-y-2 hover:border-[var(--oxblood)] transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)]"

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import {
   Layers,
   BookOpen,
@@ -317,6 +318,9 @@ export default function CollectionsPage() {
   const isCurrentCollectionOwner =
     Boolean(currentUser && activeCollectionDetails && activeCollectionDetails.ownerId === currentUser.id);
 
+  // Progressive GPU-accelerated scroll reveals
+  useScrollReveal([collections, activeTab, activeCollectionDetails]);
+
   return (
     <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
@@ -332,7 +336,7 @@ export default function CollectionsPage() {
         </div>
 
         {/* Masthead */}
-        <header className="border-b border-[var(--editorial-rule)] pb-8 mb-8">
+        <header className="scroll-ink-reveal border-b border-[var(--editorial-rule)] pb-8 mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <div className="inline-flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] mb-2 font-bold">
@@ -432,8 +436,8 @@ export default function CollectionsPage() {
           </div>
         ) : (
           <section className="grid gap-8 lg:grid-cols-12 items-start">
-            {/* Collection Selector Sidebar (5 cols) */}
-            <div className="lg:col-span-5 space-y-3">
+            {/* Collection Selector Sidebar (5 cols): Emerges from left */}
+            <div className="scroll-emerge-left lg:col-span-5 space-y-3">
               <span className="font-editorial-mono text-xs uppercase tracking-wider text-[var(--oxblood)] font-bold block mb-2">
                 {activeTab === "mine" ? "Your Reading Lists" : "Curated Anthologies"} ({collections.length})
               </span>
@@ -456,7 +460,8 @@ export default function CollectionsPage() {
                           setActiveCollectionId(col.id);
                         }
                       }}
-                      className={`group relative rounded-xl border p-5 transition-all cursor-pointer select-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] ${
+                      style={{ "--stagger-index": idx % 6 } as React.CSSProperties}
+                      className={`scroll-stagger-child group relative rounded-xl border p-5 transition-all cursor-pointer select-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] ${
                         isSelected
                           ? "border-[var(--oxblood)] bg-[var(--paper-surface)] shadow-md ring-1 ring-[var(--oxblood)]"
                           : "border-[var(--paper-border)] bg-[var(--paper-surface)]/60 hover:border-[var(--oxblood)]/50 hover:bg-[var(--paper-surface)]"
@@ -499,8 +504,8 @@ export default function CollectionsPage() {
               </div>
             </div>
 
-            {/* Collection Detail & Reading List (7 cols) */}
-            <div className="lg:col-span-7">
+            {/* Collection Detail & Reading List (7 cols): Emerges from right */}
+            <div className="scroll-emerge-right lg:col-span-7">
               {isLoadingDetails ? (
                 <div className="rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-12 text-center space-y-3">
                   <Loader2 className="h-5 w-5 animate-spin text-[var(--oxblood)] mx-auto" />

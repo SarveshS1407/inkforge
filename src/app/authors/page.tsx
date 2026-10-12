@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
 import { Users, Feather, BookOpen, ArrowRight, Clock, User } from "lucide-react";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 interface AuthorProfile {
   name: string;
@@ -103,6 +104,9 @@ export default function AuthorsPage() {
     };
   }, []);
 
+  // Progressive GPU-accelerated scroll reveals
+  useScrollReveal([registeredAuthors]);
+
   return (
     <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
@@ -118,7 +122,7 @@ export default function AuthorsPage() {
         </div>
 
         {/* Masthead */}
-        <header className="border-b border-[var(--editorial-rule)] pb-10 mb-10">
+        <header className="scroll-ink-reveal border-b border-[var(--editorial-rule)] pb-10 mb-10">
           <div className="inline-flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] mb-3 font-bold">
             <Users className="h-4 w-4" />
             <span>The Collegium</span>
@@ -134,7 +138,7 @@ export default function AuthorsPage() {
         {/* Registered Inscribed Authors (Live from Database) */}
         {registeredAuthors.length > 0 && (
           <section className="mb-14">
-            <div className="mb-6 border-b border-[var(--editorial-rule)] pb-3 flex items-baseline justify-between">
+            <div className="scroll-ink-reveal mb-6 border-b border-[var(--editorial-rule)] pb-3 flex items-baseline justify-between">
               <div>
                 <span className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
                   Live Registry
@@ -149,11 +153,12 @@ export default function AuthorsPage() {
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-10">
-              {registeredAuthors.map((author) => (
+              {registeredAuthors.map((author, index) => (
                 <Link
                   key={author.id}
                   href={`/authors/${author.username}`}
-                  className="book-jacket group rounded-xl p-6 transition-all hover:border-[var(--oxblood)] shadow-xs flex flex-col justify-between"
+                  style={{ "--stagger-index": index % 6 } as React.CSSProperties}
+                  className="scroll-stagger-child book-jacket group rounded-xl p-6 transition-all hover:border-[var(--oxblood)] shadow-xs flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3">
@@ -190,7 +195,7 @@ export default function AuthorsPage() {
         )}
 
         {/* Curated Fellows Header */}
-        <div className="mb-6 border-b border-[var(--editorial-rule)] pb-3">
+        <div className="scroll-ink-reveal mb-6 border-b border-[var(--editorial-rule)] pb-3">
           <span className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
             Fellowship Archive
           </span>
@@ -204,7 +209,8 @@ export default function AuthorsPage() {
           {AUTHORS.map((author, idx) => (
             <div
               key={idx}
-              className="rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-xs hover:border-[var(--oxblood)]/50 transition-colors"
+              style={{ "--stagger-index": idx } as React.CSSProperties}
+              className="scroll-stagger-child rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-xs hover:border-[var(--oxblood)]/50 transition-colors"
             >
               <div className="space-y-4">
                 <div className="flex items-start justify-between">
@@ -251,8 +257,8 @@ export default function AuthorsPage() {
           ))}
         </section>
 
-        {/* Join as an Author CTA */}
-        <section className="rounded-xl border border-[var(--paper-border)] bg-[var(--paper-warm)] p-8 text-center space-y-3">
+        {/* Join as an Author CTA: Pop-in reveal */}
+        <section className="scroll-pop-reveal rounded-xl border border-[var(--paper-border)] bg-[var(--paper-warm)] p-8 text-center space-y-3 shadow-xs">
           <span className="font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] font-bold">
             Write on INKFORGE
           </span>

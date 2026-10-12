@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { InkforgeLanding } from "@/components/landing/InkforgeLanding";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 interface AnthologyStory {
   slug: string;
@@ -194,38 +195,14 @@ export default function HomePage() {
     (story) => selectedCategory === "ALL" || story.category === selectedCategory
   );
 
-  // Progressive GPU-accelerated editorial scroll reveal
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      document.querySelectorAll(".editorial-reveal").forEach((el) => {
-        el.classList.add("is-revealed");
-      });
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-revealed");
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.06, rootMargin: "0px 0px -20px 0px" }
-    );
-
-    const elements = document.querySelectorAll(".editorial-reveal");
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [filteredAnthology]);
+  // Progressive GPU-accelerated layered scroll reveals
+  useScrollReveal([filteredAnthology]);
 
   return (
     <InkforgeLanding>
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         {/* Curated Publication Frontispiece Ribbon */}
-        <section className="editorial-reveal border-b border-[var(--editorial-rule)] pb-6 mb-10">
+        <section className="scroll-pop-reveal border-b border-[var(--editorial-rule)] pb-6 mb-10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-editorial-mono text-xs uppercase tracking-widest text-[var(--ink-muted)]">
             <div className="flex items-center space-x-2">
               <span className="font-bold text-[var(--oxblood)]">AUTUMN ANTHOLOGY</span>
@@ -241,9 +218,9 @@ export default function HomePage() {
         </section>
 
         {/* Lead Feature & Editorial Gazetteer (Split 7 / 5 Grid) */}
-        <section className="editorial-reveal my-14 grid gap-8 lg:grid-cols-12 items-start">
-          {/* Main Book-Jacket Lead Story (7 cols) */}
-          <div className="lg:col-span-8 book-jacket rounded-xl p-8 sm:p-10">
+        <section className="my-14 grid gap-8 lg:grid-cols-12 items-start">
+          {/* Main Book-Jacket Lead Story (7 cols): Emerges from left */}
+          <div className="lg:col-span-8 scroll-emerge-left book-jacket rounded-xl p-8 sm:p-10">
             {/* Silk Bookmark Ribbon */}
             <div className="book-ribbon" />
 
@@ -302,8 +279,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right Column: Editorial Gazetteer & Dispatches (4 cols) */}
-          <div className="lg:col-span-4 space-y-6">
+          {/* Right Column: Editorial Gazetteer & Dispatches (4 cols): Emerges from right */}
+          <div className="lg:col-span-4 scroll-emerge-right space-y-6">
             {/* The Daily Gazetteer Box */}
             <div className="paper-sheet rounded-xl p-6">
               <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-3">
@@ -334,8 +311,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Quote of the Issue */}
-            <div className="rounded-xl border border-[var(--paper-border)] bg-[var(--paper-warm)] p-6">
+            {/* Quote of the Issue: Pop reveal */}
+            <div className="scroll-pop-reveal rounded-xl border border-[var(--paper-border)] bg-[var(--paper-warm)] p-6 shadow-xs">
               <Quote className="h-5 w-5 text-[var(--oxblood)] mb-2" />
               <blockquote className="font-editorial-serif italic text-sm text-[var(--ink-secondary)] leading-relaxed">
                 &ldquo;Enduring software is not static software; it is software whose foundations are sturdy enough that evolution feels like growth rather than replacement.&rdquo;
@@ -353,8 +330,8 @@ export default function HomePage() {
         </div>
 
         {/* The Contemporary Anthology Section */}
-        <section className="editorial-reveal my-14">
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[var(--editorial-rule)] pb-4 gap-4">
+        <section className="my-14">
+          <div className="scroll-ink-reveal mb-6 flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[var(--editorial-rule)] pb-4 gap-4">
             <div>
               <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
                 Curated Monographs
@@ -372,7 +349,7 @@ export default function HomePage() {
                   type="button"
                   aria-pressed={selectedCategory === cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-2.5 py-1 rounded transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] ${
+                  className={`px-2.5 py-1 rounded transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] touch-tactile cursor-pointer ${
                     selectedCategory === cat
                       ? "bg-[var(--oxblood)] text-white font-bold"
                       : "bg-[var(--paper-warm)] text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] border border-[var(--paper-border)]"
@@ -384,11 +361,13 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Staggered Entrance Cascade for Anthology Story Cards */}
           <div className="grid gap-6 md:grid-cols-3">
-            {filteredAnthology.map((story) => (
+            {filteredAnthology.map((story, index) => (
               <article
                 key={story.slug}
-                className="book-jacket group flex flex-col justify-between rounded-xl p-6 transition-all"
+                style={{ "--stagger-index": index } as React.CSSProperties}
+                className="scroll-stagger-child book-jacket group flex flex-col justify-between rounded-xl p-6 transition-all"
               >
                 <div>
                   <div className="mb-3 flex items-center justify-between font-editorial-mono text-[11px] text-[var(--ink-muted)]">
@@ -422,7 +401,7 @@ export default function HomePage() {
         </section>
 
         {/* Bound Collections / Slipcase Boxsets */}
-        <section className="editorial-reveal my-16 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-warm)] p-8 sm:p-10 shadow-xs">
+        <section className="scroll-pop-reveal my-16 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-warm)] p-8 sm:p-10 shadow-xs">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
@@ -442,11 +421,12 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
-            {CURATED_VOLUMES.map((vol) => (
+            {CURATED_VOLUMES.map((vol, idx) => (
               <Link
                 key={vol.number}
                 href="/collections"
-                className={`block rounded-lg border bg-[var(--paper-surface)] p-5 transition-transform hover:-translate-y-1 shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] ${vol.color}`}
+                style={{ "--stagger-index": idx } as React.CSSProperties}
+                className={`scroll-stagger-child block rounded-lg border bg-[var(--paper-surface)] p-5 transition-transform hover:-translate-y-1 shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] ${vol.color}`}
               >
                 <div className="font-editorial-mono text-[10px] tracking-widest uppercase text-[var(--amber-gold)] font-bold">
                   {vol.number}
@@ -466,9 +446,9 @@ export default function HomePage() {
         </section>
 
         {/* Platform Almanac / The Scribe Ledger Stats */}
-        <section className="editorial-reveal my-16 border-t border-[var(--editorial-rule)] pt-10">
+        <section className="scroll-pop-reveal my-16 border-t border-[var(--editorial-rule)] pt-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center font-editorial-mono">
-            <div className="p-4 rounded-lg bg-[var(--paper-surface)] border border-[var(--paper-border)]">
+            <div className="p-4 rounded-lg bg-[var(--paper-surface)] border border-[var(--paper-border)] shadow-2xs hover:border-[var(--oxblood)] transition-colors">
               <div className="text-2xl font-bold font-editorial-serif text-[var(--oxblood)]">
                 38
               </div>
@@ -477,7 +457,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-lg bg-[var(--paper-surface)] border border-[var(--paper-border)]">
+            <div className="p-4 rounded-lg bg-[var(--paper-surface)] border border-[var(--paper-border)] shadow-2xs hover:border-[var(--oxblood)] transition-colors">
               <div className="text-2xl font-bold font-editorial-serif text-[var(--ink-primary)]">
                 142k
               </div>
@@ -486,7 +466,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-lg bg-[var(--paper-surface)] border border-[var(--paper-border)]">
+            <div className="p-4 rounded-lg bg-[var(--paper-surface)] border border-[var(--paper-border)] shadow-2xs hover:border-[var(--oxblood)] transition-colors">
               <div className="text-2xl font-bold font-editorial-serif text-[var(--amber-gold)]">
                 100%
               </div>
@@ -495,7 +475,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-lg bg-[var(--paper-surface)] border border-[var(--paper-border)]">
+            <div className="p-4 rounded-lg bg-[var(--paper-surface)] border border-[var(--paper-border)] shadow-2xs hover:border-[var(--oxblood)] transition-colors">
               <div className="text-2xl font-bold font-editorial-serif text-[var(--forest)]">
                 2035+
               </div>
@@ -507,8 +487,8 @@ export default function HomePage() {
         </section>
       </main>
 
-      {/* Classical Master Colophon */}
-      <footer className="editorial-reveal border-t border-[var(--editorial-rule)] bg-[var(--paper-surface)] py-14 px-4 text-center font-editorial-mono text-xs text-[var(--ink-muted)]">
+      {/* Classical Master Colophon: Ink Wash Reveal */}
+      <footer className="scroll-ink-reveal border-t border-[var(--editorial-rule)] bg-[var(--paper-surface)] py-14 px-4 text-center font-editorial-mono text-xs text-[var(--ink-muted)]">
         <div className="mx-auto max-w-2xl space-y-3">
           <p className="tracking-widest uppercase text-[var(--ink-primary)] font-bold">
             I N K F O R G E • P U B L I S H I N G • H O U S E

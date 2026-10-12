@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import {
   Users,
   Feather,
@@ -85,6 +86,9 @@ export default function PublicAuthorPage({
 
   const isOwner = currentUserUsername && author && currentUserUsername.toLowerCase() === author.username.toLowerCase();
 
+  // Progressive GPU-accelerated scroll reveals
+  useScrollReveal([author]);
+
   return (
     <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
@@ -145,8 +149,8 @@ export default function PublicAuthorPage({
         {/* Author Profile Content */}
         {!isLoading && author && (
           <div>
-            {/* Author Profile Header Card */}
-            <section className="book-jacket rounded-xl p-8 sm:p-10 mb-12 shadow-sm">
+            {/* Author Profile Header Card: Pop-in reveal */}
+            <section className="scroll-pop-reveal book-jacket rounded-xl p-8 sm:p-10 mb-12 shadow-sm">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-8 border-b border-[var(--editorial-rule)]">
                 <div className="flex items-start sm:items-center space-x-5">
                   {/* Monogram / Avatar */}
@@ -256,10 +260,11 @@ export default function PublicAuthorPage({
 
               {author.posts.length > 0 ? (
                 <div className="grid gap-6 md:grid-cols-2">
-                  {author.posts.map((post) => (
+                  {author.posts.map((post, idx) => (
                     <article
                       key={post.id}
-                      className="book-jacket group flex flex-col justify-between rounded-xl p-6 transition-all hover:border-[var(--oxblood)] shadow-xs"
+                      style={{ "--stagger-index": idx % 6 } as React.CSSProperties}
+                      className="scroll-stagger-child book-jacket group flex flex-col justify-between rounded-xl p-6 transition-all hover:border-[var(--oxblood)] shadow-xs"
                     >
                       <div>
                         <div className="mb-2 flex items-center justify-between font-editorial-mono text-[10px] uppercase tracking-wider text-[var(--ink-muted)]">

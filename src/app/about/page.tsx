@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import {
   Feather,
   BookOpen,
@@ -15,6 +16,9 @@ import {
 } from "lucide-react";
 
 export default function AboutPage() {
+  // Progressive GPU-accelerated scroll reveals
+  useScrollReveal();
+
   return (
     <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
@@ -30,7 +34,7 @@ export default function AboutPage() {
         </div>
 
         {/* Masthead */}
-        <header className="border-b border-[var(--editorial-rule)] pb-10 mb-12">
+        <header className="scroll-ink-reveal border-b border-[var(--editorial-rule)] pb-10 mb-12">
           <div className="inline-flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] mb-3 font-bold">
             <Feather className="h-4 w-4" />
             <span>Colophon &amp; Manifesto</span>

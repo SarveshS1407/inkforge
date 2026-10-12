@@ -1,133 +1,162 @@
-# INKFORGE — System Architecture & Design Specification
+# INKFORGE — System Architecture & Technical Specifications
 
-## 1. Executive Summary
-
-**INKFORGE** is a high-performance, modular publishing ecosystem designed to scale from a single author's distraction-free writing studio to an enterprise-grade multi-publication editorial platform.
-
-The core philosophy of Inkforge is:
-- **Crafted for Writers**: Distraction-free, block-oriented, keyboard-first writing experience with rich block semantics.
-- **Optimized for Readers**: Blazing-fast page loads, accessible typography, responsive reading environments, dark/light themes, and SEO performance.
-- **Engineered for Scale**: Modular domain architecture that cleanly separates content authoring, storage, workflow orchestration, and multi-tenant publication management.
+This document details the architectural principles, client/server boundaries, state management systems, AST data pipeline, and database connection infrastructure powering INKFORGE.
 
 ---
 
-## 2. Platform Evolution Phases
-
-```
-┌────────────────────────┐      ┌─────────────────────────┐      ┌─────────────────────────────┐
-│       PHASE 1          │      │         PHASE 2         │      │           PHASE 3           │
-│  The Writer's Studio   │ ───► │  Editorial & Workflow   │ ───► │    Publishing Ecosystem     │
-│                        │      │                         │      │                             │
-│ • Block-based Editor   │      │ • Multi-author Orgs     │      │ • Multiple Publications     │
-│ • Drafts & Revisions   │      │ • Editorial Roles (RBAC)│      │ • Community & Engagement    │
-│ • Fast Reader Front    │      │ • Review & Approvals    │      │ • Newsletters / Syndi-feed  │
-│ • Tagging & Metadata   │      │ • Scheduled Publishing  │      │ • Analytics & Memberships   │
-└────────────────────────┘      └─────────────────────────┘      └─────────────────────────────┘
-```
-
----
-
-## 3. Recommended Core Tech Stack
-
-| Layer | Recommended Technology | Rationale |
-| :--- | :--- | :--- |
-| **Framework** | **Next.js 15 (App Router, React 19, TypeScript)** | Industry benchmark for editorial platforms. Combines static site generation (SSG) / ISR for readers with dynamic client interactivity for editors. |
-| **Styling & UI** | **Tailwind CSS v4 + Radix UI primitives** | Fluid typography, accessible component primitives, dark/light mode, editorial design system. |
-| **Editor Core** | **Tiptap (ProseMirror runtime)** | Extensible block-based editor supporting rich blocks (code syntax highlighting, callouts, tables, embeds, images), slash commands (`/`), and clean JSON/Markdown AST. |
-| **Data Layer** | **PostgreSQL + Drizzle / Prisma ORM** | Strong relational integrity for authors, publications, posts, revision history, and collaborative permissions. |
-| **Authentication** | **Auth.js (NextAuth v5)** | Session handling, OAuth providers (GitHub, Google), magic links, role-based access control. |
-| **Search & SEO** | **Full-Text Search + OpenGraph / JSON-LD** | Native semantic metadata, automatic sitemaps, RSS feeds, schema.org publishing markup. |
-
----
-
-## 4. Domain Model (Initial Blueprint)
+## 1. High-Level Architectural Flow
 
 ```mermaid
-erDiagram
-    USER ||--o{ POST : authors
-    USER ||--o{ PUBLICATION_MEMBER : belongs_to
-    PUBLICATION ||--o{ PUBLICATION_MEMBER : has
-    PUBLICATION ||--o{ POST : publishes
-    POST ||--o{ POST_REVISION : tracks
-    POST ||--o{ POST_TAG : tagged_with
-    TAG ||--o{ POST_TAG : categorized_in
+graph TD
+    Client["Client Browser / Mobile PWA"]
+    Edge["Vercel Edge Network / CDN"]
+    NextServer["Next.js 15 App Router Server"]
+    PrismaClient["Prisma ORM 6.4 Client"]
+    SupabasePooler["Supabase Transaction Pooler (Port 6543)"]
+    SupabaseDirect["Supabase Session Pooler (Port 5432)"]
+    PostgresDB[("PostgreSQL 15+ Database")]
 
-    USER {
-        uuid id PK
-        string email
-        string username
-        string display_name
-        string avatar_url
-        string bio
-        enum role
-        datetime created_at
-    }
+    Client -->|"HTTPS / Fast Navigation"| Edge
+    Edge -->|"Server Actions & API Routes"| NextServer
+    NextServer -->|"Parameterized Queries"| PrismaClient
+    PrismaClient -->|"Runtime App Traffic (DATABASE_URL)"| SupabasePooler
+    PrismaClient -.->|"DDL & Migrations (DIRECT_URL)"| SupabaseDirect
+    SupabasePooler -->|"pgBouncer Connection Pool"| PostgresDB
+    SupabaseDirect -->|"Direct Engine Connection"| PostgresDB
 
-    PUBLICATION {
-        uuid id PK
-        string name
-        string slug
-        string description
-        string logo_url
-        uuid owner_id FK
-        datetime created_at
-    }
+    subgraph Client State Layers
+        EditionCtx["EditionContext (Theme Tokens)"]
+        StudioHook["useStudioDocument (Sync & Autosave)"]
+        ScrollHook["useScrollReveal (GPU Motion Engine)"]
+        DraftMgr["DraftManager (Local-First IndexedDB)"]
+    end
 
-    PUBLICATION_MEMBER {
-        uuid id PK
-        uuid publication_id FK
-        uuid user_id FK
-        enum member_role "OWNER | EDITOR | AUTHOR | CONTRIBUTOR"
-    }
-
-    POST {
-        uuid id PK
-        uuid author_id FK
-        uuid publication_id FK
-        string title
-        string slug
-        string excerpt
-        jsonb content_json "Block AST"
-        text content_html
-        enum status "DRAFT | IN_REVIEW | SCHEDULED | PUBLISHED | ARCHIVED"
-        datetime published_at
-        datetime scheduled_for
-        string canonical_url
-        string cover_image_url
-    }
-
-    POST_REVISION {
-        uuid id PK
-        uuid post_id FK
-        jsonb content_json
-        string title
-        datetime created_at
-    }
+    Client --- Client State Layers
 ```
 
 ---
 
-## 5. Directory Scaffolding Strategy
+## 2. Framework & Core Technologies
+
+| Layer | Technology | Rationale & Configuration |
+| :--- | :--- | :--- |
+| **Framework** | Next.js 15.2.1 | App Router architecture with nested layouts, route groups `(reader)` and `(studio)`, and optimized server/client component boundaries. |
+| **UI Library** | React 19.0.0 | Concurrent React features, lightweight ref handling, and minimal bundle sizes. |
+| **Styling** | Tailwind CSS v4 | Native CSS variable theme mappings, lightning-fast compilation, and no CSS runtime overhead. |
+| **Editor** | Tiptap & ProseMirror | Block-based composition model, structured Abstract Syntax Tree (AST), and deterministic JSON persistence. |
+| **Database** | PostgreSQL | Managed relational storage on Supabase with ACID transactions, relational integrity, and strict constraints. |
+| **ORM** | Prisma 6.4.1 | Type-safe schema definition, multi-file schema management, automatic migrations, and transaction pooling. |
+| **Hosting** | Vercel | Global edge caching, serverless API execution, automated preview deployments, and zero-config CI/CD. |
+
+---
+
+## 3. Client & Server Component Boundaries
+
+INKFORGE strictly enforces clean separation between Server Components (RSC) and Client Components (`"use client"`):
+
+### Server Components
+- Serve static layouts, metadata heads, and initial public pages.
+- Handle SEO tag generation, OpenGraph metadata, and structured JSON-LD schemas.
+- Free of client-side JavaScript execution overhead.
+
+### Client Components
+- **Reading Surface (`/read/[slug]`):** Requires local scroll tracking, progress ribbon percentage computation, dynamic theme switching, and client-side bookmark modals.
+- **Scribe Studio (`/write`):** Requires interactive Tiptap editor DOM instantiation, local keystroke debounce, IndexedDB autosave, and WebSocket/REST API communication.
+- **3D Physical Book (`PhysicalBook.tsx`):** Requires 3D matrix transforms, interactive mouse parallax tilt (`rotateX`, `rotateY`), touch swipe event tracking, and haptic feedback.
+- **Scroll Motion Engine (`useScrollReveal`):** Requires client-side `IntersectionObserver` observing DOM targets as they enter the viewport.
+
+---
+
+## 4. State Management Architecture
+
+Instead of heavy external state managers (e.g. Redux), INKFORGE utilizes focused, modular React Contexts and custom hooks:
+
+### 1. `EditionContext` (`src/components/theme/EditionContext.tsx`)
+- Manages the three active tactile paper tones: `cotton` (default Ivory), `vellum` (Amber Newsprint), and `inkwell` (Midnight Buckram).
+- Dynamically assigns CSS classes (`tone-cotton`, `tone-vellum`, `tone-inkwell`) to the root document element.
+- Persists user preferences to `localStorage` and synchronizes with system `prefers-color-scheme`.
+
+### 2. `useStudioDocument` (`src/hooks/useStudioDocument.ts`)
+- Manages the entire lifecycle of an active manuscript:
+  - **Debounced Local Save (300ms):** Keystrokes are immediately written to local storage.
+  - **Cloud Synchronization (1500ms):** Changes are packaged and sent to `/api/v1/documents/[id]` with optimistic concurrency protection.
+  - **Conflict Detection:** Monitors remote `version` changes; if another session increments the counter, prompts the user to resolve differences before overwriting.
+  - **Revision Checkpointing:** Generates snapshot records in `DocumentRevision` on major milestones and publishing operations.
+
+### 3. `useScrollReveal` (`src/hooks/useScrollReveal.ts`)
+- Reusable IntersectionObserver hook observing elements with `.editorial-reveal`, `.scroll-pop-reveal`, `.scroll-emerge-left`, `.scroll-emerge-right`, `.scroll-ink-reveal`, and `.scroll-stagger-child`.
+- Automatically toggles `.is-revealed` when elements intersect the viewport (threshold: 0.08, rootMargin: `-30px`).
+- Gracefully checks `prefers-reduced-motion: reduce` and reveals all elements instantaneously if the user requests reduced motion.
+
+---
+
+## 5. Rich Text & Abstract Syntax Tree (AST) Serialization
+
+INKFORGE rejects storing prose as unstructured, dangerous HTML blobs. Every document is maintained as a structured ProseMirror Abstract Syntax Tree:
+
+```json
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [{ "type": "text", "text": "Crafting Systems That Endure" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Software engineering suffers from a pervasive bias toward the ephemeral..." }
+      ]
+    },
+    {
+      "type": "blockquote",
+      "content": [
+        { "type": "text", "text": "Enduring software is built like a cathedral." }
+      ]
+    }
+  ]
+}
+```
+
+### Advantages of AST Serialization
+- **Zero HTML Injection Vulnerabilities:** Content is parsed through strict node schemas before rendering.
+- **Multi-Medium Output:** The same AST node tree is easily translated to clean HTML, Markdown, plain text, RSS syndication feeds, or ePub formats.
+- **Granular Diffing:** Revision comparisons operate on structured AST nodes rather than fragile line-by-line regex.
+
+---
+
+## 6. Database Connection Pooling Architecture
+
+To operate efficiently in serverless environments without exhausting PostgreSQL connection limits, INKFORGE implements dual-pooler Prisma architecture:
 
 ```
-inkforge/
-├── apps/
-│   └── web/                   # Next.js Full-Stack App (Editor + Reader + Dashboard)
-│       ├── app/
-│       │   ├── (auth)/        # Authentication routes (login, register)
-│       │   ├── (dashboard)/   # Studio / Writer dashboard & block editor
-│       │   ├── (reader)/      # Public blog, publication index & post reader
-│       │   └── api/           # Internal REST / tRPC / Server Action endpoints
-│       ├── components/
-│       │   ├── editor/        # Tiptap block editor & custom block extensions
-│       │   ├── reader/        # Article typography, TOC, reading progress
-│       │   └── ui/            # Reusable UI primitives (buttons, modals, tooltips)
-│       └── lib/               # Utility functions, validation schemas (Zod)
-├── packages/
-│   ├── database/              # Schema, migrations, client singleton
-│   └── config/                # Shared ESLint, TSConfig, Tailwind configs
-├── docs/                      # Architectural specs, RFCs, and API docs
-├── .gitignore
-├── package.json
-└── README.md
++-------------------------------------------------------------------------------+
+|                       DATABASE_URL (Transaction Pooler)                       |
+|   postgresql://postgres.[ref]:[pwd]@aws-0-[region].pooler.supabase.com:6543/  |
+|                               ?pgbouncer=true                                 |
+|                                                                               |
+|   - Utilized by standard app queries, API routes, and Next.js server actions. |
+|   - Reuses connections rapidly via pgBouncer transaction pooling.             |
++-------------------------------------------------------------------------------+
+
++-------------------------------------------------------------------------------+
+|                         DIRECT_URL (Session Pooler)                           |
+|   postgresql://postgres.[ref]:[pwd]@aws-0-[region].pooler.supabase.com:5432/  |
+|                                                                               |
+|   - Utilized exclusively during schema migrations (prisma migrate deploy).   |
+|   - Supports advisory locks, DDL commands, and long-running table mutations.  |
++-------------------------------------------------------------------------------+
 ```
+
+---
+
+## 7. 3D Physical Book Motion & Lighting Physics
+
+The interactive centerpiece in [`PhysicalBook.tsx`](file:///Users/kingpin/Documents/Vibecoded%20projects/inkforge/src/components/landing/PhysicalBook.tsx) implements authentic physical bookcraft:
+
+1. **3D Perspective Stage (`perspective-book`):** Configured with `perspective: 1800px` to give the virtual volume natural vanishing points without extreme distortion.
+2. **Hinged Cover Assembly:** The front board rotates along its spine hinge axis (`transformOrigin: "0% 50%"`) from `0deg` (closed) to `-180deg` (fully open).
+3. **Lift-Off Elevation:** When opening, the stage elevates into Z-space (`translateZ: 28px translateY: -10px`) while the contact desk shadow softens and diffuses (`blur: 35px`).
+4. **Specular Sheen Reflection:** A diagonal specular gradient (`.book-cover-sheen`) glides across the buckram cloth texture as the cover turns through the virtual light source.
+5. **Gutter Valley Shadows & Paper Arching:** Gradient overlays simulate the deep valley shadows where pages meet sewn spine binding threads.

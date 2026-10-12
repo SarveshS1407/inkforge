@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import {
   BookOpen,
   Compass,
@@ -114,6 +115,9 @@ export default function HelpPage() {
     return matchesCategory && matchesSearch;
   });
 
+  // Progressive GPU-accelerated scroll reveals
+  useScrollReveal([filteredItems]);
+
   return (
     <div className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)]">
       <Header />
@@ -129,7 +133,7 @@ export default function HelpPage() {
         </div>
 
         {/* Masthead */}
-        <section className="border-b border-[var(--editorial-rule)] pb-8 mb-10">
+        <section className="scroll-ink-reveal border-b border-[var(--editorial-rule)] pb-8 mb-10">
           <div className="inline-flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-widest text-[var(--oxblood)] mb-2 font-bold">
             <HelpCircle className="h-4 w-4" />
             <span>Support &amp; Guidance</span>
