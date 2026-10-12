@@ -194,11 +194,38 @@ export default function HomePage() {
     (story) => selectedCategory === "ALL" || story.category === selectedCategory
   );
 
+  // Progressive GPU-accelerated editorial scroll reveal
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.querySelectorAll(".editorial-reveal").forEach((el) => {
+        el.classList.add("is-revealed");
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-revealed");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.06, rootMargin: "0px 0px -20px 0px" }
+    );
+
+    const elements = document.querySelectorAll(".editorial-reveal");
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [filteredAnthology]);
+
   return (
     <InkforgeLanding>
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         {/* Curated Publication Frontispiece Ribbon */}
-        <section className="border-b border-[var(--editorial-rule)] pb-6 mb-10">
+        <section className="editorial-reveal border-b border-[var(--editorial-rule)] pb-6 mb-10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-editorial-mono text-xs uppercase tracking-widest text-[var(--ink-muted)]">
             <div className="flex items-center space-x-2">
               <span className="font-bold text-[var(--oxblood)]">AUTUMN ANTHOLOGY</span>
@@ -214,7 +241,7 @@ export default function HomePage() {
         </section>
 
         {/* Lead Feature & Editorial Gazetteer (Split 7 / 5 Grid) */}
-        <section className="my-14 grid gap-8 lg:grid-cols-12 items-start">
+        <section className="editorial-reveal my-14 grid gap-8 lg:grid-cols-12 items-start">
           {/* Main Book-Jacket Lead Story (7 cols) */}
           <div className="lg:col-span-8 book-jacket rounded-xl p-8 sm:p-10">
             {/* Silk Bookmark Ribbon */}
@@ -326,7 +353,7 @@ export default function HomePage() {
         </div>
 
         {/* The Contemporary Anthology Section */}
-        <section className="my-14">
+        <section className="editorial-reveal my-14">
           <div className="mb-6 flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[var(--editorial-rule)] pb-4 gap-4">
             <div>
               <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
@@ -395,7 +422,7 @@ export default function HomePage() {
         </section>
 
         {/* Bound Collections / Slipcase Boxsets */}
-        <section className="my-16 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-warm)] p-8 sm:p-10 shadow-xs">
+        <section className="editorial-reveal my-16 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-warm)] p-8 sm:p-10 shadow-xs">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <span className="font-editorial-mono text-xs font-bold tracking-widest uppercase text-[var(--oxblood)]">
@@ -439,7 +466,7 @@ export default function HomePage() {
         </section>
 
         {/* Platform Almanac / The Scribe Ledger Stats */}
-        <section className="my-16 border-t border-[var(--editorial-rule)] pt-10">
+        <section className="editorial-reveal my-16 border-t border-[var(--editorial-rule)] pt-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center font-editorial-mono">
             <div className="p-4 rounded-lg bg-[var(--paper-surface)] border border-[var(--paper-border)]">
               <div className="text-2xl font-bold font-editorial-serif text-[var(--oxblood)]">
@@ -481,7 +508,7 @@ export default function HomePage() {
       </main>
 
       {/* Classical Master Colophon */}
-      <footer className="border-t border-[var(--editorial-rule)] bg-[var(--paper-surface)] py-14 px-4 text-center font-editorial-mono text-xs text-[var(--ink-muted)]">
+      <footer className="editorial-reveal border-t border-[var(--editorial-rule)] bg-[var(--paper-surface)] py-14 px-4 text-center font-editorial-mono text-xs text-[var(--ink-muted)]">
         <div className="mx-auto max-w-2xl space-y-3">
           <p className="tracking-widest uppercase text-[var(--ink-primary)] font-bold">
             I N K F O R G E • P U B L I S H I N G • H O U S E

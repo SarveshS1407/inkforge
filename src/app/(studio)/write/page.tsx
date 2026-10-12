@@ -528,7 +528,7 @@ function WritePageContent() {
                       e.target.value as "DRAFT" | "IN_REVIEW" | "SCHEDULED" | "PUBLISHED"
                     )
                   }
-                  className="h-9 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 text-xs font-editorial-sans text-[var(--ink-primary)] shadow-2xs focus:border-[var(--oxblood)] focus:outline-hidden"
+                  className="h-9 rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 text-base sm:text-xs font-editorial-sans text-[var(--ink-primary)] shadow-2xs focus:border-[var(--oxblood)] focus:outline-hidden touch-manipulation cursor-pointer"
                   title="Document publication lifecycle state"
                 >
                   <option value="DRAFT">Draft</option>

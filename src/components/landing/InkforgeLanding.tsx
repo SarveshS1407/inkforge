@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, ReactNode } from "react";
+import { useState, useCallback, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { PhysicalBook } from "./PhysicalBook";
 import { BookChapter } from "./types";
@@ -14,18 +14,59 @@ interface InkforgeLandingProps {
 export function InkforgeLanding({ children }: InkforgeLandingProps) {
   const router = useRouter();
   const [isBookOpen, setIsBookOpen] = useState(false);
+  const [skipInitialAnimation, setSkipInitialAnimation] = useState(false);
+
+  // Restore open book state when navigating back via browser/Android Back button
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedState = sessionStorage.getItem("inkforge_book_open");
+        const historyState = window.history.state?.bookOpen;
+        if (savedState === "1" || historyState === true) {
+          setIsBookOpen(true);
+          setSkipInitialAnimation(true);
+        }
+      } catch {}
+    }
+  }, []);
+
+  // Listen for browser popstate (back/forward history traversals)
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && typeof event.state.bookOpen === "boolean") {
+        setIsBookOpen(event.state.bookOpen);
+        setSkipInitialAnimation(true);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const handleOpenBook = useCallback(() => {
     setIsBookOpen(true);
+    setSkipInitialAnimation(false);
+    try {
+      sessionStorage.setItem("inkforge_book_open", "1");
+      window.history.replaceState({ ...window.history.state, bookOpen: true }, "", window.location.href);
+    } catch {}
   }, []);
 
   const handleCloseBook = useCallback(() => {
     setIsBookOpen(false);
+    setSkipInitialAnimation(false);
+    try {
+      sessionStorage.removeItem("inkforge_book_open");
+      window.history.replaceState({ ...window.history.state, bookOpen: false }, "", window.location.href);
+    } catch {}
   }, []);
 
   const handleSelectChapter = useCallback(
     (chapter: BookChapter) => {
       if (chapter.href) {
+        try {
+          sessionStorage.setItem("inkforge_book_open", "1");
+          window.history.replaceState({ ...window.history.state, bookOpen: true }, "", window.location.href);
+        } catch {}
         router.push(chapter.href);
       }
     },
@@ -62,18 +103,19 @@ export function InkforgeLanding({ children }: InkforgeLandingProps) {
           <div className="flex flex-col items-center justify-center my-3 sm:my-5">
             <PhysicalBook
               isOpen={isBookOpen}
+              skipInitialAnimation={skipInitialAnimation}
               onOpen={handleOpenBook}
               onClose={handleCloseBook}
               onSelectChapter={handleSelectChapter}
             />
 
-            {/* Subtle contextual hint below book */}
+            {/* Contextual control & hint below book */}
             <div className="mt-5 text-center flex flex-col items-center space-y-2">
               <button
                 type="button"
-                onClick={() => setIsBookOpen(!isBookOpen)}
+                onClick={() => (isBookOpen ? handleCloseBook() : handleOpenBook())}
                 aria-expanded={isBookOpen}
-                className="font-editorial-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-[var(--ink-secondary)] hover:text-[var(--oxblood)] transition-all inline-flex items-center space-x-2 border border-[var(--paper-border)] bg-[var(--paper-surface)]/90 px-4 py-2 rounded-full shadow-2xs hover:border-[var(--oxblood)] hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)]"
+                className="font-editorial-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-[var(--ink-secondary)] hover:text-[var(--oxblood)] transition-all inline-flex items-center space-x-2 border border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2.5 rounded-full shadow-2xs hover:border-[var(--oxblood)] hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] touch-manipulation touch-tactile min-h-[44px] cursor-pointer"
               >
                 <BookMarked className="h-3.5 w-3.5 text-[var(--oxblood)]" />
                 <span>

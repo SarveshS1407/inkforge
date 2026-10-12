@@ -317,7 +317,7 @@ export default function DiscoverPage() {
                       setSortBy(e.target.value as any);
                       setPage(1);
                     }}
-                    className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1 text-xs font-editorial-sans text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-none cursor-pointer"
+                    className="rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1 text-base sm:text-xs font-editorial-sans text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-none cursor-pointer min-h-[36px] touch-manipulation"
                   >
                     <option value="newest">Newest First</option>
                     <option value="readingTime">Reading Time</option>

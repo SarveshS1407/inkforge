@@ -22,6 +22,7 @@ import { BookIdentity, CoverVersion } from "@/types/book";
 interface PhysicalBookProps {
   isOpen: boolean;
   isOpening?: boolean;
+  skipInitialAnimation?: boolean;
   onOpen: () => void;
   onClose: () => void;
   onSelectChapter?: (chapter: BookChapter) => void;
@@ -34,6 +35,7 @@ interface PhysicalBookProps {
 export function PhysicalBook({
   isOpen,
   isOpening = false,
+  skipInitialAnimation = false,
   onOpen,
   onClose,
   onSelectChapter,
@@ -46,6 +48,33 @@ export function PhysicalBook({
   const [activeChapterIndex, setActiveChapterIndex] = useState<number>(0);
   const [scale, setScale] = useState<number>(1);
   const [tilt, setTilt] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [mobileFolio, setMobileFolio] = useState<"contents" | "colophon">("contents");
+  const [allowTransition, setAllowTransition] = useState<boolean>(!skipInitialAnimation);
+
+  // Dimensions of a single page/board
+  const PAGE_WIDTH = 430;
+  const PAGE_HEIGHT = 600;
+
+  // Manage transition suppression on state restoration
+  useEffect(() => {
+    if (skipInitialAnimation) {
+      setAllowTransition(false);
+      const timer = setTimeout(() => {
+        setAllowTransition(true);
+      }, 200);
+      return () => clearTimeout(timer);
+    } else {
+      setAllowTransition(true);
+    }
+  }, [skipInitialAnimation]);
+
+  // Default to the interactive Table of Contents on open
+  useEffect(() => {
+    if (isOpen) {
+      setMobileFolio("contents");
+    }
+  }, [isOpen]);
 
   const activeCover = activeVersion || (book ? book.cover.versions.find((v) => v.id === book.cover.currentVersionId) || book.cover.versions[0] : null);
 
@@ -84,17 +113,21 @@ export function PhysicalBook({
     }
   };
 
-  // Responsive scale calculator to fit any screen from iPhone to 4K
+  // Responsive scale calculator: mobile scales single page for maximum readability & tap comfort
   useEffect(() => {
     const handleResize = () => {
       if (typeof window !== "undefined") {
         const vw = window.innerWidth;
-        if (vw < 520) {
-          setScale(Math.max(0.33, (vw - 28) / 880));
-        } else if (vw < 768) {
-          setScale(Math.max(0.55, (vw - 40) / 920));
+        const mobile = vw < 768;
+        setIsMobile(mobile);
+        if (mobile) {
+          // Mobile single-page scaling (430px base width) with comfortable horizontal margins
+          const padding = vw < 380 ? 24 : 32;
+          const targetScale = Math.min(0.94, Math.max(0.68, (vw - padding) / PAGE_WIDTH));
+          setScale(targetScale);
         } else if (vw < 1024) {
-          setScale(Math.max(0.78, (vw - 56) / 960));
+          // Tablet view: 2-page spread scaled to fit comfortably
+          setScale(Math.min(0.95, Math.max(0.72, (vw - 56) / (PAGE_WIDTH * 2 + 60))));
         } else {
           setScale(1);
         }
@@ -152,32 +185,67 @@ export function PhysicalBook({
     }
   };
 
-  // Dimensions of a single page/board
-  const PAGE_WIDTH = 430;
-  const PAGE_HEIGHT = 600;
+  // Center active page on mobile (Table of Contents or Colophon), or center spread on desktop
+  const stageTranslateX = !isOpen
+    ? -PAGE_WIDTH / 2
+    : isMobile
+    ? mobileFolio === "colophon"
+      ? PAGE_WIDTH / 2
+      : -PAGE_WIDTH / 2
+    : 0;
 
   return (
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative flex items-center justify-center py-6 sm:py-10 perspective-book select-none"
+      className="relative flex flex-col items-center justify-center py-4 sm:py-10 perspective-book select-none w-full max-w-full overflow-x-clip"
       style={{
-        minHeight: `${PAGE_HEIGHT * scale + 60}px`,
+        minHeight: `${PAGE_HEIGHT * scale + (isMobile ? 36 : 60)}px`,
       }}
     >
+      {/* Mobile Folio Tabs (Folio I: Colophon / Folio II: Contents) */}
+      {isMobile && isOpen && (
+        <div className="flex items-center justify-center gap-2 mb-3 z-40 animate-fade-in touch-manipulation">
+          <button
+            type="button"
+            onClick={() => setMobileFolio("colophon")}
+            aria-pressed={mobileFolio === "colophon"}
+            className={`min-h-[38px] px-3.5 py-1.5 rounded-full font-editorial-mono text-[9.5px] tracking-widest uppercase transition-all flex items-center gap-1.5 shadow-2xs touch-tactile ${
+              mobileFolio === "colophon"
+                ? "bg-[var(--oxblood)] text-white font-bold ring-1 ring-[var(--oxblood)]"
+                : "bg-[var(--paper-surface)] text-[var(--ink-secondary)] border border-[var(--paper-border)] hover:border-[var(--oxblood)]"
+            }`}
+          >
+            <span>Folio I: Colophon</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileFolio("contents")}
+            aria-pressed={mobileFolio === "contents"}
+            className={`min-h-[38px] px-3.5 py-1.5 rounded-full font-editorial-mono text-[9.5px] tracking-widest uppercase transition-all flex items-center gap-1.5 shadow-2xs touch-tactile ${
+              mobileFolio === "contents"
+                ? "bg-[var(--oxblood)] text-white font-bold ring-1 ring-[var(--oxblood)]"
+                : "bg-[var(--paper-surface)] text-[var(--ink-secondary)] border border-[var(--paper-border)] hover:border-[var(--oxblood)]"
+            }`}
+          >
+            <span>Folio II: Contents</span>
+          </button>
+        </div>
+      )}
+
       {/* Scaled 3D Book Stage Container */}
       <div
-        className="preserve-3d transition-transform duration-1000 ease-out"
+        className={`preserve-3d ${allowTransition ? "transition-transform duration-1000 ease-out" : ""}`}
         style={{
-          transform: `scale(${scale}) translateX(${isOpen ? 0 : -PAGE_WIDTH / 2}px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
+          transform: `scale(${scale}) translateX(${stageTranslateX}px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
           width: `${PAGE_WIDTH * 2}px`,
           height: `${PAGE_HEIGHT}px`,
         }}
       >
         {/* Dynamic Desk Cast Shadow Beneath the Volume */}
         <div
-          className={`absolute pointer-events-none rounded-3xl transition-all duration-1000 ease-out ${
+          className={`absolute pointer-events-none rounded-3xl ${allowTransition ? "transition-all duration-1000 ease-out" : ""} ${
             isOpen
               ? "left-2 top-6 right-2 bottom-2 desk-shadow-open opacity-90"
               : "left-[430px] top-6 right-2 bottom-2 desk-shadow-closed opacity-80"
@@ -260,9 +328,20 @@ export function PhysicalBook({
               <div>
                 {/* Running Header */}
                 <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-2.5 font-editorial-mono text-[9px] tracking-widest uppercase text-[var(--ink-muted)]">
-                  <span>CREATOR WORKSPACE</span>
-                  <span className="font-bold text-[var(--oxblood)]">{book.state}</span>
-                  <span>FOLIO 2</span>
+                  <div className="flex items-center gap-1.5">
+                    <span>CREATOR WORKSPACE</span>
+                    <span className="opacity-40">•</span>
+                    <span className="font-bold text-[var(--oxblood)]">{book.state}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="Fold volume closed"
+                    className="inline-flex items-center gap-1 font-editorial-mono text-[9px] uppercase tracking-wider text-[var(--ink-muted)] hover:text-[var(--oxblood)] transition-colors p-1 -mr-1 rounded hover:bg-[var(--paper-warm)] focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] cursor-pointer touch-tactile"
+                  >
+                    <X className="h-3 w-3" />
+                    <span className="hidden sm:inline">Close</span>
+                  </button>
                 </div>
 
                 {/* Title Section */}
@@ -296,7 +375,7 @@ export function PhysicalBook({
                         }}
                         role="button"
                         tabIndex={isOpen ? 0 : -1}
-                        className={`group relative rounded-md p-2.5 border transition-all cursor-pointer select-none ${
+                        className={`group relative rounded-md p-2.5 border transition-all cursor-pointer select-none touch-manipulation touch-tactile min-h-[46px] ${
                           isActive
                             ? "border-[var(--oxblood)] bg-[var(--paper-warm)] shadow-xs translate-x-1"
                             : "border-transparent hover:border-[var(--paper-border)] hover:bg-[var(--paper-canvas)]"
@@ -333,11 +412,22 @@ export function PhysicalBook({
               </div>
             ) : (
               <div>
-                {/* Running Header */}
+                {/* Running Header with Quick Close Button */}
                 <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-2 font-editorial-mono text-[9px] tracking-widest uppercase text-[var(--ink-muted)]">
-                  <span>LIBER PRIMUS</span>
-                  <span className="font-bold text-[var(--oxblood)] tracking-[0.25em]">INDEX CAPITULORUM</span>
-                  <span>FOLIO II</span>
+                  <div className="flex items-center gap-1.5">
+                    <span>LIBER PRIMUS</span>
+                    <span className="opacity-40">•</span>
+                    <span className="font-bold text-[var(--oxblood)] tracking-[0.2em]">INDEX CAPITULORUM</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="Fold volume closed"
+                    className="inline-flex items-center gap-1 font-editorial-mono text-[9px] uppercase tracking-wider text-[var(--ink-muted)] hover:text-[var(--oxblood)] transition-colors p-1 -mr-1 rounded hover:bg-[var(--paper-warm)] focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] cursor-pointer touch-tactile"
+                  >
+                    <X className="h-3 w-3" />
+                    <span className="hidden sm:inline">Close</span>
+                  </button>
                 </div>
 
                 {/* Title Section */}
@@ -370,7 +460,7 @@ export function PhysicalBook({
                         }}
                         role="button"
                         tabIndex={isOpen ? 0 : -1}
-                        className={`group relative rounded-md px-3 py-2 border transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] ${
+                        className={`group relative rounded-md px-3.5 py-2.5 border transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] touch-manipulation touch-tactile min-h-[46px] ${
                           isActive
                             ? "border-l-2 border-l-[var(--oxblood)] border-y-transparent border-r-transparent bg-[var(--paper-warm)] shadow-2xs translate-x-1"
                             : "border-l-2 border-transparent hover:border-l-[var(--oxblood)]/40 hover:bg-[var(--paper-canvas)]"
@@ -417,7 +507,7 @@ export function PhysicalBook({
             <div className="mt-3 pt-2.5 border-t border-[var(--editorial-rule)] flex items-center justify-between font-editorial-mono text-[8.5px] uppercase tracking-widest text-[var(--ink-muted)]">
               <span className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[var(--oxblood)]" />
-                Select destination to enter
+                <span>Tap destination to enter</span>
               </span>
               <span className="text-[var(--oxblood)] font-bold">
                 {book
@@ -450,7 +540,7 @@ export function PhysicalBook({
             DRAPED SILK RIBBON BOOKMARK
             ===================================================================== */}
         <div
-          className={`silk-ribbon-draped pointer-events-none transition-all duration-1000 ease-out ${
+          className={`silk-ribbon-draped pointer-events-none ${allowTransition ? "transition-all duration-1000 ease-out" : ""} ${
             isOpen
               ? "left-[436px] -top-2 w-[18px] h-[340px] opacity-95 rotate-3"
               : "right-10 -top-3 w-[20px] h-[100px] opacity-100"
@@ -463,7 +553,7 @@ export function PhysicalBook({
             Rotates around its left hinge (X=0) from 0deg (closed) to -180deg (open)
             ===================================================================== */}
         <div
-          className="absolute left-[430px] top-0 preserve-3d cover-turning-motion"
+          className={`absolute left-[430px] top-0 preserve-3d ${allowTransition ? "cover-turning-motion" : ""}`}
           style={{
             width: `${PAGE_WIDTH}px`,
             height: `${PAGE_HEIGHT}px`,
@@ -616,7 +706,7 @@ export function PhysicalBook({
                 </>
               ) : (
                 <>
-                  <div className="letterpress-bookplate mx-auto max-w-[265px] rounded-md px-4 py-2.5 flex items-center justify-between transition-all group-hover:scale-[1.02]">
+                  <div className="letterpress-bookplate mx-auto max-w-[265px] min-h-[44px] rounded-md px-4 py-2.5 flex items-center justify-between transition-all group-hover:scale-[1.02] active:scale-[0.98] touch-manipulation touch-tactile">
                     <span className="font-editorial-mono text-[9.5px] uppercase tracking-[0.2em] font-bold text-[#faebc3] bookplate-label">
                       Unfold Volume
                     </span>
@@ -715,10 +805,10 @@ export function PhysicalBook({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex items-center space-x-1.5 font-editorial-sans text-[10px] uppercase tracking-wider text-[var(--ink-muted)] hover:text-[var(--oxblood)] transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-1.5 py-1"
+                className="inline-flex items-center space-x-1.5 font-editorial-sans text-[11px] sm:text-[10px] uppercase tracking-wider text-[var(--ink-muted)] hover:text-[var(--oxblood)] transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-2.5 py-1.5 min-h-[40px] touch-manipulation touch-tactile cursor-pointer"
                 title="Fold cover closed"
               >
-                <X className="h-3 w-3" />
+                <X className="h-3.5 w-3.5" />
                 <span>Close Volume (Esc)</span>
               </button>
 
