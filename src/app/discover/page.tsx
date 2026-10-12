@@ -254,7 +254,7 @@ export default function DiscoverPage() {
                   setPage(1);
                 }}
                 placeholder="Search by title, author, or keyword (e.g. permanence, typography, web)..."
-                className="w-full rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] pl-10 pr-10 py-2.5 font-editorial-sans text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] shadow-xs transition-all"
+                className="w-full rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] pl-10 pr-10 py-2.5 font-editorial-sans text-base sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--oxblood)] shadow-xs transition-all"
               />
               {searchQuery && (
                 <button

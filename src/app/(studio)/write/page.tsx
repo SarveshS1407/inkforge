@@ -474,8 +474,8 @@ function WritePageContent() {
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="font-editorial-serif text-xl sm:text-2xl font-bold text-[var(--ink-primary)] tracking-tight truncate max-w-sm sm:max-w-md">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <h1 className="font-editorial-serif text-xl sm:text-2xl font-bold text-[var(--ink-primary)] tracking-tight truncate max-w-[calc(100vw-3rem)] sm:max-w-md">
                     {doc.title || "Untitled Manuscript"}
                   </h1>
 
@@ -485,7 +485,7 @@ function WritePageContent() {
               </div>
 
               {/* REGION C: ACTIONS */}
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 {/* Action: New Manuscript */}
                 <button
                   type="button"
@@ -785,15 +785,25 @@ function WritePageContent() {
               </div>
 
               {aiCopilotOpen && (
-                <div className="w-full lg:w-2/5 xl:w-1/3 shrink-0 rounded-xl overflow-hidden border border-[var(--paper-border)] shadow-md sticky top-4">
-                  <AiCopilotPanel
-                    isOpen={aiCopilotOpen}
-                    onClose={() => setAiCopilotOpen(false)}
-                    editor={editorInstance}
-                    documentId={doc.documentId || undefined}
-                    documentTitle={doc.title}
+                <>
+                  {/* Mobile Backdrop (<lg) */}
+                  <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
+                    onClick={() => setAiCopilotOpen(false)}
+                    aria-hidden="true"
                   />
-                </div>
+
+                  {/* Container: Bottom-sheet slide-up drawer on mobile (<lg), inline sticky sidebar on lg+ */}
+                  <div className="fixed inset-x-0 bottom-0 top-12 z-50 rounded-t-2xl border-t border-[var(--oxblood)] bg-[var(--paper-surface)] shadow-2xl lg:static lg:inset-auto lg:top-4 lg:z-auto lg:rounded-xl lg:border lg:border-[var(--paper-border)] lg:w-2/5 xl:w-1/3 lg:shrink-0 overflow-hidden flex flex-col max-h-[calc(100dvh-3rem)] lg:max-h-none">
+                    <AiCopilotPanel
+                      isOpen={aiCopilotOpen}
+                      onClose={() => setAiCopilotOpen(false)}
+                      editor={editorInstance}
+                      documentId={doc.documentId || undefined}
+                      documentTitle={doc.title}
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -823,7 +833,7 @@ function WritePageContent() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-lg rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8 shadow-2xl space-y-5"
+            className="relative w-full max-w-lg max-h-[90dvh] overflow-y-auto overscroll-contain rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8 shadow-2xl space-y-5"
           >
             <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-3">
               <div className="flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-wider text-[var(--oxblood)] font-bold">
@@ -917,7 +927,7 @@ function WritePageContent() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-lg rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 shadow-2xl space-y-4 max-h-[85vh] flex flex-col"
+            className="relative w-full max-w-lg max-h-[85dvh] overscroll-contain rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-4 sm:p-6 shadow-2xl space-y-4 flex flex-col"
           >
             <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-3">
               <div className="flex items-center space-x-2 font-editorial-mono text-xs uppercase tracking-wider text-[var(--oxblood)] font-bold">

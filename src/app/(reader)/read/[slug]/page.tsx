@@ -403,7 +403,7 @@ export default function StoryReaderPage() {
         </div>
       )}
 
-      <article className={`mx-auto px-4 py-12 sm:px-6 ${solitaryMode ? "max-w-2xl" : "max-w-4xl"}`}>
+      <article className={`mx-auto px-4 py-8 sm:py-12 sm:px-6 ${solitaryMode ? "max-w-2xl" : "max-w-4xl"}`}>
         {/* Navigation & Reader Folio Bar */}
         <div className="mb-8 flex flex-wrap items-center justify-between border-b border-[var(--editorial-rule)] pb-4 font-editorial-mono text-xs tracking-widest uppercase text-[var(--ink-muted)] gap-3">
           <Link
@@ -411,7 +411,7 @@ export default function StoryReaderPage() {
             className="inline-flex items-center space-x-1.5 transition-colors hover:text-[var(--oxblood)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded px-1"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Return to Frontispiece</span>
+            <span><span className="hidden sm:inline">Return to </span>Frontispiece</span>
           </Link>
 
           <div className="flex items-center space-x-3 sm:space-x-4">

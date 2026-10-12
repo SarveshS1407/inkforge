@@ -138,7 +138,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8 shadow-2xl space-y-5"
+        className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto overscroll-contain rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 sm:p-8 shadow-2xl space-y-5"
       >
         {/* Close Button (Explicit User Control) */}
         <button
@@ -251,7 +251,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="author@independentpress.org"
                 disabled={isSubmitting}
-                className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-1.5 font-editorial-sans text-xs sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-hidden shadow-2xs disabled:opacity-50"
+                className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 sm:py-1.5 font-editorial-sans text-base sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-hidden shadow-2xs disabled:opacity-50"
               />
             </div>
 
@@ -268,7 +268,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="elena-rostova"
                     disabled={isSubmitting}
-                    className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-1.5 font-editorial-sans text-xs sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-hidden shadow-2xs disabled:opacity-50"
+                    className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 sm:py-1.5 font-editorial-sans text-base sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-hidden shadow-2xs disabled:opacity-50"
                   />
                 </div>
                 <div>
@@ -281,7 +281,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="Elena Rostova"
                     disabled={isSubmitting}
-                    className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-1.5 font-editorial-sans text-xs sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-hidden shadow-2xs disabled:opacity-50"
+                    className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 sm:py-1.5 font-editorial-sans text-base sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-hidden shadow-2xs disabled:opacity-50"
                   />
                 </div>
               </>
@@ -314,7 +314,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   disabled={isSubmitting}
-                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-1.5 font-editorial-sans text-xs sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-hidden shadow-2xs disabled:opacity-50"
+                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 sm:py-1.5 font-editorial-sans text-base sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-hidden shadow-2xs disabled:opacity-50"
                 />
               </div>
             )}
@@ -322,7 +322,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center space-x-2 rounded-md bg-[var(--oxblood)] py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white hover:bg-[var(--oxblood-hover)] shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
+              className="w-full min-h-[44px] flex items-center justify-center space-x-2 rounded-md bg-[var(--oxblood)] py-2.5 sm:py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white hover:bg-[var(--oxblood-hover)] shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <>

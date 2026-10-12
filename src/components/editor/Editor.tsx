@@ -286,15 +286,15 @@ export function Editor({
       <div
         role="toolbar"
         aria-label="Manuscript Formatting Controls"
-        className="sticky top-16 z-30 flex flex-wrap items-center gap-1.5 border-b border-[var(--editorial-rule)] bg-[var(--paper-warm)]/98 backdrop-blur-md px-3 sm:px-4 py-2 text-[var(--ink-secondary)] rounded-t-xl"
+        className="sticky top-14 sm:top-16 z-30 flex items-center overflow-x-auto sm:flex-wrap no-scrollbar touch-scroll gap-1 sm:gap-1.5 border-b border-[var(--editorial-rule)] bg-[var(--paper-warm)]/98 backdrop-blur-md px-2.5 sm:px-4 py-1.5 sm:py-2 text-[var(--ink-secondary)] rounded-t-xl"
       >
         {/* GROUP 1: TEXT STYLE (Paragraph & Headings) */}
-        <div className="flex items-center space-x-0.5">
+        <div className="shrink-0 flex items-center space-x-0.5">
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().setParagraph().run()}
-            className={`rounded px-2 py-1 text-xs font-editorial-sans transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded px-2.5 sm:px-2 py-1.5 sm:py-1 min-h-[36px] sm:min-h-auto text-xs font-editorial-sans transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("paragraph") && !editor.isActive("heading")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] font-bold shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -312,7 +312,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={`rounded px-2 py-1 font-editorial-serif text-xs font-bold transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded px-2.5 sm:px-2 py-1.5 sm:py-1 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto font-editorial-serif text-xs font-bold transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("heading", { level: 1 })
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -327,7 +327,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={`rounded px-2 py-1 font-editorial-serif text-xs font-semibold transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded px-2.5 sm:px-2 py-1.5 sm:py-1 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto font-editorial-serif text-xs font-semibold transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("heading", { level: 2 })
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -342,7 +342,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            className={`rounded px-2 py-1 font-editorial-serif text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded px-2.5 sm:px-2 py-1.5 sm:py-1 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto font-editorial-serif text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("heading", { level: 3 })
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -355,17 +355,17 @@ export function Editor({
         </div>
 
         {/* Group Divider */}
-        <div className="h-4 w-[1px] bg-[var(--editorial-rule)] mx-1" aria-hidden="true" />
+        <div className="shrink-0 h-4 w-[1px] bg-[var(--editorial-rule)] mx-0.5 sm:mx-1" aria-hidden="true" />
 
         {/* GROUP: TYPOGRAPHY (Font Family & Scale) */}
-        <div className="flex items-center space-x-1">
+        <div className="shrink-0 flex items-center space-x-1">
           {/* Font Family Dropdown */}
           <div className="relative" ref={fontMenuRef}>
             <button
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setFontMenuOpen(!fontMenuOpen)}
-              className={`flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2 py-1 text-xs font-editorial-sans text-[var(--ink-primary)] shadow-2xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] cursor-pointer ${
+              className={`flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 sm:px-2 py-1.5 sm:py-1 min-h-[36px] sm:min-h-auto text-xs font-editorial-sans text-[var(--ink-primary)] shadow-2xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] cursor-pointer ${
                 editor.isActive("fontFamily") ? "border-[var(--oxblood)] text-[var(--oxblood)] font-semibold" : ""
               }`}
               title="Select Font Family"
@@ -381,7 +381,7 @@ export function Editor({
             </button>
 
             {fontMenuOpen && (
-              <div className="absolute left-0 top-full mt-1.5 z-50 w-48 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-1.5 shadow-xl animate-in fade-in slide-in-from-top-1 text-xs font-editorial-sans">
+              <div className="absolute left-0 top-full mt-1.5 z-50 w-48 max-w-[calc(100vw-2rem)] rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-1.5 shadow-xl animate-in fade-in slide-in-from-top-1 text-xs font-editorial-sans">
                 <div className="px-2 py-1 text-[9px] font-editorial-mono uppercase tracking-wider text-[var(--ink-muted)] border-b border-[var(--editorial-rule)] mb-1">
                   Typography Families
                 </div>
@@ -429,7 +429,7 @@ export function Editor({
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setSizeMenuOpen(!sizeMenuOpen)}
-              className={`flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2 py-1 text-xs font-editorial-sans text-[var(--ink-primary)] shadow-2xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] cursor-pointer ${
+              className={`flex items-center space-x-1 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 sm:px-2 py-1.5 sm:py-1 min-h-[36px] sm:min-h-auto text-xs font-editorial-sans text-[var(--ink-primary)] shadow-2xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)] cursor-pointer ${
                 editor.isActive("fontSize") ? "border-[var(--oxblood)] text-[var(--oxblood)] font-semibold" : ""
               }`}
               title="Select Font Scale"
@@ -445,7 +445,7 @@ export function Editor({
             </button>
 
             {sizeMenuOpen && (
-              <div className="absolute left-0 top-full mt-1.5 z-50 w-44 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-1.5 shadow-xl animate-in fade-in slide-in-from-top-1 text-xs font-editorial-sans">
+              <div className="absolute left-0 top-full mt-1.5 z-50 w-44 max-w-[calc(100vw-2rem)] rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-1.5 shadow-xl animate-in fade-in slide-in-from-top-1 text-xs font-editorial-sans">
                 <div className="px-2 py-1 text-[9px] font-editorial-mono uppercase tracking-wider text-[var(--ink-muted)] border-b border-[var(--editorial-rule)] mb-1">
                   Typographic Scale
                 </div>
@@ -489,15 +489,15 @@ export function Editor({
         </div>
 
         {/* Group Divider */}
-        <div className="h-4 w-[1px] bg-[var(--editorial-rule)] mx-1" aria-hidden="true" />
+        <div className="shrink-0 h-4 w-[1px] bg-[var(--editorial-rule)] mx-0.5 sm:mx-1" aria-hidden="true" />
 
         {/* GROUP 2: INLINE FORMATTING */}
-        <div className="flex items-center space-x-0.5">
+        <div className="shrink-0 flex items-center space-x-0.5">
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`rounded p-1.5 text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("bold")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] font-bold shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -512,7 +512,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`rounded p-1.5 text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("italic")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -527,7 +527,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleMark("underline").run()}
-            className={`rounded p-1.5 text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("underline")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] font-bold shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -542,7 +542,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            className={`rounded p-1.5 text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("strike")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -557,7 +557,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleCode().run()}
-            className={`rounded p-1.5 text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("code")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -572,7 +572,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleMark("highlight").run()}
-            className={`rounded p-1.5 text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("highlight")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] font-bold shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -587,7 +587,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleClearFormatting}
-            className="rounded p-1.5 text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--oxblood)]"
+            className="rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center text-xs transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--oxblood)]"
             title="Clear Formatting"
             aria-label="Clear Formatting"
           >
@@ -596,15 +596,15 @@ export function Editor({
         </div>
 
         {/* Group Divider */}
-        <div className="h-4 w-[1px] bg-[var(--editorial-rule)] mx-1" aria-hidden="true" />
+        <div className="shrink-0 h-4 w-[1px] bg-[var(--editorial-rule)] mx-0.5 sm:mx-1" aria-hidden="true" />
 
         {/* GROUP 3: STRUCTURE & LISTS */}
-        <div className="flex items-center space-x-0.5">
+        <div className="shrink-0 flex items-center space-x-0.5">
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`rounded p-1.5 transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("bulletList")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -619,7 +619,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`rounded p-1.5 transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("orderedList")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -634,7 +634,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={`rounded p-1.5 transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("blockquote")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -649,7 +649,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={`rounded p-1.5 transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+            className={`rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
               editor.isActive("codeBlock")
                 ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)]"
                 : ""
@@ -664,7 +664,7 @@ export function Editor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().setHorizontalRule().run()}
-            className="rounded p-1.5 transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)]"
+            className="rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)]"
             title="Section Divider Rule"
             aria-label="Section Divider"
           >
@@ -673,15 +673,15 @@ export function Editor({
         </div>
 
         {/* Group Divider */}
-        <div className="h-4 w-[1px] bg-[var(--editorial-rule)] mx-1" aria-hidden="true" />
+        <div className="shrink-0 h-4 w-[1px] bg-[var(--editorial-rule)] mx-0.5 sm:mx-1" aria-hidden="true" />
 
         {/* GROUP 4: INSERT MENU POPOVER */}
-        <div className="relative" ref={insertMenuRef}>
+        <div className="shrink-0 relative" ref={insertMenuRef}>
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setInsertMenuOpen(!insertMenuOpen)}
-            className="flex items-center space-x-1.5 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1 text-xs font-editorial-sans font-semibold text-[var(--ink-primary)] shadow-2xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)]"
+            className="flex items-center space-x-1.5 rounded border border-[var(--paper-border)] bg-[var(--paper-surface)] px-2.5 py-1.5 sm:py-1 min-h-[36px] sm:min-h-auto text-xs font-editorial-sans font-semibold text-[var(--ink-primary)] shadow-2xs transition-colors hover:border-[var(--oxblood)] hover:text-[var(--oxblood)]"
             title="Insert Block Components"
             aria-haspopup="true"
             aria-expanded={insertMenuOpen}
@@ -692,7 +692,7 @@ export function Editor({
 
           {/* Insert Dropdown Menu */}
           {insertMenuOpen && (
-            <div className="absolute left-0 top-full mt-1.5 z-50 w-52 rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-1.5 shadow-xl animate-in fade-in slide-in-from-top-1 font-editorial-sans text-xs">
+            <div className="absolute left-0 top-full mt-1.5 z-50 w-52 max-w-[calc(100vw-2rem)] rounded-lg border border-[var(--paper-border)] bg-[var(--paper-surface)] p-1.5 shadow-xl animate-in fade-in slide-in-from-top-1 font-editorial-sans text-xs">
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
@@ -788,7 +788,7 @@ export function Editor({
           type="button"
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleOpenLinkDialog}
-          className={`rounded p-1.5 transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
+          className={`shrink-0 rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center transition-colors hover:bg-[var(--paper-surface)] hover:text-[var(--ink-primary)] ${
             editor.isActive("link")
               ? "bg-[var(--paper-surface)] text-[var(--oxblood)] shadow-2xs border border-[var(--paper-border)] font-bold"
               : ""
@@ -801,12 +801,12 @@ export function Editor({
 
         {/* GROUP 5: AI WRITING COPILOT ENTRY POINT */}
         {onOpenAiCopilot && (
-          <div className="ml-auto flex items-center pr-1.5">
+          <div className="shrink-0 flex items-center pr-1 sm:ml-auto">
             <button
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={onOpenAiCopilot}
-              className="flex items-center space-x-1.5 rounded-md border border-[var(--oxblood)]/40 bg-[var(--oxblood-subtle)] px-2.5 py-1 text-xs font-editorial-sans font-semibold text-[var(--oxblood)] shadow-2xs hover:bg-[var(--oxblood)] hover:text-white transition-all cursor-pointer"
+              className="flex items-center space-x-1.5 rounded-md border border-[var(--oxblood)]/40 bg-[var(--oxblood-subtle)] px-2.5 py-1.5 sm:py-1 min-h-[36px] sm:min-h-auto text-xs font-editorial-sans font-semibold text-[var(--oxblood)] shadow-2xs hover:bg-[var(--oxblood)] hover:text-white transition-all cursor-pointer"
               title="Open AI Writing Copilot"
               aria-label="Open AI Writing Copilot"
             >
@@ -817,13 +817,13 @@ export function Editor({
         )}
 
         {/* GROUP 6: HISTORY (Undo / Redo) */}
-        <div className={`${onOpenAiCopilot ? "" : "ml-auto"} flex items-center space-x-1`}>
+        <div className={`shrink-0 ${onOpenAiCopilot ? "" : "sm:ml-auto"} flex items-center space-x-0.5 sm:space-x-1`}>
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().undo()}
-            className="rounded p-1.5 transition-colors hover:bg-[var(--paper-surface)] disabled:opacity-30 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--oxblood)]"
+            className="rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center transition-colors hover:bg-[var(--paper-surface)] disabled:opacity-30 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--oxblood)]"
             title="Undo (Cmd+Z)"
             aria-label="Undo"
           >
@@ -834,7 +834,7 @@ export function Editor({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().redo()}
-            className="rounded p-1.5 transition-colors hover:bg-[var(--paper-surface)] disabled:opacity-30 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--oxblood)]"
+            className="rounded p-2 sm:p-1.5 min-h-[36px] min-w-[36px] sm:min-h-auto sm:min-w-auto flex items-center justify-center transition-colors hover:bg-[var(--paper-surface)] disabled:opacity-30 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--oxblood)]"
             title="Redo (Cmd+Shift+Z)"
             aria-label="Redo"
           >
@@ -847,7 +847,7 @@ export function Editor({
           LINK DIALOG POPOVER
           ===================================================================== */}
       {linkDialogOpen && (
-        <div className="absolute left-6 top-14 z-40 w-80 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-4 shadow-xl animate-in fade-in font-editorial-sans text-xs">
+        <div className="absolute left-3 sm:left-6 top-14 z-40 w-80 max-w-[calc(100vw-1.5rem)] rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-4 shadow-xl animate-in fade-in font-editorial-sans text-xs">
           <div className="flex items-center justify-between pb-2 border-b border-[var(--editorial-rule)] mb-3">
             <span className="font-bold text-[var(--oxblood)] uppercase tracking-wider font-editorial-mono text-[10px]">
               Set Web Hyperlink
@@ -877,7 +877,7 @@ export function Editor({
                     handleApplyLink();
                   }
                 }}
-                className="w-full rounded border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-2.5 py-1.5 text-xs text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden"
+                className="w-full rounded border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 sm:py-1.5 text-base sm:text-xs text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden"
                 autoFocus
               />
             </div>
@@ -918,7 +918,7 @@ export function Editor({
           IMAGE INSERTION DIALOG
           ===================================================================== */}
       {imageDialogOpen && (
-        <div className="absolute left-6 top-14 z-40 w-96 rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-4 shadow-xl animate-in fade-in font-editorial-sans text-xs">
+        <div className="absolute left-3 sm:left-6 top-14 z-40 w-96 max-w-[calc(100vw-1.5rem)] rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-4 shadow-xl animate-in fade-in font-editorial-sans text-xs">
           <div className="flex items-center justify-between pb-2 border-b border-[var(--editorial-rule)] mb-3">
             <span className="font-bold text-[var(--oxblood)] uppercase tracking-wider font-editorial-mono text-[10px]">
               Embed Manuscript Illustration
@@ -942,7 +942,7 @@ export function Editor({
                 placeholder="https://images.unsplash.com/photo-..."
                 value={imageSrc}
                 onChange={(e) => setImageSrc(e.target.value)}
-                className="w-full rounded border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-2.5 py-1.5 text-xs text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden"
+                className="w-full rounded border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 sm:py-1.5 text-base sm:text-xs text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden"
                 autoFocus
               />
             </div>
@@ -956,7 +956,7 @@ export function Editor({
                 placeholder="Figure 1: Architectural plates from the 1892 edition"
                 value={imageTitle}
                 onChange={(e) => setImageTitle(e.target.value)}
-                className="w-full rounded border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-2.5 py-1.5 text-xs text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden"
+                className="w-full rounded border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 sm:py-1.5 text-base sm:text-xs text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden"
               />
             </div>
 
@@ -984,7 +984,7 @@ export function Editor({
       {/* =====================================================================
           MANUSCRIPT WRITING CANVAS
           ===================================================================== */}
-      <div className="p-8 md:p-14 bg-[var(--paper-surface)] rounded-b-xl min-h-[520px]">
+      <div className="p-4 sm:p-8 md:p-14 bg-[var(--paper-surface)] rounded-b-xl min-h-[420px] sm:min-h-[520px]">
         <EditorContent editor={editor} />
       </div>
 
@@ -992,7 +992,7 @@ export function Editor({
           BOTTOM SCRIBE STATUS STRIP
           Real-time metrics, character count, and persistent autosave pulse
           ===================================================================== */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--editorial-rule)] bg-[var(--paper-warm)] px-6 py-2.5 font-editorial-mono text-[11px] text-[var(--ink-muted)] rounded-b-xl">
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 border-t border-[var(--editorial-rule)] bg-[var(--paper-warm)] px-3.5 sm:px-6 py-2.5 font-editorial-mono text-[11px] text-[var(--ink-muted)] rounded-b-xl">
         <div className="flex items-center space-x-3 sm:space-x-4">
           <span>
             <strong className="text-[var(--ink-primary)] font-semibold">{wordCount}</strong> words

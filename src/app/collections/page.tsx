@@ -686,7 +686,7 @@ export default function CollectionsPage() {
           onClick={() => setCreateModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-md rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 shadow-2xl space-y-4"
+            className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto overscroll-contain rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 shadow-2xl space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-3">
@@ -718,7 +718,7 @@ export default function CollectionsPage() {
                   placeholder="e.g. Architectural Foundations &amp; Craft"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 text-sm font-editorial-sans text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden"
+                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 text-base sm:text-sm font-editorial-sans text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden"
                 />
               </div>
 
@@ -732,7 +732,7 @@ export default function CollectionsPage() {
                   placeholder="A brief explanation of the thematic vision of this collection..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 text-sm font-editorial-sans text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden resize-none"
+                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 text-base sm:text-sm font-editorial-sans text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden resize-none"
                 />
               </div>
 
@@ -784,7 +784,7 @@ export default function CollectionsPage() {
           onClick={() => setEditModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-md rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 shadow-2xl space-y-4"
+            className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto overscroll-contain rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 shadow-2xl space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-[var(--editorial-rule)] pb-3">
@@ -815,7 +815,7 @@ export default function CollectionsPage() {
                   maxLength={100}
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 text-sm font-editorial-sans text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden"
+                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 text-base sm:text-sm font-editorial-sans text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden"
                 />
               </div>
 
@@ -828,7 +828,7 @@ export default function CollectionsPage() {
                   maxLength={500}
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 text-sm font-editorial-sans text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden resize-none"
+                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 text-base sm:text-sm font-editorial-sans text-[var(--ink-primary)] focus:border-[var(--oxblood)] focus:outline-hidden resize-none"
                 />
               </div>
 

@@ -1,6 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { EditionProvider } from "@/components/theme/EditionContext";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0f1012" },
+    { media: "(prefers-color-scheme: light)", color: "#fbf9f4" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: "Inkforge — The Living Digital Book & Publishing Platform",
@@ -8,6 +19,15 @@ export const metadata: Metadata = {
     "A living publishing ecosystem combining editorial sophistication, tactile book-inspired design, and modern digital energy. Crafted for discerning writers and readers.",
   keywords: ["publishing", "literary journal", "essays", "writer studio", "book design", "reading", "typography"],
   authors: [{ name: "The Inkforge Editors" }],
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Inkforge",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({

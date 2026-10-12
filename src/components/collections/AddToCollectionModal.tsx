@@ -190,7 +190,7 @@ export function AddToCollectionModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 shadow-2xl space-y-5"
+        className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto overscroll-contain rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 shadow-2xl space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -325,7 +325,7 @@ export function AddToCollectionModal({
                   required
                   autoFocus
                   maxLength={100}
-                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-1.5 text-xs font-editorial-sans text-[var(--ink-primary)] placeholder-[var(--ink-muted)] focus:border-[var(--oxblood)] focus:outline-hidden"
+                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-2 sm:py-1.5 text-base sm:text-xs font-editorial-sans text-[var(--ink-primary)] placeholder-[var(--ink-muted)] focus:border-[var(--oxblood)] focus:outline-hidden"
                 />
 
                 <input
@@ -334,7 +334,7 @@ export function AddToCollectionModal({
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                   maxLength={500}
-                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-1.5 text-xs font-editorial-sans text-[var(--ink-primary)] placeholder-[var(--ink-muted)] focus:border-[var(--oxblood)] focus:outline-hidden"
+                  className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-2 sm:py-1.5 text-base sm:text-xs font-editorial-sans text-[var(--ink-primary)] placeholder-[var(--ink-muted)] focus:border-[var(--oxblood)] focus:outline-hidden"
                 />
 
                 <div className="flex items-center justify-between pt-1">
@@ -351,7 +351,7 @@ export function AddToCollectionModal({
                   <button
                     type="submit"
                     disabled={isSubmittingNew || !newTitle.trim()}
-                    className="inline-flex items-center space-x-1.5 rounded-md bg-[var(--oxblood)] px-3 py-1 text-xs font-editorial-sans font-semibold uppercase tracking-wider text-white shadow-2xs hover:bg-[var(--oxblood-hover)] disabled:opacity-40 cursor-pointer"
+                    className="inline-flex min-h-[40px] items-center space-x-1.5 rounded-md bg-[var(--oxblood)] px-3 py-1.5 text-xs font-editorial-sans font-semibold uppercase tracking-wider text-white shadow-2xs hover:bg-[var(--oxblood-hover)] disabled:opacity-40 cursor-pointer"
                   >
                     {isSubmittingNew ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -366,7 +366,7 @@ export function AddToCollectionModal({
               <button
                 type="button"
                 onClick={() => setIsCreating(true)}
-                className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-lg border border-dashed border-[var(--paper-border)] bg-[var(--paper-warm)] font-editorial-sans text-xs text-[var(--oxblood)] font-bold hover:border-[var(--oxblood)] hover:bg-[var(--paper-surface)] transition-all cursor-pointer"
+                className="w-full min-h-[44px] flex items-center justify-center space-x-2 py-2 px-3 rounded-lg border border-dashed border-[var(--paper-border)] bg-[var(--paper-warm)] font-editorial-sans text-xs text-[var(--oxblood)] font-bold hover:border-[var(--oxblood)] hover:bg-[var(--paper-surface)] transition-all cursor-pointer"
               >
                 <FolderPlus className="h-3.5 w-3.5" />
                 <span>Create New Collection</span>
