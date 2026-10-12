@@ -420,7 +420,9 @@ export function PhysicalBook({
                 Select destination to enter
               </span>
               <span className="text-[var(--oxblood)] font-bold">
-                Chapter {BOOK_CHAPTERS[activeChapterIndex].roman} of {BOOK_CHAPTERS.length}
+                {book
+                  ? `Item ${activeChapterIndex + 1} of ${getAdaptiveMenuItems(book.state).length}`
+                  : `Chapter ${BOOK_CHAPTERS[activeChapterIndex]?.roman || "I"} of ${BOOK_CHAPTERS.length}`}
               </span>
             </div>
           </div>
@@ -508,11 +510,11 @@ export function PhysicalBook({
 
             {/* Spine Hinge French Groove & Crease (Realistic Joint Indentation) */}
             <div className="french-groove absolute left-6 top-0 bottom-0 w-3 pointer-events-none z-10" />
-            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-black/50 via-black/30 to-black/10 pointer-events-none z-10" />
+            <div className="absolute left-0 top-0 bottom-0 w-6 book-spine-crease pointer-events-none z-10" />
 
             {/* Inset Blind-Debossed Framing Rules with Corner Brackets */}
-            <div className="debossed-frame absolute inset-5 sm:inset-7 border border-[#cfa85b]/30 rounded-r-xl pointer-events-none z-10" />
-            <div className="absolute inset-7 sm:inset-9 border border-[#cfa85b]/15 rounded-r-lg pointer-events-none z-10" />
+            <div className="debossed-frame tone-vellum-frame-outer absolute inset-5 sm:inset-7 border border-[#cfa85b]/30 rounded-r-xl pointer-events-none z-10" />
+            <div className="tone-vellum-frame-inner absolute inset-7 sm:inset-9 border border-[#cfa85b]/15 rounded-r-lg pointer-events-none z-10" />
 
             {/* Top Colophon Imprint & Publisher Mark */}
             <div className="relative pt-1 pl-6 z-20 space-y-2">
@@ -531,7 +533,7 @@ export function PhysicalBook({
                   <div className="flex justify-center mb-1">
                     <svg
                       viewBox="0 0 40 40"
-                      className="w-8 h-8 text-[#d8b065] transition-transform duration-300 group-hover:scale-105"
+                      className="w-8 h-8 text-[#d8b065] book-cover-crest transition-transform duration-300 group-hover:scale-105"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="1.25"
@@ -553,7 +555,7 @@ export function PhysicalBook({
                   <div className="font-editorial-mono text-[10px] sm:text-[11px] uppercase tracking-[0.4em] font-bold gold-foil-stamp">
                     I N K F O R G E
                   </div>
-                  <div className="font-editorial-mono text-[7.5px] uppercase tracking-[0.24em] text-[#a8a192]">
+                  <div className="font-editorial-mono text-[7.5px] uppercase tracking-[0.24em] text-[#a8a192] book-cover-subcolophon">
                     Publishing House &amp; Digital Press
                   </div>
                 </div>
@@ -581,19 +583,19 @@ export function PhysicalBook({
                 <>
                   {/* Central Editorial Cartouche */}
                   <div className="space-y-1.5">
-                    <div className="font-editorial-mono text-[8.5px] uppercase tracking-[0.34em] text-[#cfa85b] font-semibold">
+                    <div className="font-editorial-mono text-[8.5px] uppercase tracking-[0.34em] text-[#cfa85b] book-cover-kicker font-semibold">
                       A Living Digital Book
                     </div>
-                    <h1 className="font-editorial-serif text-3xl sm:text-4xl font-bold tracking-tight text-[#fbf8f0] leading-[1.14] drop-shadow-xs">
+                    <h1 className="font-editorial-serif text-3xl sm:text-4xl font-bold tracking-tight text-[#fbf8f0] book-cover-title leading-[1.14] drop-shadow-xs">
                       The Sovereign <br /> Written Word
                     </h1>
                   </div>
 
-                  <p className="mx-auto max-w-[275px] font-editorial-serif text-[11px] sm:text-xs text-[#d1cbc0] italic leading-relaxed">
+                  <p className="mx-auto max-w-[275px] font-editorial-serif text-[11px] sm:text-xs text-[#d1cbc0] book-cover-motto italic leading-relaxed">
                     &ldquo;To write with discipline, to publish with permanence, and to treat digital literature with stillness.&rdquo;
                   </p>
 
-                  <div className="pt-1 font-editorial-mono text-[8px] uppercase tracking-[0.28em] text-[#9a9488]">
+                  <div className="pt-1 font-editorial-mono text-[8px] uppercase tracking-[0.28em] text-[#9a9488] book-cover-edition">
                     Continuous Archival Edition • MMXXVI
                   </div>
                 </>
@@ -601,7 +603,7 @@ export function PhysicalBook({
             </div>
 
             {/* Bottom Invitation to Open: Authentic Letterpress Bookplate Inset */}
-            <div className="relative pt-3 border-t border-[#cfa85b]/20 pl-6 space-y-2 z-20">
+            <div className="relative pt-3 border-t border-[#cfa85b]/20 book-cover-bookplate-divider pl-6 space-y-2 z-20">
               {book ? (
                 <>
                   <div className="inline-flex items-center space-x-2 rounded-full bg-[var(--oxblood)] px-5 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-all group-hover:bg-[var(--oxblood-hover)] group-hover:shadow-md group-hover:scale-[1.02]">
@@ -615,16 +617,16 @@ export function PhysicalBook({
               ) : (
                 <>
                   <div className="letterpress-bookplate mx-auto max-w-[265px] rounded-md px-4 py-2.5 flex items-center justify-between transition-all group-hover:scale-[1.02]">
-                    <span className="font-editorial-mono text-[9.5px] uppercase tracking-[0.2em] font-bold text-[#faebc3]">
+                    <span className="font-editorial-mono text-[9.5px] uppercase tracking-[0.2em] font-bold text-[#faebc3] bookplate-label">
                       Unfold Volume
                     </span>
-                    <span className="font-editorial-mono text-[9px] text-[#cfa85b] uppercase tracking-wider flex items-center space-x-1 font-semibold">
+                    <span className="font-editorial-mono text-[9px] text-[#cfa85b] bookplate-action uppercase tracking-wider flex items-center space-x-1 font-semibold">
                       <span>Open</span>
-                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1 text-[#faebc3]" />
+                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1 text-[#faebc3] bookplate-action" />
                     </span>
                   </div>
-                  <div className="font-editorial-mono text-[8px] uppercase tracking-widest text-[#9e988c]">
-                    Click cover or press <kbd className="px-1 py-0.5 rounded border border-[#3e424c] bg-[#1a1b20] text-[8px] text-[#ded9cd]">Enter</kbd> to unfold
+                  <div className="font-editorial-mono text-[8px] uppercase tracking-widest text-[#9e988c] book-cover-kbd-hint">
+                    Click cover or press <kbd className="px-1 py-0.5 rounded border border-[#3e424c] bg-[#1a1b20] book-cover-kbd text-[8px] text-[#ded9cd]">Enter</kbd> to unfold
                   </div>
                 </>
               )}

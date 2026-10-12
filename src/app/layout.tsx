@@ -36,7 +36,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('inkforge_paper_tone');var r=document.documentElement;r.classList.remove('tone-cotton','tone-vellum','tone-inkwell','dark');if(t==='inkwell'){r.classList.add('dark','tone-inkwell');}else if(t==='vellum'){r.classList.add('tone-vellum');}else{r.classList.add('tone-cotton');}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-[var(--paper-canvas)] text-[var(--ink-primary)] antialiased selection:bg-[var(--oxblood)] selection:text-white">
         <EditionProvider>{children}</EditionProvider>
       </body>

@@ -10,6 +10,7 @@
     --paper-vellum: #eee6d6;
     --paper-border: #e4dccb;
     --paper-border-subtle: #ece5d5;
+    --paper-border-strong: #c8bd9f;
     --ink-primary: #171513;
     --ink-secondary: #423e38;
     --ink-muted: #6b665c;
@@ -31,6 +32,7 @@
     --paper-vellum: #e4d7bf;
     --paper-border: #d7c7ab;
     --paper-border-subtle: #e0d2b9;
+    --paper-border-strong: #beac8c;
     --ink-primary: #201a14;
     --ink-secondary: #473c30;
     --ink-muted: #6d5e4d;
@@ -53,6 +55,7 @@
     --paper-vellum: #23262c;
     --paper-border: #2a2d35;
     --paper-border-subtle: #212329;
+    --paper-border-strong: #404552;
     --ink-primary: #f5f2ea;
     --ink-secondary: #c6c2b7;
     --ink-muted: #8e8a80;
@@ -474,6 +477,132 @@
   box-shadow: 
     inset 1px 1px 2px rgba(0, 0, 0, 0.5),
     0 0 12px rgba(207, 168, 91, 0.2);
+}
+
+/* =========================================================================
+   Bookshop Vellum Edition Book-Cover Styling (Warm Antiquarian Parchment)
+   ========================================================================= */
+
+/* Vellum Hardcover Cloth Binding */
+.tone-vellum .book-cloth-permanent {
+  background-color: #dfcead;
+  background-image: 
+    radial-gradient(ellipse at 35% 25%, rgba(255, 255, 255, 0.55) 0%, transparent 60%),
+    radial-gradient(ellipse at 75% 85%, rgba(153, 41, 45, 0.09) 0%, transparent 55%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, transparent 45%, rgba(85, 60, 30, 0.14) 100%),
+    radial-gradient(rgba(100, 70, 35, 0.1) 1px, transparent 0),
+    radial-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 0);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 3px 3px, 3px 3px;
+  background-position: 0 0, 0 0, 0 0, 0 0, 1.5px 1.5px;
+  border-color: #cbb894;
+  color: #201a14;
+}
+
+/* Vellum Board Edge Bevel */
+.tone-vellum .book-board-bevel {
+  box-shadow:
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.7),
+    inset 1.5px 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1.5px -1.5px 3px 0 rgba(70, 50, 25, 0.22),
+    0 2px 4px rgba(45, 30, 15, 0.12);
+}
+
+/* Vellum French Groove Crease */
+.tone-vellum .french-groove {
+  background: linear-gradient(
+    90deg,
+    rgba(70, 50, 25, 0.28) 0%,
+    rgba(70, 50, 25, 0.12) 30%,
+    rgba(255, 255, 255, 0.35) 48%,
+    rgba(255, 255, 255, 0.5) 52%,
+    rgba(70, 50, 25, 0.14) 75%,
+    rgba(70, 50, 25, 0.24) 100%
+  );
+  box-shadow: inset 1px 0 2px rgba(70, 50, 25, 0.25);
+}
+
+/* Adaptive Spine Crease Shadow */
+.book-spine-crease {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.1) 100%);
+}
+.tone-vellum .book-spine-crease {
+  background: linear-gradient(90deg, rgba(70, 48, 22, 0.32) 0%, rgba(70, 48, 22, 0.16) 50%, transparent 100%);
+}
+
+/* Vellum Inset Framing Debossing */
+.tone-vellum .debossed-frame {
+  box-shadow: 
+    inset 1.5px 1.5px 3px rgba(70, 48, 20, 0.22),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.65),
+    0 1px 1px rgba(255, 255, 255, 0.4);
+}
+.tone-vellum .tone-vellum-frame-outer {
+  border-color: rgba(140, 95, 35, 0.35);
+}
+.tone-vellum .tone-vellum-frame-inner {
+  border-color: rgba(140, 95, 35, 0.2);
+}
+
+/* Vellum Crest & Typography Overrides */
+.tone-vellum .book-cover-crest {
+  color: var(--oxblood);
+}
+.tone-vellum .book-cover-subcolophon {
+  color: #635445;
+}
+.tone-vellum .book-cover-kicker {
+  color: #8a5914;
+}
+.tone-vellum .book-cover-title {
+  color: #1e1711;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+.tone-vellum .book-cover-motto {
+  color: #44372b;
+}
+.tone-vellum .book-cover-edition {
+  color: #6d5d4d;
+}
+.tone-vellum .book-cover-bookplate-divider {
+  border-color: rgba(140, 95, 35, 0.25);
+}
+
+/* Vellum Gold Foil Stamping -> Deep Burnished Oxblood / Foil Letterpress */
+.tone-vellum .gold-foil-stamp {
+  background: linear-gradient(135deg, #831e26 0%, #a32a32 30%, #5c1218 70%, #831e26 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.6));
+}
+
+/* Vellum Letterpress Bookplate Inset */
+.tone-vellum .letterpress-bookplate {
+  background: linear-gradient(180deg, rgba(248, 242, 230, 0.9) 0%, rgba(225, 212, 187, 0.95) 100%);
+  box-shadow: 
+    inset 1.5px 1.5px 3px rgba(70, 48, 20, 0.2),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.85),
+    0 1px 2px rgba(70, 48, 20, 0.08);
+  border: 1px solid rgba(150, 110, 45, 0.45);
+}
+.tone-vellum .letterpress-bookplate:hover {
+  border-color: rgba(153, 41, 45, 0.7);
+  box-shadow: 
+    inset 1px 1px 2px rgba(70, 48, 20, 0.15),
+    0 0 14px rgba(153, 41, 45, 0.18);
+}
+.tone-vellum .bookplate-label {
+  color: #1e1711;
+}
+.tone-vellum .bookplate-action {
+  color: var(--oxblood);
+}
+.tone-vellum .book-cover-kbd-hint {
+  color: #635445;
+}
+.tone-vellum .book-cover-kbd {
+  border-color: #cfbe9e;
+  background-color: #faf6ee;
+  color: #1e1711;
 }
 
 /* Center gutter valley and sewn binding shadow */

@@ -293,9 +293,14 @@ export default function HomePage() {
                       <span className="text-[var(--oxblood)] font-bold">{d.tag}</span>
                       <span>{d.date}</span>
                     </div>
-                    <h5 className="mt-1 font-editorial-serif text-sm font-bold leading-snug text-[var(--ink-primary)] hover:text-[var(--oxblood)] cursor-pointer transition-colors">
-                      {d.title}
-                    </h5>
+                    <Link
+                      href="/discover"
+                      className="block group/dispatch focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--oxblood)] rounded-xs"
+                    >
+                      <h5 className="mt-1 font-editorial-serif text-sm font-bold leading-snug text-[var(--ink-primary)] group-hover/dispatch:text-[var(--oxblood)] transition-colors">
+                        {d.title}
+                      </h5>
+                    </Link>
                     <p className="mt-0.5 text-[11px] text-[var(--ink-muted)]">By {d.author}</p>
                   </div>
                 ))}
