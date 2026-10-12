@@ -39,6 +39,9 @@ jobs:
       - name: Initialize SQLite Test Schema
         run: npx prisma db push --skip-generate
 
+      - name: Validate Production PostgreSQL Schema
+        run: DATABASE_URL="postgresql://mock:mock@localhost:5432/mock" DIRECT_URL="postgresql://mock:mock@localhost:5432/mock" npx prisma validate --schema=prisma/schema.postgresql.prisma
+
       - name: TypeScript Type Check
         run: npx tsc --noEmit
 

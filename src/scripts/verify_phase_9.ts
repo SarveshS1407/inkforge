@@ -204,13 +204,16 @@ async function runPhase9Verification() {
     throw new Error("prisma/schema.postgresql.prisma does not exist");
   }
   const pgSchema = fs.readFileSync(pgSchemaPath, "utf8");
-  if (!pgSchema.includes('provider = "postgresql"')) {
+  if (!/provider\s*=\s*"postgresql"/.test(pgSchema)) {
     throw new Error("prisma/schema.postgresql.prisma must specify provider = 'postgresql'");
+  }
+  if (!pgSchema.includes("directUrl")) {
+    throw new Error("prisma/schema.postgresql.prisma must specify directUrl for connection pooling");
   }
   if (!pgSchema.includes("model User") || !pgSchema.includes("model Post") || !pgSchema.includes("model PostRevision")) {
     throw new Error("prisma/schema.postgresql.prisma must declare core models User, Post, PostRevision");
   }
-  console.log("  ✓ Production PostgreSQL Prisma schema confirmed\n");
+  console.log("  ✓ Production PostgreSQL Prisma schema confirmed (with directUrl connection pooling)\n");
 
   // --------------------------------------------------------------------------
   // 7. PostgreSQL Baseline Migration SQL Verification
