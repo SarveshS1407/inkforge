@@ -47,6 +47,19 @@ const requestLogs = new Map<string, number[]>();
 
 function checkRateLimit(userId: string) {
   const now = Date.now();
+
+  // Prevent memory leaks: evict expired entries when map grows
+  if (requestLogs.size > 1000) {
+    for (const [id, timestamps] of requestLogs.entries()) {
+      const valid = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+      if (valid.length === 0) {
+        requestLogs.delete(id);
+      } else {
+        requestLogs.set(id, valid);
+      }
+    }
+  }
+
   const timestamps = requestLogs.get(userId) || [];
   const validTimestamps = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
 
@@ -59,6 +72,7 @@ function checkRateLimit(userId: string) {
   validTimestamps.push(now);
   requestLogs.set(userId, validTimestamps);
 }
+
 
 // ============================================================================
 // PROVIDER ADAPTER INTERFACE
@@ -99,38 +113,45 @@ class GeminiProvider implements AiProvider {
     }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}:generateContent?key=${this.apiKey}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: systemInstruction }],
-        },
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: prompt }],
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(25000),
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: systemInstruction }],
           },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 2048,
-        },
-      }),
-    });
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: prompt }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048,
+          },
+        }),
+      });
 
-    if (!response.ok) {
-      const errorJson = await response.json().catch(() => ({}));
-      const msg = errorJson?.error?.message || response.statusText;
-      throw new Error(`Google Gemini API error (${response.status}): ${msg}`);
-    }
+      if (!response.ok) {
+        const errorJson = await response.json().catch(() => ({}));
+        const msg = errorJson?.error?.message || response.statusText;
+        throw new Error(`Google Gemini API error (${response.status}): ${msg}`);
+      }
 
-    const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) {
-      throw new Error("Gemini returned an empty response candidate.");
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        throw new Error("Gemini returned an empty response candidate.");
+      }
+      return text.trim();
+    } catch (err: any) {
+      const rawMsg = err instanceof Error ? err.message : String(err);
+      const cleanMsg = this.apiKey ? rawMsg.split(this.apiKey).join("[REDACTED_API_KEY]") : rawMsg;
+      throw new Error(`Google Gemini API error: ${cleanMsg}`);
     }
-    return text.trim();
   }
 }
 
@@ -162,35 +183,42 @@ class OpenAiProvider implements AiProvider {
       throw new Error("OPENAI_API_KEY is not configured.");
     }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.modelName,
-        messages: [
-          { role: "system", content: systemInstruction },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 2048,
-      }),
-    });
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        signal: AbortSignal.timeout(25000),
+        body: JSON.stringify({
+          model: this.modelName,
+          messages: [
+            { role: "system", content: systemInstruction },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.7,
+          max_tokens: 2048,
+        }),
+      });
 
-    if (!response.ok) {
-      const errorJson = await response.json().catch(() => ({}));
-      const msg = errorJson?.error?.message || response.statusText;
-      throw new Error(`OpenAI API error (${response.status}): ${msg}`);
-    }
+      if (!response.ok) {
+        const errorJson = await response.json().catch(() => ({}));
+        const msg = errorJson?.error?.message || response.statusText;
+        throw new Error(`OpenAI API error (${response.status}): ${msg}`);
+      }
 
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
-    if (!text) {
-      throw new Error("OpenAI returned an empty completion choice.");
+      const data = await response.json();
+      const text = data.choices?.[0]?.message?.content;
+      if (!text) {
+        throw new Error("OpenAI returned an empty completion choice.");
+      }
+      return text.trim();
+    } catch (err: any) {
+      const rawMsg = err instanceof Error ? err.message : String(err);
+      const cleanMsg = this.apiKey ? rawMsg.split(this.apiKey).join("[REDACTED_API_KEY]") : rawMsg;
+      throw new Error(`OpenAI API error: ${cleanMsg}`);
     }
-    return text.trim();
   }
 }
 
@@ -441,6 +469,17 @@ export class AiService {
 
     // 7. Execute generation via active provider
     const provider = this.getActiveProvider();
+
+    if (
+      process.env.NODE_ENV === "production" &&
+      process.env.INKFORGE_AI_PROVIDER !== "mock" &&
+      provider.id === "mock"
+    ) {
+      throw new ValidationError(
+        "AI Copilot is unconfigured in production. Please configure GEMINI_API_KEY or OPENAI_API_KEY in environment variables."
+      );
+    }
+
     let suggestion = "";
 
     try {

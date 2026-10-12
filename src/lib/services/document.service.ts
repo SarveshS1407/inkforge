@@ -672,4 +672,94 @@ export class DocumentService {
 
     return revisions;
   }
+
+  /**
+   * Restore a historical revision snapshot to the active document.
+   * Enforces:
+   * 1. Document existence (404)
+   * 2. Author ownership (403)
+   * 3. Revision existence (404)
+   * 4. Revision-belongs-to-document check (400)
+   * 5. Atomic transaction creating pre-restore snapshot & incrementing OCC version
+   */
+  static async restoreRevision(
+    documentId: string,
+    revisionId: string,
+    requesterId: string
+  ) {
+    const existing = await prisma.post.findUnique({
+      where: { id: documentId },
+    });
+
+    if (!existing) {
+      throw new NotFoundError(`Document with ID '${documentId}' not found`);
+    }
+
+    if (existing.authorId !== requesterId) {
+      throw new ForbiddenError("You can only restore revisions for your own documents.");
+    }
+
+    const revision = await prisma.postRevision.findUnique({
+      where: { id: revisionId },
+    });
+
+    if (!revision) {
+      throw new NotFoundError(`Revision with ID '${revisionId}' not found`);
+    }
+
+    if (revision.postId !== documentId) {
+      throw new ValidationError("The specified revision does not belong to this manuscript.");
+    }
+
+    const nextVersion = existing.version + 1;
+    const restoredWordCount = revision.wordCount || extractWordCount(existing.contentHtml, revision.contentJson);
+    const readingTimeMinutes = calculateReadingMinutes(restoredWordCount);
+
+    const restored = await prisma.$transaction(async (tx) => {
+      // 1. Snapshot the current state before rolling back so no work is permanently lost
+      await tx.postRevision.create({
+        data: {
+          postId: existing.id,
+          version: existing.version,
+          title: existing.title,
+          contentJson: existing.contentJson || JSON.stringify({ type: "doc" }),
+          wordCount: extractWordCount(existing.contentHtml, existing.contentJson),
+          excerpt: existing.excerpt,
+        },
+      });
+
+      // 2. Restore the target revision content
+      return await tx.post.update({
+        where: { id: documentId },
+        data: {
+          title: revision.title,
+          contentJson: revision.contentJson,
+          excerpt: revision.excerpt,
+          version: nextVersion,
+          readingTimeMinutes,
+          updatedAt: new Date(),
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+            },
+          },
+          publication: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+      });
+    });
+
+    return restored;
+  }
 }
+

@@ -16,7 +16,8 @@
     "verify:phase3": "jiti src/scripts/verify_phase_3.ts",
     "verify:phase4": "jiti src/scripts/verify_phase_4.ts",
     "verify:phase5": "jiti src/scripts/verify_phase_5.ts",
-    "verify:phase6": "jiti src/scripts/verify_phase_6.ts"
+    "verify:phase6": "jiti src/scripts/verify_phase_6.ts",
+    "verify:phase7": "jiti src/scripts/verify_phase_7.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",

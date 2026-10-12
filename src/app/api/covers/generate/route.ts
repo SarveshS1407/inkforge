@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { realCoverService } from "@/lib/cover-generator/service";
 import { BookVisualContext, VisualBrief } from "@/types/cover-generator";
+import { requireAuth } from "@/lib/auth/guard";
+import { handleApiError } from "@/lib/api/response";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
+    // Enforce authentication: protect expensive generation endpoint
+    await requireAuth(req);
+
     const body = await req.json();
     const { context, brief, conceptId, refinement } = body as {
       context?: BookVisualContext;
@@ -44,8 +51,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ result });
   } catch (error) {
-    const errMessage = error instanceof Error ? error.message : "Image generation failed.";
-    console.error("API /api/covers/generate error:", errMessage);
-    return NextResponse.json({ error: errMessage }, { status: 500 });
+    return handleApiError(error);
   }
 }
