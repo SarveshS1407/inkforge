@@ -1,0 +1,52 @@
+name: INKFORGE CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Build, Lint & Verify
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      DATABASE_URL: "file:./prisma/dev.db"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      INKFORGE_AI_PROVIDER: "mock"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (20.x)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run db:generate
+
+      - name: Initialize SQLite Test Schema
+        run: npx prisma db push --skip-generate
+
+      - name: TypeScript Type Check
+        run: npx tsc --noEmit
+
+      - name: ESLint Code Quality
+        run: npm run lint
+
+      - name: Run All Automated Verification Suites (Phase 2A - Phase 9)
+        run: npm test
+
+      - name: Build Next.js Production Application
+        run: npm run build

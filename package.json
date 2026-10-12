@@ -18,7 +18,12 @@
     "verify:phase5": "jiti src/scripts/verify_phase_5.ts",
     "verify:phase6": "jiti src/scripts/verify_phase_6.ts",
     "verify:phase7": "jiti src/scripts/verify_phase_7.ts",
-    "verify:phase8": "jiti src/scripts/verify_phase_8.ts"
+    "verify:phase8": "jiti src/scripts/verify_phase_8.ts",
+    "verify:phase9": "jiti src/scripts/verify_phase_9.ts",
+    "verify:all": "npm run db:verify && npm run verify:phase2b && npm run verify:phase3 && npm run verify:phase4 && npm run verify:phase5 && npm run verify:phase6 && npm run verify:phase7 && npm run verify:phase8 && npm run verify:phase9",
+    "test": "npm run verify:all",
+    "db:migrate:postgres": "prisma migrate deploy --schema=prisma/schema.postgresql.prisma",
+    "db:migrate:data": "jiti src/scripts/migrate_sqlite_to_postgres.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",
@@ -43,6 +48,8 @@
     "@types/node": "^22.13.9",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.27",
     "postcss": "^8.5.3",
     "prisma": "^6.4.1",
     "tailwindcss": "^4.0.9",

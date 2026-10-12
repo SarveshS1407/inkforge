@@ -1,0 +1,260 @@
+// INKFORGE Prisma Schema (Production PostgreSQL)
+// Configured for managed PostgreSQL on Vercel / Neon / Supabase / Railway.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// 1. IDENTITY & AUTHOR PROFILE
+// ============================================================================
+
+model User {
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  passwordHash        String?              // Hashed via scrypt + salt; null for future social OAuth
+  username            String               @unique
+  displayName         String?
+  avatarUrl           String?
+  bio                 String?
+  role                String               @default("WRITER") // ADMIN, EDITOR, WRITER, READER
+  emailVerified       DateTime?            // Null if unverified
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  profile             Profile?
+  sessions            Session[]
+  verificationTokens  VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+  posts               Post[]
+  memberships         PublicationMember[]
+  ownedPublications   Publication[]        @relation("PublicationOwner")
+  collections         Collection[]         @relation("UserCollections")
+
+  @@index([email])
+  @@index([username])
+}
+
+model Profile {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  displayName String
+  slug        String?   @unique
+  bio         String?
+  avatarUrl   String?
+  websiteUrl  String?
+  location    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+}
+
+// ============================================================================
+// 2. SESSIONS & SECURITY TOKENS
+// ============================================================================
+
+model Session {
+  id           String    @id @default(uuid())
+  sessionToken String    @unique // Cryptographically secure token
+  userId       String
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime  @default(now())
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model VerificationToken {
+  id         String    @id @default(uuid())
+  userId     String
+  tokenHash  String    @unique // SHA-256 hash of single-use token
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id         String    @id @default(uuid())
+  userId     String
+  tokenHash  String    @unique // SHA-256 hash of single-use token
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ============================================================================
+// 3. PUBLICATIONS & EDITORIAL ORGANIZATIONS
+// ============================================================================
+
+model Publication {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  logoUrl     String?
+  coverUrl    String?
+  ownerId     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  owner       User      @relation("PublicationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     PublicationMember[]
+  posts       Post[]
+
+  @@index([ownerId])
+  @@index([slug])
+}
+
+model PublicationMember {
+  id            String      @id @default(uuid())
+  publicationId String
+  userId        String
+  role          String      @default("CONTRIBUTOR") // OWNER, EDITOR, AUTHOR, CONTRIBUTOR
+  createdAt     DateTime    @default(now())
+
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([publicationId, userId])
+  @@index([publicationId])
+  @@index([userId])
+}
+
+// ============================================================================
+// 4. DOCUMENTS / MANUSCRIPTS & REVISIONS
+// Structured for multi-device sync, optimistic concurrency & rich-text AST
+// ============================================================================
+
+model Post {
+  id                 String         @id @default(uuid())
+  title              String
+  subtitle           String?
+  slug               String         @unique
+  excerpt            String?
+  contentJson        String?        // Rich-text AST stored as JSON string (Tiptap / ProseMirror)
+  contentHtml        String?        // Pre-rendered HTML for fast reader serving
+  status             String         @default("DRAFT") // DRAFT, IN_REVIEW, SCHEDULED, PUBLISHED, ARCHIVED
+  version            Int            @default(1)       // Multi-device sync counter (optimistic concurrency)
+  targetWords        Int            @default(1200)    // Word count goal
+  coverImageUrl      String?
+  readingTimeMinutes Int            @default(1)
+  publishedAt        DateTime?
+  scheduledFor       DateTime?
+  canonicalUrl       String?
+
+  authorId           String
+  author             User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  publicationId      String?
+  publication        Publication?   @relation(fields: [publicationId], references: [id], onDelete: SetNull)
+
+  revisions          PostRevision[]
+  tags               PostTag[]
+  collectionItems    CollectionItem[]
+
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@index([authorId])
+  @@index([status])
+  @@index([slug])
+  @@index([publicationId])
+  @@index([publishedAt])
+}
+
+model PostRevision {
+  id          String   @id @default(uuid())
+  postId      String
+  version     Int      @default(1)
+  title       String
+  contentJson String   // Content snapshot
+  wordCount   Int      @default(0)
+  excerpt     String?
+  createdAt   DateTime @default(now())
+
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
+
+// ============================================================================
+// 5. TAXONOMY & METADATA
+// ============================================================================
+
+model Tag {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  posts     PostTag[]
+  createdAt DateTime  @default(now())
+
+  @@index([slug])
+}
+
+model PostTag {
+  postId    String
+  tagId     String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([postId])
+  @@index([tagId])
+}
+
+// ============================================================================
+// 6. COLLECTIONS & CURATED READING LISTS
+// ============================================================================
+
+model Collection {
+  id          String           @id @default(uuid())
+  title       String
+  slug        String
+  description String?
+  isPublic    Boolean          @default(true)
+  ownerId     String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  owner       User             @relation("UserCollections", fields: [ownerId], references: [id], onDelete: Cascade)
+  items       CollectionItem[]
+
+  @@unique([ownerId, slug])
+  @@index([ownerId])
+  @@index([isPublic])
+}
+
+model CollectionItem {
+  id           String     @id @default(uuid())
+  collectionId String
+  postId       String
+  orderIndex   Int        @default(0)
+  addedAt      DateTime   @default(now())
+
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, postId])
+  @@index([collectionId])
+  @@index([postId])
+}

@@ -198,10 +198,13 @@ export function AiCopilotPanel({
       setActiveTab("selection");
       setSelectedTask("rewrite");
     } else {
-      if (activeTab === "selection") {
-        setActiveTab("generative");
-        setSelectedTask("continue");
-      }
+      setActiveTab((prev) => {
+        if (prev === "selection") {
+          setSelectedTask("continue");
+          return "generative";
+        }
+        return prev;
+      });
     }
   }, [capturedSelection]);
 
