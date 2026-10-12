@@ -78,22 +78,22 @@ class NumberedCanvas(canvas.Canvas):
         # Running Header (Top of page)
         header_text = "INKFORGE  •  THE COMPLETE USER GUIDE & OPERATIONAL MANUAL"
         app_url = "https://inkforge-sigma.vercel.app/"
-        self.drawString(50, 755, header_text)
-        self.drawRightString(612 - 50, 755, app_url)
+        self.drawString(50, 764, header_text)
+        self.drawRightString(612 - 50, 764, app_url)
 
         # Header Hairline Rule
         self.setStrokeColor(PAPER_BORDER)
         self.setLineWidth(0.5)
-        self.line(50, 747, 612 - 50, 747)
+        self.line(50, 756, 612 - 50, 756)
 
         # Footer Hairline Rule
-        self.line(50, 48, 612 - 50, 48)
+        self.line(50, 36, 612 - 50, 36)
 
         # Running Footer (Bottom of page)
         footer_text = "Permanent Words  •  Living Software"
         page_str = f"Page {self._pageNumber} of {total_pages}"
-        self.drawString(50, 36, footer_text)
-        self.drawRightString(612 - 50, 36, page_str)
+        self.drawString(50, 24, footer_text)
+        self.drawRightString(612 - 50, 24, page_str)
 
         self.restoreState()
 
@@ -107,8 +107,8 @@ def create_user_guide_pdf(output_filename):
         pagesize=letter,
         leftMargin=50,
         rightMargin=50,
-        topMargin=55,
-        bottomMargin=55,
+        topMargin=44,
+        bottomMargin=42,
     )
 
     styles = getSampleStyleSheet()
@@ -177,30 +177,30 @@ def create_user_guide_pdf(output_filename):
     styles.add(ParagraphStyle(
         "ChapterTitle",
         fontName="Times-Bold",
-        fontSize=22,
-        leading=26,
+        fontSize=19,
+        leading=23,
         textColor=INK_PRIMARY,
-        spaceAfter=14,
+        spaceAfter=8,
         keepWithNext=True,
     ))
     styles.add(ParagraphStyle(
         "SectionHeading",
         fontName="Times-Bold",
-        fontSize=14,
-        leading=18,
+        fontSize=12.5,
+        leading=16,
         textColor=INK_PRIMARY,
-        spaceBefore=12,
-        spaceAfter=6,
+        spaceBefore=7,
+        spaceAfter=3,
         keepWithNext=True,
     ))
     styles.add(ParagraphStyle(
         "SubSectionHeading",
         fontName="Helvetica-Bold",
-        fontSize=11,
-        leading=15,
+        fontSize=10,
+        leading=13,
         textColor=OXBLOOD,
-        spaceBefore=8,
-        spaceAfter=4,
+        spaceBefore=5,
+        spaceAfter=2,
         keepWithNext=True,
     ))
 
@@ -208,28 +208,28 @@ def create_user_guide_pdf(output_filename):
     styles.add(ParagraphStyle(
         "GuideBody",
         fontName="Times-Roman",
-        fontSize=10,
-        leading=14.5,
+        fontSize=9.5,
+        leading=13.5,
         textColor=INK_SECONDARY,
-        spaceAfter=8,
+        spaceAfter=5,
     ))
     styles.add(ParagraphStyle(
         "GuideBodyBold",
         fontName="Times-Bold",
-        fontSize=10,
-        leading=14.5,
+        fontSize=9.5,
+        leading=13.5,
         textColor=INK_PRIMARY,
-        spaceAfter=8,
+        spaceAfter=5,
     ))
     styles.add(ParagraphStyle(
         "GuideBullet",
         fontName="Times-Roman",
-        fontSize=10,
-        leading=14,
+        fontSize=9.5,
+        leading=13,
         textColor=INK_SECONDARY,
-        leftIndent=15,
-        firstLineIndent=-10,
-        spaceAfter=4,
+        leftIndent=14,
+        firstLineIndent=-9,
+        spaceAfter=2.5,
     ))
 
     # Callout / Alert Styles
@@ -291,32 +291,31 @@ def create_user_guide_pdf(output_filename):
             ('BACKGROUND', (0,0), (-1,-1), bg_col),
             ('BOX', (0,0), (-1,-1), 0.5, border_col),
             ('LINELEFT', (0,0), (0,0), 3.5, border_col),
-            ('TOPPADDING', (0,0), (-1,-1), 8),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-            ('LEFTPADDING', (0,0), (-1,-1), 12),
-            ('RIGHTPADDING', (0,0), (-1,-1), 12),
+            ('TOPPADDING', (0,0), (-1,-1), 5),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+            ('LEFTPADDING', (0,0), (-1,-1), 9),
+            ('RIGHTPADDING', (0,0), (-1,-1), 9),
         ]))
         return box_table
 
     def step_card(step_num, title, text):
-        num_cell = Paragraph(f"<font color='{OXBLOOD.hexval()}'><b>Step {step_num}</b></font>", styles["ChapterKicker"])
-        title_cell = Paragraph(f"<b>{title}</b>", styles["SubSectionHeading"])
+        header_p = Paragraph(f"<font color='{OXBLOOD.hexval()}'><b>STEP {step_num}</b></font> &nbsp;•&nbsp; <b>{title}</b>", styles["SubSectionHeading"])
         body_cell = Paragraph(text, styles["GuideBody"])
-        content = [num_cell, title_cell, body_cell]
+        content = [header_p, body_cell]
         
         tbl = Table([[content]], colWidths=[512])
         tbl.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,-1), PAPER_CARD),
             ('BOX', (0,0), (-1,-1), 0.5, PAPER_BORDER),
-            ('TOPPADDING', (0,0), (-1,-1), 6),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-            ('LEFTPADDING', (0,0), (-1,-1), 10),
-            ('RIGHTPADDING', (0,0), (-1,-1), 10),
+            ('TOPPADDING', (0,0), (-1,-1), 4),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('LEFTPADDING', (0,0), (-1,-1), 8),
+            ('RIGHTPADDING', (0,0), (-1,-1), 8),
         ]))
         return tbl
 
     def divider():
-        return HRFlowable(width="100%", thickness=0.5, color=PAPER_BORDER, spaceBefore=10, spaceAfter=14)
+        return HRFlowable(width="100%", thickness=0.5, color=PAPER_BORDER, spaceBefore=5, spaceAfter=8)
 
     # ==========================================================================
     # COVER PAGE
@@ -380,13 +379,13 @@ def create_user_guide_pdf(output_filename):
         [Paragraph("<b>Chapter 2</b>", styles["TableCellBold"]), Paragraph("Getting Started: Homepage, The 3D Book &amp; Account Setup", styles["TableCell"]), Paragraph("Page 4", styles["TableCellBold"])],
         [Paragraph("<b>Chapter 3</b>", styles["TableCellBold"]), Paragraph("The Reading Experience: Folios, Paper Tones &amp; Controls", styles["TableCell"]), Paragraph("Page 5", styles["TableCellBold"])],
         [Paragraph("<b>Chapter 4</b>", styles["TableCellBold"]), Paragraph("Scribe Studio: Distraction-Free Writing &amp; Typography", styles["TableCell"]), Paragraph("Page 6", styles["TableCellBold"])],
-        [Paragraph("<b>Chapter 5</b>", styles["TableCellBold"]), Paragraph("Protecting Your Work: Autosave, Recovery &amp; Revisions", styles["TableCell"]), Paragraph("Page 8", styles["TableCellBold"])],
-        [Paragraph("<b>Chapter 6</b>", styles["TableCellBold"]), Paragraph("Publishing Your Writing &amp; Sharing with the World", styles["TableCell"]), Paragraph("Page 9", styles["TableCellBold"])],
-        [Paragraph("<b>Chapter 7</b>", styles["TableCellBold"]), Paragraph("Discovering Stories: The Gazetteer &amp; Author Directory", styles["TableCell"]), Paragraph("Page 10", styles["TableCellBold"])],
-        [Paragraph("<b>Chapter 8</b>", styles["TableCellBold"]), Paragraph("Thematic Collections &amp; Personal Slipcases", styles["TableCell"]), Paragraph("Page 11", styles["TableCellBold"])],
-        [Paragraph("<b>Chapter 9</b>", styles["TableCellBold"]), Paragraph("Complete Book Creation &amp; Cover Design Studio", styles["TableCell"]), Paragraph("Page 12", styles["TableCellBold"])],
-        [Paragraph("<b>Chapter 10</b>", styles["TableCellBold"]), Paragraph("Author Folio Settings &amp; Personalizing Your Sanctuary", styles["TableCell"]), Paragraph("Page 13", styles["TableCellBold"])],
-        [Paragraph("<b>Chapter 11</b>", styles["TableCellBold"]), Paragraph("Quick Reference: Keyboard Shortcuts, Mobile Tips &amp; FAQ", styles["TableCell"]), Paragraph("Page 14", styles["TableCellBold"])],
+        [Paragraph("<b>Chapter 5</b>", styles["TableCellBold"]), Paragraph("Protecting Your Work: Autosave, Recovery &amp; Revisions", styles["TableCell"]), Paragraph("Page 7", styles["TableCellBold"])],
+        [Paragraph("<b>Chapter 6</b>", styles["TableCellBold"]), Paragraph("Publishing Your Writing &amp; Sharing with the World", styles["TableCell"]), Paragraph("Page 8", styles["TableCellBold"])],
+        [Paragraph("<b>Chapter 7</b>", styles["TableCellBold"]), Paragraph("Discovering Stories: The Gazetteer &amp; Author Directory", styles["TableCell"]), Paragraph("Page 9", styles["TableCellBold"])],
+        [Paragraph("<b>Chapter 8</b>", styles["TableCellBold"]), Paragraph("Thematic Collections &amp; Personal Slipcases", styles["TableCell"]), Paragraph("Page 10", styles["TableCellBold"])],
+        [Paragraph("<b>Chapter 9</b>", styles["TableCellBold"]), Paragraph("Complete Book Creation &amp; Cover Design Studio", styles["TableCell"]), Paragraph("Page 11", styles["TableCellBold"])],
+        [Paragraph("<b>Chapter 10</b>", styles["TableCellBold"]), Paragraph("Author Folio Settings &amp; Personalizing Your Sanctuary", styles["TableCell"]), Paragraph("Page 12", styles["TableCellBold"])],
+        [Paragraph("<b>Chapter 11</b>", styles["TableCellBold"]), Paragraph("Quick Reference: Keyboard Shortcuts, Mobile Tips &amp; FAQ", styles["TableCell"]), Paragraph("Page 13", styles["TableCellBold"])],
     ]
     toc_table = Table(toc_data, colWidths=[80, 360, 72])
     toc_table.setStyle(TableStyle([
@@ -485,12 +484,12 @@ def create_user_guide_pdf(output_filename):
         "1", "Hover or Touch",
         "Move your cursor over the book or tap it lightly on mobile. Notice how the book lifts slightly from the desk surface and a gentle golden sheen sweeps across the cover cloth."
     ))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 2))
     story.append(step_card(
         "2", "Click to Unfold",
         "Click the cover or press the <b>Enter</b> key. The front cover turns smoothly along its spine, unfolding the volume to reveal the Table of Contents on the right folio and the publisher colophon on the left folio."
     ))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 2))
     story.append(step_card(
         "3", "Explore the Chapters",
         "Inside the Table of Contents, click any chapter (e.g. <i>Chapter I: Read: The Lead Monograph</i>) to enter that section directly, or swipe sideways on your phone to flip pages."
@@ -946,17 +945,17 @@ def create_user_guide_pdf(output_filename):
     ))
 
     story.append(step_card(
-        "Step 1", "Volume Identity & Genre",
+        "1", "Volume Identity & Genre",
         "Enter your book title, subtitle, author byline, and description. Select a genre preset (Biography, Philosophy, Literary Fiction, Technology & Craft, Poetry, etc.) and mood preset (Contemplative, Urgency, Lyrical, Archival)."
     ))
     story.append(Spacer(1, 4))
     story.append(step_card(
-        "Step 2", "Visual Brief & Symbolic Concepts",
+        "2", "Visual Brief & Symbolic Concepts",
         "Click <b>Generate Concepts</b>. INKFORGE analyzes your book's themes and extracts symbolic visual motifs, color palettes, and typographic directions. Choose your preferred concept card."
     ))
     story.append(Spacer(1, 4))
     story.append(step_card(
-        "Step 3", "Cover Studio & 3D Preview",
+        "3", "Cover Studio & 3D Preview",
         "Enter the Cover Studio! Here you can customize cover cloth materials (linen, buckram, vellum), choose foil stamping finishes (gold foil, silver foil, debossed blind stamp), and watch the 3D Physical Book render your cover in real time."
     ))
 
