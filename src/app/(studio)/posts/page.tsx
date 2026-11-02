@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header } from "@/components/navigation/Header";
 import { BookCreateModal } from "@/components/books/BookCreateModal";
 import { BookHistoryModal } from "@/components/books/BookHistoryModal";
+import { ManuscriptImportWizard } from "@/components/books/ManuscriptImportWizard";
 import { DraftManager } from "@/lib/drafts/draft-manager";
 import {
   FileText,
@@ -17,6 +18,7 @@ import {
   BookOpen,
   ArrowRight,
   CloudUpload,
+  Upload,
   Loader2,
   Trash2,
   AlertCircle,
@@ -65,6 +67,7 @@ interface BookItem {
   visibility: "PRIVATE" | "PUBLIC" | string;
   sourceFilename?: string | null;
   importMethod?: string | null;
+  originalFileSize?: number | null;
   publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -107,6 +110,7 @@ export default function PostsDashboardPage() {
 
   // Modal State
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [importWizardOpen, setImportWizardOpen] = useState(false);
   const [historyModalTarget, setHistoryModalTarget] = useState<BookItem | null>(null);
 
   const loadAllData = useCallback(async () => {
@@ -486,6 +490,16 @@ export default function PostsDashboardPage() {
                 <span className="hidden sm:inline">Author Folio</span>
               </Link>
             )}
+
+            {/* Secondary Action: Import Manuscript Wizard */}
+            <button
+              type="button"
+              onClick={() => setImportWizardOpen(true)}
+              className="inline-flex items-center space-x-2 rounded-md border border-[var(--oxblood)] bg-[var(--paper-surface)] px-4 py-2 font-editorial-sans text-xs font-semibold uppercase tracking-wider text-[var(--oxblood)] shadow-xs transition-all hover:bg-[var(--oxblood)] hover:text-white hover:shadow-sm active:scale-[0.98] cursor-pointer"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              <span>Import Manuscript</span>
+            </button>
 
             {/* Primary Action: Inscribe New Book Modal */}
             <button
@@ -966,6 +980,17 @@ export default function PostsDashboardPage() {
           )}
         </section>
       </main>
+
+      {/* Dedicated Manuscript Import Wizard */}
+      {importWizardOpen && (
+        <ManuscriptImportWizard
+          isOpen={importWizardOpen}
+          onClose={() => setImportWizardOpen(false)}
+          onBookCreated={() => {
+            loadAllData();
+          }}
+        />
+      )}
 
       {/* Book Creation Modal */}
       {createModalOpen && (

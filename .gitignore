@@ -46,3 +46,7 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 prisma/*.db
+
+# User Uploads & Test Fixtures
+uploads/
+test-manuscripts/

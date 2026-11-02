@@ -1,12 +1,17 @@
 import { PrismaClient, Prisma } from "@prisma/client";
+import path from "path";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+const localSqliteUrl = `file:${path.join(process.cwd(), "prisma", "dev.db")}`;
+const isLocalSqlite = !process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith("file:");
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
+    datasources: isLocalSqlite ? { db: { url: localSqliteUrl } } : undefined,
     log:
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]

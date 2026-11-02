@@ -6,6 +6,8 @@ import { ValidationError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
+
 export async function POST(req: NextRequest) {
   try {
     await requireAuthor(req);
@@ -19,20 +21,39 @@ export async function POST(req: NextRequest) {
         throw new ValidationError("No manuscript file was uploaded.");
       }
 
+      if (file.size > MAX_FILE_SIZE) {
+        throw new ValidationError(
+          `Manuscript file size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds the maximum allowed 25MB limit.`
+        );
+      }
+
       const filename = file.name || "manuscript";
       const buffer = Buffer.from(await file.arrayBuffer());
 
+      // Stage file for permanent archival upon book creation
+      const { stagedFileKey, fileSize } = await ImportService.stageUploadedFile(buffer, filename);
+
       if (filename.toLowerCase().endsWith(".docx")) {
         const result = await ImportService.parseDocx(buffer, filename);
-        return apiSuccess(result);
+        return apiSuccess({
+          ...result,
+          stagedFileKey,
+          fileSize,
+        });
       } else if (filename.toLowerCase().endsWith(".pdf")) {
         const result = await ImportService.parsePdf(buffer, filename);
-        return apiSuccess(result);
+        return apiSuccess({
+          ...result,
+          stagedFileKey,
+          fileSize,
+        });
       } else {
-        throw new ValidationError("Unsupported file type. Please upload a Microsoft Word (.docx) or PDF (.pdf) file.");
+        throw new ValidationError(
+          "Unsupported file type. Please upload a Microsoft Word (.docx) or PDF (.pdf) file."
+        );
       }
     } else {
-      // JSON Paste import analysis
+      // JSON Paste manuscript analysis
       const body = await req.json();
       const rawText = body.text || "";
       const title = body.title || "Pasted Manuscript";
@@ -42,7 +63,10 @@ export async function POST(req: NextRequest) {
       }
 
       const result = ImportService.segmentText(rawText, title);
-      return apiSuccess(result);
+      return apiSuccess({
+        ...result,
+        fileSize: Buffer.byteLength(rawText, "utf-8"),
+      });
     }
   } catch (error) {
     return handleApiError(error);

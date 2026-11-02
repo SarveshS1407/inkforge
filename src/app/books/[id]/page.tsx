@@ -11,7 +11,13 @@ import { AddToCollectionModal } from "@/components/collections/AddToCollectionMo
 import { getBookById } from "@/lib/book-store";
 import { BookIdentity, CoverVersion } from "@/types/book";
 import {
+  BookFormattingOptions,
+  DEFAULT_BOOK_FORMATTING,
+  toRoman,
+} from "@/types/import";
+import {
   BookOpen,
+  FileText,
   PenTool,
   ArrowLeft,
   ArrowRight,
@@ -69,6 +75,9 @@ interface LoadedBook {
   visibility: string;
   sourceFilename?: string | null;
   importMethod?: string | null;
+  formattingOptions?: string | null;
+  originalFileSize?: number | null;
+  originalFileStoragePath?: string | null;
   publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -99,6 +108,18 @@ export default function BookContinuousReaderPage() {
   const [fontSize, setFontSize] = useState<"standard" | "large" | "generous">("standard");
   const [solitaryMode, setSolitaryMode] = useState(false);
   const [activeChapterIndex, setActiveChapterIndex] = useState(0);
+
+  // Active book formatting
+  const bookFormatting: BookFormattingOptions = (() => {
+    if (!book?.formattingOptions) return DEFAULT_BOOK_FORMATTING;
+    try {
+      return typeof book.formattingOptions === "string"
+        ? JSON.parse(book.formattingOptions)
+        : book.formattingOptions;
+    } catch {
+      return DEFAULT_BOOK_FORMATTING;
+    }
+  })();
   const [scrollProgress, setScrollProgress] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
 
@@ -773,7 +794,15 @@ export default function BookContinuousReaderPage() {
           )}
 
           {/* Center Prose Canvas */}
-          <article className="flex-1 max-w-3xl mx-auto space-y-16">
+          <article
+            className={`flex-1 mx-auto space-y-16 transition-all ${
+              bookFormatting.readingWidth === "narrow"
+                ? "max-w-xl"
+                : bookFormatting.readingWidth === "wide"
+                ? "max-w-4xl"
+                : "max-w-3xl"
+            }`}
+          >
             {/* Frontispiece / Title Page */}
             <header className="border-b-2 border-[var(--editorial-rule)] pb-12 pt-4 text-center space-y-5">
               {/* Privacy Badge */}
@@ -894,7 +923,14 @@ export default function BookContinuousReaderPage() {
                   {/* Chapter Ornamental Header */}
                   <div className="text-center space-y-2">
                     <div className="font-editorial-mono text-[10px] uppercase tracking-widest text-[var(--oxblood)] font-bold">
-                      Folio Part {idx + 1}
+                      {bookFormatting.chapterHeadingStyle === "roman" &&
+                        `CHAPTER ${toRoman(idx + 1)}`}
+                      {bookFormatting.chapterHeadingStyle === "modern" &&
+                        `Chapter ${idx + 1}`}
+                      {bookFormatting.chapterHeadingStyle === "minimalist" &&
+                        `${idx + 1}`}
+                      {bookFormatting.chapterHeadingStyle === "ornamental" &&
+                        `— § Part ${toRoman(idx + 1)} § —`}
                     </div>
                     <h2 className="font-editorial-serif text-2xl sm:text-3xl font-bold text-[var(--ink-primary)]">
                       {chapter.title}
@@ -912,13 +948,31 @@ export default function BookContinuousReaderPage() {
 
                   {/* Chapter Body Prose */}
                   <div
-                    className={`font-editorial-serif leading-relaxed text-[var(--ink-primary)] transition-all ${
+                    className={`transition-all text-[var(--ink-primary)] ${
+                      bookFormatting.bodyFont === "sans"
+                        ? "font-editorial-sans"
+                        : bookFormatting.bodyFont === "mono"
+                        ? "font-editorial-mono"
+                        : bookFormatting.bodyFont === "garamond"
+                        ? "font-serif"
+                        : "font-editorial-serif"
+                    } ${
                       fontSize === "large"
-                        ? "text-lg leading-loose"
+                        ? "text-lg"
                         : fontSize === "generous"
-                        ? "text-xl leading-loose"
-                        : "text-base leading-relaxed"
-                    }`}
+                        ? "text-xl"
+                        : "text-base"
+                    } ${
+                      bookFormatting.lineSpacing === "compact"
+                        ? "leading-normal"
+                        : bookFormatting.lineSpacing === "relaxed"
+                        ? "leading-loose"
+                        : "leading-relaxed"
+                    } ${
+                      bookFormatting.paragraphStyle === "indented"
+                        ? "[&_p]:indent-6 [&_p+p]:mt-0 [&_p:first-of-type]:indent-0"
+                        : "[&_p]:indent-0 [&_p]:mb-4"
+                    } ${bookFormatting.alignment === "justify" ? "text-justify hyphens-auto" : "text-left"}`}
                   >
                     <SafeContentRenderer
                       contentHtml={chapter.contentHtml || undefined}
@@ -956,8 +1010,15 @@ export default function BookContinuousReaderPage() {
                 deterministic versioning and archival safety.
               </p>
               {book.sourceFilename && (
-                <div className="font-editorial-mono text-[9px] text-[var(--ink-muted)]">
-                  Manuscript source: {book.sourceFilename} ({book.importMethod || "Import"})
+                <div className="pt-2 flex flex-wrap items-center justify-center gap-2 font-editorial-mono text-[10px] text-[var(--ink-muted)]">
+                  <span className="inline-flex items-center gap-1.5 rounded bg-[var(--paper-warm)] px-2.5 py-1 border border-[var(--paper-border)]">
+                    <FileText className="h-3.5 w-3.5 text-[var(--oxblood)]" />
+                    <span>Manuscript source: {book.sourceFilename}</span>
+                    {book.originalFileSize && (
+                      <span>· {(book.originalFileSize / 1024).toFixed(1)} KB</span>
+                    )}
+                    <span>· Archival Preserved</span>
+                  </span>
                 </div>
               )}
             </footer>

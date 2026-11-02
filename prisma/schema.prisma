@@ -210,10 +210,13 @@ model Book {
   coverEmblem     String?
   status          String         @default("DRAFT")    // DRAFT, PUBLISHED, ARCHIVED
   visibility      String         @default("PRIVATE")  // PRIVATE ("Private — Only Me"), PUBLIC ("Published — Public")
-  sourceFilename  String?
-  importMethod    String?        // DIRECT, PASTE, DOCX, PDF
-  importWarnings  String?        // JSON-encoded warnings from document parsing
-  publishedAt     DateTime?
+  sourceFilename          String?
+  importMethod            String?        // DIRECT, PASTE, DOCX, PDF
+  importWarnings          String?        // JSON-encoded warnings from document parsing
+  formattingOptions       String?        // JSON-encoded book styling (bodyFont, fontSize, lineSpacing, paragraphStyle, alignment, readingWidth, chapterHeadingStyle)
+  originalFileSize        Int?           // Original document size in bytes
+  originalFileStoragePath String?        // Path to preserved uploaded manuscript
+  publishedAt             DateTime?
 
   authorId        String
   author          User           @relation("UserBooks", fields: [authorId], references: [id], onDelete: Cascade)

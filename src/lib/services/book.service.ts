@@ -1,6 +1,7 @@
 import slugify from "slugify";
 import { prisma } from "../db";
 import { canWrite, canManageTech } from "../auth/guard";
+import { ImportService } from "./import.service";
 import {
   NotFoundError,
   ForbiddenError,
@@ -22,6 +23,10 @@ export interface CreateBookInput {
   sourceFilename?: string;
   importMethod?: "DIRECT" | "PASTE" | "DOCX" | "PDF";
   importWarnings?: string[];
+  formattingOptions?: string;
+  originalFileSize?: number;
+  originalFileStoragePath?: string;
+  stagedFileKey?: string;
   chapters?: Array<{
     title: string;
     subtitle?: string;
@@ -124,10 +129,27 @@ export class BookService {
         sourceFilename: input.sourceFilename || null,
         importMethod: input.importMethod || "DIRECT",
         importWarnings: input.importWarnings ? JSON.stringify(input.importWarnings) : null,
+        formattingOptions: input.formattingOptions || null,
+        originalFileSize: input.originalFileSize || null,
+        originalFileStoragePath: input.originalFileStoragePath || null,
         publishedAt: visibility === "PUBLIC" ? new Date() : null,
         authorId: userId,
       },
     });
+
+    // Commit staged manuscript file if provided
+    if (input.stagedFileKey) {
+      const commitRes = await ImportService.commitStagedFile(input.stagedFileKey, book.id);
+      if (commitRes) {
+        await prisma.book.update({
+          where: { id: book.id },
+          data: {
+            originalFileStoragePath: commitRes.storagePath,
+            originalFileSize: commitRes.fileSize,
+          },
+        });
+      }
+    }
 
     // Create chapters if provided
     let totalWords = 0;
