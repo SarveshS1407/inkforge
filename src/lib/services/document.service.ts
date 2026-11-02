@@ -351,6 +351,8 @@ export class DocumentService {
         scheduledFor: input.scheduledFor ? new Date(input.scheduledFor) : null,
         authorId,
         publicationId: input.publicationId || null,
+        bookId: input.bookId || null,
+        orderIndex: input.orderIndex ?? undefined,
       },
       include: {
         author: {
@@ -462,6 +464,8 @@ export class DocumentService {
           canonicalUrl,
           scheduledFor: input.scheduledFor !== undefined ? (input.scheduledFor ? new Date(input.scheduledFor) : null) : undefined,
           publicationId: input.publicationId !== undefined ? input.publicationId : undefined,
+          bookId: input.bookId !== undefined ? input.bookId : undefined,
+          orderIndex: input.orderIndex ?? undefined,
         },
         include: {
           author: {

@@ -236,11 +236,80 @@ export default function PublicAuthorPage({
 
                   <div className="flex items-center space-x-1.5 text-[var(--ink-primary)] font-semibold">
                     <BookOpen className="h-3.5 w-3.5 text-[var(--oxblood)]" />
-                    <span>{author.posts.length} Published Monograph{author.posts.length === 1 ? "" : "s"}</span>
+                    <span>
+                      {author.posts.length} Monograph{author.posts.length === 1 ? "" : "s"}
+                      {author.books && author.books.length > 0 && ` · ${author.books.length} Volume${author.books.length === 1 ? "" : "s"}`}
+                    </span>
                   </div>
                 </div>
               </div>
             </section>
+
+            {/* Published Bound Volumes Section (if any) */}
+            {author.books && author.books.length > 0 && (
+              <section className="mb-14">
+                <div className="mb-6 flex items-baseline justify-between border-b border-[var(--editorial-rule)] pb-3">
+                  <div>
+                    <span className="font-editorial-mono text-xs font-bold uppercase tracking-widest text-[var(--oxblood)]">
+                      Bound Editions
+                    </span>
+                    <h2 className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)]">
+                      Published Books &amp; Volumes
+                    </h2>
+                  </div>
+                  <span className="font-editorial-mono text-xs text-[var(--ink-muted)]">
+                    {author.books.length} volume{author.books.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  {author.books.map((b) => (
+                    <div
+                      key={b.id}
+                      className="book-jacket group rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 transition-all hover:border-[var(--oxblood)] flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="mb-2 flex items-center justify-between font-editorial-mono text-[10px] uppercase tracking-wider text-[var(--ink-muted)]">
+                          <span className="font-bold text-[var(--oxblood)]">{b.genre || "Volume"}</span>
+                          <span>{b.chapters?.length || 0} Chapters</span>
+                        </div>
+
+                        <Link href={`/books/${b.id}`} className="block">
+                          <h3 className="font-editorial-serif text-xl font-bold text-[var(--ink-primary)] group-hover:text-[var(--oxblood)] transition-colors leading-snug">
+                            {b.title}
+                          </h3>
+                        </Link>
+
+                        {b.subtitle && (
+                          <p className="mt-1 font-editorial-serif italic text-xs text-[var(--ink-secondary)]">
+                            {b.subtitle}
+                          </p>
+                        )}
+
+                        {b.description && (
+                          <p className="mt-2.5 font-editorial-serif text-xs text-[var(--ink-secondary)] line-clamp-2 leading-relaxed">
+                            {b.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="mt-6 pt-3 border-t border-[var(--editorial-rule)] flex items-center justify-between font-editorial-mono text-[10px]">
+                        <span className="text-[var(--ink-muted)]">
+                          {b.publishedAt ? new Date(b.publishedAt).toLocaleDateString() : "Published"}
+                        </span>
+                        <Link
+                          href={`/books/${b.id}`}
+                          className="font-bold uppercase tracking-wider text-[var(--oxblood)] hover:underline inline-flex items-center space-x-1"
+                        >
+                          <span>Read Volume</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Published Works Section */}
             <section className="mb-16">

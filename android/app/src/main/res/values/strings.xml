@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">INKFORGE</string>
+    <string name="default_url">https://inkforge-sigma.vercel.app</string>
+</resources>

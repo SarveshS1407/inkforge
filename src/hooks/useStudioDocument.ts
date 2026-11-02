@@ -158,6 +158,37 @@ export function useStudioDocument({
       try {
         // Case A: Book context passed via ?bookId=
         if (bookId) {
+          try {
+            const bRes = await fetch(`/api/v1/books/${bookId}`);
+            if (bRes.ok) {
+              const bJson = await bRes.json();
+              if (bJson.success && bJson.data && mounted) {
+                const dbBook = bJson.data;
+                setActiveBook(dbBook as any);
+                setPublication(dbBook.genre || "Literary Volume");
+
+                // If user didn't request a specific document/chapter id, load first chapter
+                if (!initialDocumentId && dbBook.chapters && dbBook.chapters.length > 0) {
+                  const firstCh = dbBook.chapters[0];
+                  setDocumentId(firstCh.id);
+                  setVersion(firstCh.version || 1);
+                  setTitle(firstCh.title || `${dbBook.title} — Chapter 1`);
+                  setExcerpt(firstCh.excerpt || dbBook.description || "");
+                  setContentHtml(firstCh.contentHtml || "");
+                  setContentJson(firstCh.contentJson ? (typeof firstCh.contentJson === "string" ? JSON.parse(firstCh.contentJson) : firstCh.contentJson) : null);
+                  setStatus(firstCh.status || "DRAFT");
+                  if (firstCh.contentHtml) updateContentCounts(firstCh.contentHtml);
+                  setSaveStatus("saved");
+                  setIsLoading(false);
+                  isInitializedRef.current = true;
+                  return;
+                }
+              }
+            }
+          } catch (e) {
+            console.warn("[useStudioDocument] Could not load book from DB API, trying local store:", e);
+          }
+
           const book = getBookById(bookId);
           if (book && mounted) {
             setActiveBook(book);
@@ -348,6 +379,7 @@ export function useStudioDocument({
               expectedVersion: state.version,
               targetWords: state.targetWords,
               scheduledFor: targetStatus === "SCHEDULED" && state.scheduledDate ? state.scheduledDate : null,
+              bookId: bookId || undefined,
             }),
           });
 
@@ -392,6 +424,7 @@ export function useStudioDocument({
               status: targetStatus,
               targetWords: state.targetWords,
               scheduledFor: targetStatus === "SCHEDULED" && state.scheduledDate ? state.scheduledDate : null,
+              bookId: bookId || undefined,
             }),
           });
 
@@ -435,7 +468,7 @@ export function useStudioDocument({
         isSavingRef.current = false;
       }
     },
-    []
+    [bookId]
   );
 
   // 3. Debounced Autosave Trigger

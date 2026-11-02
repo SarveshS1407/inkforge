@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# INKFORGE Android Gradle Wrapper Script
+
+set -e
+
+DIRNAME="$(cd "$(dirname "$0")" && pwd)"
+APP_HOME="$DIRNAME"
+
+# Locate Gradle or Gradle wrapper jar
+WRAPPER_JAR="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+
+if [ -f "$WRAPPER_JAR" ]; then
+    exec java -Xmx2048m -jar "$WRAPPER_JAR" "$@"
+fi
+
+# Fallback: check system gradle
+if command -v gradle >/dev/null 2>&1; then
+    exec gradle "$@"
+fi
+
+# If wrapper jar missing, download gradle 8.2 or inform author
+echo "[INKFORGE Android] Gradle wrapper jar not found. Bootstrapping Gradle 8.2..."
+GRADLE_VERSION="8.2"
+DIST_DIR="$HOME/.gradle/wrapper/dists/gradle-$GRADLE_VERSION-bin"
+mkdir -p "$DIST_DIR"
+
+if [ ! -d "$DIST_DIR/gradle-$GRADLE_VERSION" ]; then
+    echo "Downloading Gradle $GRADLE_VERSION from services.gradle.org..."
+    curl -sSL "https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip" -o "$DIST_DIR/gradle-$GRADLE_VERSION-bin.zip"
+    unzip -q -o "$DIST_DIR/gradle-$GRADLE_VERSION-bin.zip" -d "$DIST_DIR"
+fi
+
+GRADLE_BIN="$DIST_DIR/gradle-$GRADLE_VERSION/bin/gradle"
+if [ -x "$GRADLE_BIN" ]; then
+    exec "$GRADLE_BIN" "$@"
+else
+    echo "Error: Could not locate executable gradle at $GRADLE_BIN"
+    exit 1
+fi

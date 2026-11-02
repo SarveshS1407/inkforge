@@ -209,6 +209,26 @@ export class UserService {
             canonicalUrl: true,
           },
         },
+        books: {
+          where: { visibility: "PUBLIC", status: "PUBLISHED" },
+          orderBy: { publishedAt: "desc" },
+          select: {
+            id: true,
+            title: true,
+            subtitle: true,
+            slug: true,
+            description: true,
+            genre: true,
+            publishedAt: true,
+            chapters: {
+              select: {
+                id: true,
+                title: true,
+                readingTimeMinutes: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -227,6 +247,7 @@ export class UserService {
       websiteUrl: user.profile?.websiteUrl || null,
       location: user.profile?.location || null,
       posts: user.posts,
+      books: (user as any).books || [],
     };
   }
 

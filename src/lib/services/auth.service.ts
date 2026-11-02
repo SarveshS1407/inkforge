@@ -34,11 +34,14 @@ const registerSchema = z.object({
     .max(30, "Username must be under 30 characters.")
     .regex(/^[a-zA-Z0-9_-]+$/, "Username can only contain alphanumeric characters, underscores, and dashes."),
   displayName: z.string().min(1).max(60).optional(),
+  role: z.enum(["READER", "AUTHOR", "WRITER", "TECH"]).optional().default("READER"),
+  inviteCode: z.string().optional(),
 });
 
 const loginSchema = z.object({
   email: z.string().email("Please provide a valid email address."),
   password: z.string().min(1, "Password is required."),
+  portal: z.enum(["TECH", "AUTHOR", "READER"]).optional(),
 });
 
 const resetPasswordSchema = z.object({
@@ -82,6 +85,22 @@ export class AuthService {
       strict: true,
     }) || cleanUsername;
 
+    // Validate registration role & privileges
+    const targetRole = (input.role || "READER").toUpperCase();
+    if (targetRole === "TECH") {
+      throw new UnauthorizedError("Tech administrator accounts cannot be created via public registration.");
+    }
+
+    if (targetRole === "AUTHOR" || targetRole === "WRITER") {
+      const expectedCode = (process.env.AUTHOR_INVITE_CODE || "INKFORGE-AUTHOR-2026").trim().toLowerCase();
+      const providedCode = (input.inviteCode || "").trim().toLowerCase();
+      if (!providedCode || providedCode !== expectedCode) {
+        throw new ValidationError("A valid author invitation passcode is required to create an Author account.");
+      }
+    }
+
+    const assignedRole = (targetRole === "AUTHOR" || targetRole === "WRITER") ? "AUTHOR" : "READER";
+
     // Create user and profile in transaction
     const user = await prisma.user.create({
       data: {
@@ -89,12 +108,14 @@ export class AuthService {
         passwordHash,
         username: cleanUsername,
         displayName,
-        role: "WRITER",
+        role: assignedRole,
         profile: {
           create: {
             displayName,
             slug: authorSlug,
-            bio: "Author at the INKFORGE Publishing Sanctuary.",
+            bio: assignedRole === "AUTHOR" 
+              ? "Author at the INKFORGE Publishing Sanctuary." 
+              : "Reader at the INKFORGE Publishing Sanctuary.",
           },
         },
       },
@@ -161,6 +182,13 @@ export class AuthService {
     const isValid = await verifyPassword(input.password, user.passwordHash);
     if (!isValid) {
       throw new UnauthorizedError("Invalid email or password.");
+    }
+
+    if (input.portal === "TECH") {
+      const isTech = user.role === "TECH" || user.role === "ADMIN";
+      if (!isTech) {
+        throw new UnauthorizedError("Tech portal access is restricted to platform administrators.");
+      }
     }
 
     const { sessionToken, session } = await createSession(user.id, context);

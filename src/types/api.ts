@@ -16,6 +16,8 @@ export interface CreateDocumentInput {
   publicationId?: string;
   coverImageUrl?: string;
   scheduledFor?: string | Date;
+  bookId?: string | null;
+  orderIndex?: number | null;
 }
 
 export interface UpdateDocumentInput {
@@ -30,6 +32,8 @@ export interface UpdateDocumentInput {
   coverImageUrl?: string;
   scheduledFor?: string | Date;
   expectedVersion?: number; // Concurrency control
+  bookId?: string | null;
+  orderIndex?: number | null;
 }
 
 export interface DocumentResponse {
@@ -132,6 +136,20 @@ export interface PublicAuthorResponse {
     readingTimeMinutes: number;
     publishedAt: Date | null;
     canonicalUrl: string | null;
+  }>;
+  books?: Array<{
+    id: string;
+    title: string;
+    subtitle: string | null;
+    slug: string;
+    description: string | null;
+    genre: string | null;
+    publishedAt: Date | null;
+    chapters?: Array<{
+      id: string;
+      title: string;
+      wordCount?: number | null;
+    }>;
   }>;
 }
 

@@ -97,6 +97,7 @@ const PAGE_SIZE = 10;
 
 export default function DiscoverPage() {
   const [stories, setStories] = useState<Story[]>([]);
+  const [publishedBooks, setPublishedBooks] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -116,6 +117,19 @@ export default function DiscoverPage() {
   const fetchStories = useCallback(async () => {
     setIsLoading(true);
     try {
+      // Also fetch public published books
+      try {
+        const bRes = await fetch("/api/v1/books?visibility=PUBLIC&status=PUBLISHED&limit=6");
+        if (bRes.ok) {
+          const bJson = await bRes.json();
+          if (bJson.success && Array.isArray(bJson.data?.items)) {
+            setPublishedBooks(bJson.data.items);
+          }
+        }
+      } catch {
+        // Ignored
+      }
+
       const offset = (page - 1) * PAGE_SIZE;
       const params = new URLSearchParams();
       params.set("status", "PUBLISHED");
@@ -384,6 +398,65 @@ export default function DiscoverPage() {
             </div>
           </div>
         </header>
+
+        {/* Published Books & Bound Volumes Shelf */}
+        {publishedBooks.length > 0 && (
+          <section className="mb-14">
+            <div className="mb-5 flex items-center justify-between border-b border-[var(--editorial-rule)] pb-2 font-editorial-mono text-xs">
+              <span className="font-bold uppercase tracking-widest text-[var(--oxblood)] flex items-center gap-1.5">
+                <BookOpen className="h-3.5 w-3.5" />
+                <span>Published Volumes &amp; Books ({publishedBooks.length})</span>
+              </span>
+              <span className="text-[10px] text-[var(--ink-muted)] uppercase">
+                Continuous Multi-Chapter Works
+              </span>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {publishedBooks.map((b) => (
+                <div
+                  key={b.id}
+                  className="book-jacket group rounded-xl border border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 transition-all hover:border-[var(--oxblood)] hover:shadow-md flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between font-editorial-mono text-[9px] uppercase tracking-wider text-[var(--ink-muted)] mb-2">
+                      <span className="text-[var(--oxblood)] font-bold">{b.genre || "Volume"}</span>
+                      <span>{b.chapters?.length || 0} Chapters</span>
+                    </div>
+
+                    <Link href={`/books/${b.id}`} className="block">
+                      <h3 className="font-editorial-serif text-lg font-bold text-[var(--ink-primary)] group-hover:text-[var(--oxblood)] transition-colors leading-snug">
+                        {b.title}
+                      </h3>
+                      {b.subtitle && (
+                        <p className="mt-1 font-editorial-serif italic text-xs text-[var(--ink-secondary)] line-clamp-1">
+                          {b.subtitle}
+                        </p>
+                      )}
+                    </Link>
+
+                    {b.description && (
+                      <p className="mt-2.5 font-editorial-serif text-xs text-[var(--ink-secondary)] line-clamp-2 leading-relaxed">
+                        {b.description}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-[var(--editorial-rule)] flex items-center justify-between font-editorial-mono text-[10px]">
+                    <span className="text-[var(--ink-muted)]">By {b.author?.displayName || b.author?.username || "Resident Author"}</span>
+                    <Link
+                      href={`/books/${b.id}`}
+                      className="font-bold uppercase tracking-wider text-[var(--oxblood)] hover:underline inline-flex items-center space-x-1"
+                    >
+                      <span>Read Volume</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Stories Grid */}
         <section className="space-y-6 mb-12">

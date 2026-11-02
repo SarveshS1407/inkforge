@@ -48,8 +48,12 @@ if (isPostgres && !process.env.DIRECT_URL) {
   process.env.DIRECT_URL = dbUrl;
 }
 
+const prismaBin = fs.existsSync(path.join(process.cwd(), "node_modules/prisma/build/index.js"))
+  ? `node "${path.join(process.cwd(), "node_modules/prisma/build/index.js")}"`
+  : "npx prisma";
+
 try {
-  execSync(`npx prisma generate --schema=${schemaPath}`, {
+  execSync(`${prismaBin} generate --schema=${schemaPath}`, {
     stdio: "inherit",
     env: { ...process.env },
   });

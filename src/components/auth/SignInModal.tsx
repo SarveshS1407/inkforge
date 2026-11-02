@@ -6,19 +6,32 @@ import { X, Feather, CheckCircle2, ArrowRight, AlertCircle, Loader2 } from "luci
 interface SignInModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialPortal?: "TECH" | "READER" | "AUTHOR";
 }
 
 type AuthMode = "signin" | "register" | "forgot";
 
-export function SignInModal({ isOpen, onClose }: SignInModalProps) {
+export function SignInModal({ isOpen, onClose, initialPortal = "AUTHOR" }: SignInModalProps) {
+  const [selectedPortal, setSelectedPortal] = useState<"TECH" | "READER" | "AUTHOR">(initialPortal);
   const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Sync initialPortal prop when opened
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedPortal(initialPortal);
+      if (initialPortal === "TECH") {
+        setMode("signin");
+      }
+    }
+  }, [isOpen, initialPortal]);
 
   // Explicit close handler giving the user total control over dismissal
   const handleExplicitClose = useCallback(() => {
@@ -69,7 +82,11 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
         const res = await fetch("/api/v1/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email.trim(), password }),
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+            portal: selectedPortal,
+          }),
         });
         const data = await res.json();
 
@@ -80,8 +97,8 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
         // Notify background listeners immediately
         window.dispatchEvent(new Event("inkforge_auth_change"));
 
-        // Present persistent success confirmation — NEVER close automatically with setTimeout
-        setSuccessMessage(`Welcome back, ${data.data?.displayName || data.data?.username || "Author"}! Your author session is active.`);
+        const roleBadge = data.data?.role === "TECH" ? "Tech Administrator" : data.data?.role === "AUTHOR" ? "Author" : "Reader";
+        setSuccessMessage(`Welcome back, ${data.data?.displayName || data.data?.username}! Your ${roleBadge} session is active.`);
       } else if (mode === "register") {
         const res = await fetch("/api/v1/auth/register", {
           method: "POST",
@@ -91,6 +108,8 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
             password,
             username: username.trim(),
             displayName: displayName.trim() || undefined,
+            role: selectedPortal === "AUTHOR" ? "AUTHOR" : "READER",
+            inviteCode: selectedPortal === "AUTHOR" ? inviteCode.trim() : undefined,
           }),
         });
         const data = await res.json();
@@ -101,8 +120,11 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
 
         window.dispatchEvent(new Event("inkforge_auth_change"));
 
-        // Present persistent success confirmation — NEVER close automatically with setTimeout
-        setSuccessMessage("Author folio created successfully! Your credentials are now active in the INKFORGE registry.");
+        setSuccessMessage(
+          selectedPortal === "AUTHOR"
+            ? "Author folio created successfully! Your writing studio is ready."
+            : "Reader sanctuary account created! You can now bookmark and collect monographs."
+        );
       } else if (mode === "forgot") {
         const res = await fetch("/api/v1/auth/forgot-password", {
           method: "POST",
@@ -149,34 +171,87 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
           <X className="h-4 w-4" />
         </button>
 
+        {/* Portal Switcher Tabs */}
+        <div className="flex rounded-lg border border-[var(--paper-border)] bg-[var(--paper-canvas)] p-1 text-xs font-editorial-mono">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedPortal("READER");
+              setErrorMessage(null);
+            }}
+            className={`flex-1 py-1.5 rounded-md text-center transition-colors cursor-pointer ${
+              selectedPortal === "READER"
+                ? "bg-[var(--paper-surface)] text-[var(--ink-primary)] font-bold shadow-2xs border border-[var(--paper-border)]"
+                : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"
+            }`}
+          >
+            Reader
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedPortal("AUTHOR");
+              setErrorMessage(null);
+            }}
+            className={`flex-1 py-1.5 rounded-md text-center transition-colors cursor-pointer ${
+              selectedPortal === "AUTHOR"
+                ? "bg-[var(--oxblood)] text-white font-bold shadow-2xs"
+                : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"
+            }`}
+          >
+            Author
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedPortal("TECH");
+              setMode("signin");
+              setErrorMessage(null);
+            }}
+            className={`flex-1 py-1.5 rounded-md text-center transition-colors cursor-pointer ${
+              selectedPortal === "TECH"
+                ? "bg-[var(--paper-surface)] text-amber-700 dark:text-amber-400 font-bold shadow-2xs border border-amber-500/30"
+                : "text-[var(--ink-muted)] hover:text-[var(--ink-primary)]"
+            }`}
+          >
+            Tech Admin
+          </button>
+        </div>
+
         {/* Modal Masthead */}
         <div className="space-y-1.5">
           <div className="flex items-center space-x-2 font-editorial-mono text-[10px] uppercase tracking-widest text-[var(--oxblood)] font-bold">
             <Feather className="h-3.5 w-3.5" />
             <span>
+              {selectedPortal === "TECH"
+                ? "Platform Console"
+                : selectedPortal === "READER"
+                ? "Reader Sanctuary"
+                : "Author Atelier"}
+              {" • "}
               {mode === "signin"
-                ? "Author Account & Sign In"
+                ? "Sign In"
                 : mode === "register"
-                ? "Create New Author Folio"
-                : "Account Recovery"}
+                ? "New Account"
+                : "Recovery"}
             </span>
           </div>
           <h2
             id="sign-in-modal-title"
             className="font-editorial-serif text-2xl font-bold text-[var(--ink-primary)]"
           >
-            {mode === "signin"
-              ? "Welcome to INKFORGE"
-              : mode === "register"
-              ? "Join the Sanctuary"
-              : "Reset Your Password"}
+            {selectedPortal === "TECH"
+              ? "Technical Administration"
+              : selectedPortal === "READER"
+              ? "Reader Sanctuary"
+              : "Author Sanctuary"}
           </h2>
           <p className="font-editorial-serif italic text-xs text-[var(--ink-secondary)] leading-relaxed">
-            {mode === "signin"
-              ? "Sign in to sync drafts across devices, manage published monographs, and protect your intellectual archive."
-              : mode === "register"
-              ? "Create your independent publishing account with cryptographic security and permanent folios."
-              : "Enter your registered email address and we will dispatch a secure, single-use password recovery link."}
+            {selectedPortal === "TECH"
+              ? "Restricted access to system telemetry, content governance, and database migration tooling."
+              : selectedPortal === "READER"
+              ? "Explore the living press, save monographs, and discover voices across the independent web."
+              : "Inscribe your books, import Word & PDF manuscripts, customize physical covers, and publish."}
           </p>
         </div>
 
@@ -259,7 +334,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
               <>
                 <div>
                   <label className="block font-editorial-mono text-[10px] uppercase tracking-wider text-[var(--oxblood)] font-bold mb-1">
-                    Author Username
+                    Username
                   </label>
                   <input
                     type="text"
@@ -284,6 +359,31 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
                     className="w-full rounded-md border border-[var(--paper-border)] bg-[var(--paper-canvas)] px-3 py-2 sm:py-1.5 font-editorial-sans text-base sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-hidden shadow-2xs disabled:opacity-50"
                   />
                 </div>
+
+                {selectedPortal === "AUTHOR" && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block font-editorial-mono text-[10px] uppercase tracking-wider text-[var(--oxblood)] font-bold">
+                        Author Invitation Passcode
+                      </label>
+                      <span className="text-[9px] font-editorial-mono text-[var(--oxblood)]">
+                        Required
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value)}
+                      placeholder="e.g. INKFORGE-AUTHOR-2026"
+                      disabled={isSubmitting}
+                      className="w-full rounded-md border border-[var(--oxblood)]/40 bg-[var(--paper-canvas)] px-3 py-2 sm:py-1.5 font-editorial-mono text-base sm:text-sm text-[var(--ink-primary)] placeholder-[var(--ink-muted)]/60 focus:border-[var(--oxblood)] focus:outline-hidden shadow-2xs disabled:opacity-50"
+                    />
+                    <p className="mt-1 font-editorial-serif italic text-[11px] text-[var(--ink-muted)]">
+                      Author registration is invitation-only during the pilot sprint.
+                    </p>
+                  </div>
+                )}
               </>
             )}
 

@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.Inkforge" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/oxblood</item>
+        <item name="colorPrimaryVariant">@color/oxblood_dark</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="android:statusBarColor">@color/oxblood_dark</item>
+        <item name="android:windowBackground">@color/paper_canvas</item>
+    </style>
+</resources>

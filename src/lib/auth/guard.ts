@@ -1,6 +1,25 @@
 import { NextRequest } from "next/server";
 import { SESSION_COOKIE_NAME, validateSession } from "./session";
-import { UnauthorizedError } from "../errors";
+import { UnauthorizedError, ForbiddenError } from "../errors";
+
+/**
+ * Checks whether a user role has authoring/writing privileges.
+ * Supports modern "AUTHOR" and "TECH", as well as legacy "WRITER" and "ADMIN".
+ */
+export function canWrite(role?: string | null): boolean {
+  if (!role) return false;
+  const upper = role.toUpperCase();
+  return upper === "AUTHOR" || upper === "WRITER" || upper === "ADMIN" || upper === "TECH";
+}
+
+/**
+ * Checks whether a user role has platform tech administration privileges.
+ */
+export function canManageTech(role?: string | null): boolean {
+  if (!role) return false;
+  const upper = role.toUpperCase();
+  return upper === "TECH" || upper === "ADMIN";
+}
 
 /**
  * Extracts session token from either:
@@ -59,6 +78,28 @@ export async function requireAuth(req: Request | NextRequest) {
   const user = await getAuthenticatedUser(req);
   if (!user) {
     throw new UnauthorizedError("Authentication required. Please sign in to continue.");
+  }
+  return user;
+}
+
+/**
+ * Enforces that the authenticated user possesses Author privileges.
+ */
+export async function requireAuthor(req: Request | NextRequest) {
+  const user = await requireAuth(req);
+  if (!canWrite(user.role)) {
+    throw new ForbiddenError("Author privileges required to create or manage books.");
+  }
+  return user;
+}
+
+/**
+ * Enforces that the authenticated user possesses Tech Administration privileges.
+ */
+export async function requireTech(req: Request | NextRequest) {
+  const user = await requireAuth(req);
+  if (!canManageTech(user.role)) {
+    throw new ForbiddenError("Tech administration privileges required.");
   }
   return user;
 }

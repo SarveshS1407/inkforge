@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { InkforgeLanding } from "@/components/landing/InkforgeLanding";
+import { EntryPortalsSection } from "@/components/landing/EntryPortalsSection";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 interface AnthologyStory {
@@ -201,6 +202,9 @@ export default function HomePage() {
   return (
     <InkforgeLanding>
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+        {/* Three Dedicated Entry Portals: TECH, READER, AUTHOR */}
+        <EntryPortalsSection />
+
         {/* Curated Publication Frontispiece Ribbon */}
         <section className="scroll-pop-reveal border-b border-[var(--editorial-rule)] pb-6 mb-10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-editorial-mono text-xs uppercase tracking-widest text-[var(--ink-muted)]">
